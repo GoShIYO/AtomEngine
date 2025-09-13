@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Source\Runtime\Core\Log\LogSystem.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Vector4.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Vector3.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Math.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Random.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Matrix4x4.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Matrix3x3.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Quaternion.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Vector2.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\Transform.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Runtime\Core\Log\LogSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Math.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Random.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix3x3.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Quaternion.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp" />
+  </ItemGroup>
+</Project>
