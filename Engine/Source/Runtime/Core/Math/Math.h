@@ -217,8 +217,7 @@ namespace AtomEngine
         static Matrix4x4 MakePerspectiveMatrix(Radian fovy, float aspect, float znear = 0.1f, float zfar = 100.0f);
 
         static Matrix4x4
-            MakeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar);
-
+            MakeOrthographicProjectionMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
     };
 
     inline Radian::Radian(const Degree& d) : rad(d.GetRadians()) {}

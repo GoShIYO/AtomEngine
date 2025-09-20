@@ -75,12 +75,13 @@ namespace AtomEngine
 		return result;
 	}
 
-	Matrix4x4 Math::MakeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float znear, float zfar)
+	Matrix4x4 Math::MakeOrthographicProjectionMatrix(float left, float top, float right, float bottom, float nearClip, float farClip)
 	{
 		Matrix4x4 result = {
+			2 / (right - left), 0.0f, 0.0f, 0.0f,
 			0.0f, 2 / (top - bottom), 0.0f, 0.0f,
-			0.0f, 0.0f, 1 / (zfar - znear), 0.0f,
-			(left + right) / (left - right), (top + bottom) / (bottom - top), znear / (znear - zfar), 1.0f
+			0.0f, 0.0f, 1 / (farClip - nearClip), 0.0f,
+			(left + right) / (left - right), (top + bottom) / (bottom - top), nearClip / (nearClip - farClip), 1.0f
 		};
 		return result;
 	}

@@ -28,12 +28,12 @@ namespace AtomEngine
 	{
 	private:
 
-		static RandomGenEngine s_engine;
+		static RandomGenEngine randomEngine;
 
 	public:
 		static void Initialize(unsigned int seed = std::random_device()())
 		{
-			s_engine.seed(seed);
+			randomEngine.seed(seed);
 		}
 
 		/// <summary>
@@ -50,7 +50,7 @@ namespace AtomEngine
 				std::uniform_int_distribution<T>,
 				std::uniform_real_distribution<T>>;
 
-			return Distribution(min, max)(s_engine);
+			return Distribution(min, max)(randomEngine);
 		}
 
 		/// <summary>
@@ -78,7 +78,7 @@ namespace AtomEngine
 		/// <returns></returns>
 		static bool bernoulli(float probability)
 		{
-			return std::bernoulli_distribution(probability)(s_engine);
+			return std::bernoulli_distribution(probability)(randomEngine);
 		}
 
 		/// <summary>
@@ -89,7 +89,7 @@ namespace AtomEngine
 		/// <returns>生成された乱数（float）</returns>
 		static float normal(float mean, float stddev)
 		{
-			return std::normal_distribution<float>(mean, stddev)(s_engine);
+			return std::normal_distribution<float>(mean, stddev)(randomEngine);
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@ namespace AtomEngine
 			Distribution dist(std::forward<Params>(params)...);
 			std::generate(std::begin(range), std::end(range), [&]
 				{
-					return dist(s_engine);
+					return dist(randomEngine);
 				});
 		}
 	};

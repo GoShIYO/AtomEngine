@@ -1,26 +1,145 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="Source\Runtime\Core\Log\LogSystem.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Vector4.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Vector3.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Math.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Random.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Matrix4x4.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Matrix3x3.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Quaternion.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Vector2.h" />
-    <ClInclude Include="Source\Runtime\Core\Math\Transform.h" />
+    <ClInclude Include="Source\Editor\editor.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Math.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Matrix3x3.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Matrix4x4.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Quaternion.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Random.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Transform.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Vector4.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Vector2.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Vector3.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\EngineCore.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Color\Color.h">
+      <Filter>Engine\Core\Color</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Utility\Hash.h">
+      <Filter>Engine\Core\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Log\LogSystem.h">
+      <Filter>Engine\Core\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Utility\Utility.h">
+      <Filter>Engine\Core\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Input\Input.h">
+      <Filter>Engine\Function\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h">
+      <Filter>Engine\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Global\GlobalContext.h">
+      <Filter>Engine\Function\Global</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Runtime\Core\Log\LogSystem.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Math.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Random.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Matrix3x3.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Quaternion.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp" />
+    <ClCompile Include="Source\Editor\main.cpp" />
+    <ClCompile Include="Source\Editor\editor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Math.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix3x3.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Quaternion.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Random.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\EngineCore.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Color\Color.cpp">
+      <Filter>Engine\Core\Color</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Log\LogSystem.cpp">
+      <Filter>Engine\Core\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Input\Input.cpp">
+      <Filter>Engine\Function\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp">
+      <Filter>Engine\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Global\GlobalContext.cpp">
+      <Filter>Engine\Function\Global</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{d414d8a5-6337-434d-9705-88ffd7e0921a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core">
+      <UniqueIdentifier>{f99e1fe0-72a8-422b-910e-1cb9d9b07175}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function">
+      <UniqueIdentifier>{e5a82c2e-9b50-4f7d-b951-6fd5fe90286c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Platform">
+      <UniqueIdentifier>{6855602d-91cd-4cb2-9cf4-d23966a65b14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource">
+      <UniqueIdentifier>{dde2c041-ebc7-4b42-820d-37cb5c552449}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{7254812e-351e-4a5e-b172-4a323c88336c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core\Math">
+      <UniqueIdentifier>{432f705b-dc8d-46c9-9921-c2bf69c4f016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core\Color">
+      <UniqueIdentifier>{ae8d28a2-0a3c-45fd-b470-aff705d31463}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core\Utility">
+      <UniqueIdentifier>{517c32b4-798b-41ac-bd2a-e89262ef236b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Input">
+      <UniqueIdentifier>{1e6a9566-9357-4f57-b7c9-46ee38469966}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Render">
+      <UniqueIdentifier>{5f7449f4-7203-4827-b850-1be47c0d4e90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Global">
+      <UniqueIdentifier>{332201d9-971f-4698-9f9a-154eb8f1e647}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

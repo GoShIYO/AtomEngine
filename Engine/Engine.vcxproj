@@ -48,13 +48,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\imgui;$(SolutionDir)External\assimp\include;$(IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\assimp\lib\$(Configuration);$(SolutionDir)External\DirectXTex\lib\$(Configuration);$(SolutionDir)External\GameInput\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;gameinput.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -63,16 +67,26 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\imgui;$(SolutionDir)External\assimp\include;$(IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\assimp\lib\$(Configuration);$(SolutionDir)External\DirectXTex\lib\$(Configuration);$(SolutionDir)External\GameInput\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTex.lib;gameinput.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Function\Global\GlobalContext.h" />
+    <ClInclude Include="Source\Runtime\EngineCore.h" />
+    <ClInclude Include="Source\Editor\editor.h" />
+    <ClInclude Include="Source\Runtime\Function\Input\Input.h" />
+    <ClInclude Include="Source\Runtime\Core\Color\Color.h" />
+    <ClInclude Include="Source\Runtime\Core\Utility\Hash.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Quaternion.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Matrix3x3.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Matrix4x4.h" />
@@ -83,8 +97,16 @@
     <ClInclude Include="Source\Runtime\Core\Math\Vector3.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Vector2.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Transform.h" />
+    <ClInclude Include="Source\Runtime\Core\Utility\Utility.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Function\Global\GlobalContext.cpp" />
+    <ClCompile Include="Source\Runtime\EngineCore.cpp" />
+    <ClCompile Include="Source\Editor\editor.cpp" />
+    <ClCompile Include="Source\Editor\main.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Input\Input.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Color\Color.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Quaternion.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Matrix3x3.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp" />
@@ -94,6 +116,7 @@
     <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

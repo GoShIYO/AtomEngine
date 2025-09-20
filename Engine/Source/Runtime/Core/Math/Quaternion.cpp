@@ -6,9 +6,9 @@
 namespace AtomEngine
 {
 	const Quaternion Quaternion::ZERO(0, 0, 0, 0);
-	const Quaternion Quaternion::IDENTITY(1, 0, 0, 0);
+	const Quaternion Quaternion::IDENTITY(0, 0, 0, 1);
 
-	const float Quaternion::kEpsilon = 1e-03;
+	const float Quaternion::kEpsilon = 1e-03f;
 
 	Quaternion Quaternion::operator*(const Quaternion& q) const
 	{
@@ -172,16 +172,16 @@ namespace AtomEngine
 	{
 		Matrix3x3 rot;
 
-		rot.mat[0][0] = xaxis.x; 
-		rot.mat[0][1] = xaxis.y; 
+		rot.mat[0][0] = xaxis.x;
+		rot.mat[0][1] = xaxis.y;
 		rot.mat[0][2] = xaxis.z;
 
-		rot.mat[1][0] = yaxis.x; 
-		rot.mat[1][1] = yaxis.y; 
+		rot.mat[1][0] = yaxis.x;
+		rot.mat[1][1] = yaxis.y;
 		rot.mat[1][2] = yaxis.z;
 
-		rot.mat[2][0] = zaxis.x; 
-		rot.mat[2][1] = zaxis.y; 
+		rot.mat[2][0] = zaxis.x;
+		rot.mat[2][1] = zaxis.y;
 		rot.mat[2][2] = zaxis.z;
 
 		FromRotationMatrix(rot);
@@ -189,7 +189,7 @@ namespace AtomEngine
 
 	Vector3 Quaternion::xAxis() const
 	{
-		float tx = 2.0 * x;
+		float tx = 2.0f * x;
 		float ty = 2.0f * y;
 		float tz = 2.0f * z;
 		float twy = ty * w;
@@ -237,16 +237,16 @@ namespace AtomEngine
 		Matrix3x3 rot;
 		ToRotationMatrix(rot);
 
-		xaxis.x = rot.mat[0][0]; 
-		xaxis.y = rot.mat[0][1]; 
+		xaxis.x = rot.mat[0][0];
+		xaxis.y = rot.mat[0][1];
 		xaxis.z = rot.mat[0][2];
 
-		yaxis.x = rot.mat[1][0]; 
-		yaxis.y = rot.mat[1][1]; 
+		yaxis.x = rot.mat[1][0];
+		yaxis.y = rot.mat[1][1];
 		yaxis.z = rot.mat[1][2];
 
-		zaxis.x = rot.mat[2][0]; 
-		zaxis.y = rot.mat[2][1]; 
+		zaxis.x = rot.mat[2][0];
+		zaxis.y = rot.mat[2][1];
 		zaxis.z = rot.mat[2][2];
 	}
 
@@ -321,7 +321,7 @@ namespace AtomEngine
 		}
 	}
 
-	Quaternion Quaternion::SLerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath = false)
+	Quaternion Quaternion::SLerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath)
 	{
 		float      cos_v = kp.Dot(kq);
 		Quaternion kt;
@@ -353,7 +353,7 @@ namespace AtomEngine
 		}
 	}
 
-	Quaternion Quaternion::Lerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath = false)
+	Quaternion Quaternion::Lerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath)
 	{
 		Quaternion result;
 		float      cos_value = kp.Dot(kq);

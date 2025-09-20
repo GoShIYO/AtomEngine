@@ -387,9 +387,9 @@ namespace AtomEngine
 
 		void setTrans(const Vector3& v)
 		{
-			mat[0][3] = v.x;
-			mat[1][3] = v.y;
-			mat[2][3] = v.z;
+			mat[3][0] = v.x;
+			mat[3][1] = v.y;
+			mat[3][2] = v.z;
 		}
 
 		Vector3 GetTrans() const { return Vector3(mat[0][3], mat[1][3], mat[2][3]); }
