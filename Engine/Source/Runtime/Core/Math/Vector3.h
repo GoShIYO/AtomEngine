@@ -294,7 +294,6 @@ namespace AtomEngine
                 Math::Clamp(v.x, min.x, max.x), Math::Clamp(v.y, min.y, max.y), Math::Clamp(v.z, min.z, max.z));
         }
 
-        static float MaxElement(const Vector3& v) { return Math::MaxElement(v.x, v.y, v.z); }
         bool         IsNaN() const { return Math::IsNaN(x) || Math::IsNaN(y) || Math::IsNaN(z); }
 
         static const Vector3 ZERO;

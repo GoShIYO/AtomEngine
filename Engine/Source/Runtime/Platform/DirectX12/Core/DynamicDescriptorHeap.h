@@ -1,0 +1,160 @@
+#pragma once
+#include "DescriptorHeap.h"
+#include "../Pipline/RootSignature.h"
+#include <vector>
+#include <queue>
+#include <mutex>
+
+namespace AtomEngine
+{
+
+    class CommandContext;
+
+    // このクラスは、動的に生成される記述子テーブルのための線形割り当てシステムです。
+    // 内部的にCPU記述子ハンドルをキャッシュするため、現在のヒープに十分なスペースがない場合でも、
+    // 必要な記述子を新しいヒープに再コピーできます。
+    class DynamicDescriptorHeap
+    {
+    public:
+        DynamicDescriptorHeap(CommandContext& OwningContext, D3D12_DESCRIPTOR_HEAP_TYPE HeapType);
+        ~DynamicDescriptorHeap();
+
+        static void DestroyAll(void)
+        {
+            sm_DescriptorHeapPool[0].clear();
+            sm_DescriptorHeapPool[1].clear();
+        }
+
+        void CleanupUsedHeaps(uint64_t fenceValue);
+
+        // 指定されたルート パラメータ用に予約されたキャッシュ領域に複数のハンドルをコピーします。
+        void SetGraphicsDescriptorHandles(UINT RootIndex, UINT Offset, UINT NumHandles, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
+        {
+            m_GraphicsHandleCache.StageDescriptorHandles(RootIndex, Offset, NumHandles, Handles);
+        }
+
+        void SetComputeDescriptorHandles(UINT RootIndex, UINT Offset, UINT NumHandles, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[])
+        {
+            m_ComputeHandleCache.StageDescriptorHandles(RootIndex, Offset, NumHandles, Handles);
+        }
+
+        // キャッシュをバイパスし、シェーダーが認識できるヒープに直接アップロードする
+        D3D12_GPU_DESCRIPTOR_HANDLE UploadDirect(D3D12_CPU_DESCRIPTOR_HANDLE Handles);
+
+        // ルート署名に必要な記述子テーブルをサポートするために必要なキャッシュ レイアウトを推測します。
+        void ParseGraphicsRootSignature(const RootSignature& RootSig)
+        {
+            m_GraphicsHandleCache.ParseRootSignature(m_DescriptorType, RootSig);
+        }
+
+        void ParseComputeRootSignature(const RootSignature& RootSig)
+        {
+            m_ComputeHandleCache.ParseRootSignature(m_DescriptorType, RootSig);
+        }
+
+        // キャッシュ内の新しい記述子をシェーダーが認識できるヒープにアップロードします。
+        inline void CommitGraphicsRootDescriptorTables(ID3D12GraphicsCommandList* CmdList)
+        {
+            if (m_GraphicsHandleCache.m_StaleRootParamsBitMap != 0)
+                CopyAndBindStagedTables(m_GraphicsHandleCache, CmdList, &ID3D12GraphicsCommandList::SetGraphicsRootDescriptorTable);
+        }
+
+        inline void CommitComputeRootDescriptorTables(ID3D12GraphicsCommandList* CmdList)
+        {
+            if (m_ComputeHandleCache.m_StaleRootParamsBitMap != 0)
+                CopyAndBindStagedTables(m_ComputeHandleCache, CmdList, &ID3D12GraphicsCommandList::SetComputeRootDescriptorTable);
+        }
+
+    private:
+
+        // 静的メンバー
+        static const uint32_t kNumDescriptorsPerHeap = 1024;
+        static std::mutex sm_Mutex;
+        static std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> sm_DescriptorHeapPool[2];
+        static std::queue<std::pair<uint64_t, ID3D12DescriptorHeap*>> sm_RetiredDescriptorHeaps[2];
+        static std::queue<ID3D12DescriptorHeap*> sm_AvailableDescriptorHeaps[2];
+
+        // 静的メソッド
+        static ID3D12DescriptorHeap* RequestDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE HeapType);
+        static void DiscardDescriptorHeaps(D3D12_DESCRIPTOR_HEAP_TYPE HeapType, uint64_t FenceValueForReset, const std::vector<ID3D12DescriptorHeap*>& UsedHeaps);
+
+        // メンバー変数
+        CommandContext& m_OwningContext;
+        ID3D12DescriptorHeap* m_CurrentHeapPtr;
+        const D3D12_DESCRIPTOR_HEAP_TYPE m_DescriptorType;
+        uint32_t m_DescriptorSize;
+        uint32_t m_CurrentOffset;
+        DescriptorHandle m_FirstDescriptor;
+        std::vector<ID3D12DescriptorHeap*> m_RetiredHeaps;
+
+        // 記述子テーブルエントリを記述します。ハンドルキャッシュの領域と、設定されているハンドルです。
+        struct DescriptorTableCache
+        {
+            DescriptorTableCache() : AssignedHandlesBitMap(0) {}
+            uint32_t AssignedHandlesBitMap;
+            D3D12_CPU_DESCRIPTOR_HANDLE* TableStart = nullptr;
+            uint32_t TableSize;
+        };
+
+        struct DescriptorHandleCache
+        {
+            DescriptorHandleCache()
+            {
+                ClearCache();
+            }
+
+            void ClearCache()
+            {
+                m_RootDescriptorTablesBitMap = 0;
+                m_StaleRootParamsBitMap = 0;
+                m_MaxCachedDescriptors = 0;
+            }
+
+            uint32_t m_RootDescriptorTablesBitMap;
+            uint32_t m_StaleRootParamsBitMap;
+            uint32_t m_MaxCachedDescriptors;
+
+            static const uint32_t kMaxNumDescriptors = 256;
+            static const uint32_t kMaxNumDescriptorTables = 16;
+
+            uint32_t ComputeStagedSize();
+            void CopyAndBindStaleTables(D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32_t DescriptorSize, DescriptorHandle DestHandleStart, ID3D12GraphicsCommandList* CmdList,
+                void (STDMETHODCALLTYPE ID3D12GraphicsCommandList::* SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE));
+
+            DescriptorTableCache m_RootDescriptorTable[kMaxNumDescriptorTables];
+            D3D12_CPU_DESCRIPTOR_HANDLE m_HandleCache[kMaxNumDescriptors];
+
+            void UnbindAllValid();
+            void StageDescriptorHandles(UINT RootIndex, UINT Offset, UINT NumHandles, const D3D12_CPU_DESCRIPTOR_HANDLE Handles[]);
+            void ParseRootSignature(D3D12_DESCRIPTOR_HEAP_TYPE Type, const RootSignature& RootSig);
+        };
+
+        DescriptorHandleCache m_GraphicsHandleCache;
+        DescriptorHandleCache m_ComputeHandleCache;
+
+        bool HasSpace(uint32_t Count)
+        {
+            return (m_CurrentHeapPtr != nullptr && m_CurrentOffset + Count <= kNumDescriptorsPerHeap);
+        }
+
+        void RetireCurrentHeap(void);
+        void RetireUsedHeaps(uint64_t fenceValue);
+        ID3D12DescriptorHeap* GetHeapPointer();
+
+        DescriptorHandle Allocate(UINT Count)
+        {
+            DescriptorHandle ret = m_FirstDescriptor + m_CurrentOffset * m_DescriptorSize;
+            m_CurrentOffset += Count;
+            return ret;
+        }
+
+        void CopyAndBindStagedTables(DescriptorHandleCache& HandleCache, ID3D12GraphicsCommandList* CmdList,
+            void (STDMETHODCALLTYPE ID3D12GraphicsCommandList::* SetFunc)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE));
+
+        //キャッシュ内のすべての記述子を古いものとしてマークし、再アップロードが必要です。
+        void UnbindAllValid(void);
+
+    };
+}
+
+

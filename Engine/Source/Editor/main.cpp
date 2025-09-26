@@ -11,7 +11,6 @@ int WINAPI WinMain(
 	AtomEngine::AtomEngine engine;
 	engine.Initialize();
 	engine.Update();
-	engine.Shutdown();
-
-	return 0;
+	
+	return engine.Shutdown();
 }

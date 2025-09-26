@@ -1,13 +1,17 @@
 #include "EngineCore.h"
-#include "Runtime/Core/Log/LogSystem.h"
+#include "Runtime/Core/LogSystem/LogSystem.h"
 #include "Runtime/Function/Global/GlobalContext.h"
 #include "Runtime/Function/Render/WindowManager.h"
+#include "Runtime/Function/Input/Input.h"
+
+#include "Runtime/Platform/DirectX12/Core/SwapChain.h"
+#include "Runtime/Platform/DirectX12/Core/GraphicsCore.h"
 
 namespace AtomEngine
 {
 	void AtomEngine::Initialize()
 	{
-		g_GlobalContext.Initialize();
+		gGlobalContext.Initialize();
 
 		Log("Engine Start");
 	}
@@ -15,28 +19,32 @@ namespace AtomEngine
 	void AtomEngine::Update()
 	{
 		auto window = WindowManager::GetInstance();
-		while (window->ShouldClose())
+		while (!window->ShouldClose())
 		{
 			const float deltaTime = CalculateDeltaTime();
 			Tick(deltaTime);
 		}
+		mIsQuit = true;
 	}
 
-	void AtomEngine::Shutdown()
+	bool AtomEngine::Shutdown()
 	{
-		Log("Engine Shutdown");
+		Log("Engine ShutdownDx12");
 
-		g_GlobalContext.Finalize();
+		gGlobalContext.Finalize();
+		return mIsQuit;
 	}
 
 	void AtomEngine::LogicalTick(float deltaTime)
 	{
-
+		Input::GetInstance()->Update();
 	}
 
 	void AtomEngine::RenderTick(float deltaTime)
 	{
 
+
+		SwapChain::Present();
 	}
 
 	float AtomEngine::CalculateDeltaTime()
@@ -73,8 +81,6 @@ namespace AtomEngine
 		LogicalTick(deltaTime);
 		CalculateFPS(deltaTime);
 
-	
-		//g_GlobalContext.m_render_system->swapLogicRenderData();
 
 		RenderTick(deltaTime);
 	}

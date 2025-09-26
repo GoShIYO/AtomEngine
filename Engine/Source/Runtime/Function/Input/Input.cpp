@@ -1,5 +1,5 @@
 #include "Input.h"
-#include "Runtime/Core/Log/LogSystem.h"
+#include "Runtime/Core/LogSystem/LogSystem.h"
 #include "Runtime/Core/Utility/Utility.h"
 
 #pragma comment(lib, "gameinput.lib")
@@ -56,25 +56,25 @@ namespace AtomEngine
 	void Input::Initialize()
 	{
 		// GameInput初期化
-		ThrowIfFailed(GameInputCreate(&input_));
+		ThrowIfFailed(GameInputCreate(&mInput));
 		// コールバック登録
-		ThrowIfFailed(input_->RegisterDeviceCallback(
+		ThrowIfFailed(mInput->RegisterDeviceCallback(
 			nullptr,
 			GameInputKindGamepad | GameInputKindKeyboard | GameInputKindMouse,
 			GameInputDeviceAnyStatus,
 			GameInputAsyncEnumeration,
 			nullptr,
 			&DeviceCallback,
-			&deviceCallbackToken_)
+			&mDeviceCallbackToken)
 		);
 	}
 
 	void Input::Finalize()
 	{
 #if GAMEINPUT_API_VERSION >= 1
-		input_->UnregisterCallback(deviceCallbackToken_);
+		mInput->UnregisterCallback(mDeviceCallbackToken);
 #else
-		input_->UnregisterCallback(deviceCallbackToken_, UINT64_MAX);
+		mInput->UnregisterCallback(mDeviceCallbackToken, UINT64_MAX);
 #endif
 	}
 
@@ -82,118 +82,117 @@ namespace AtomEngine
 	{
 #pragma region keyboard入力
 		// キーの押す状態を更新
-		std::memcpy(preKeys_, keys_, sizeof(keys_));
+		std::memcpy(mPreKeys, mkeys, sizeof(mkeys));
 		// 押す状態をリセット
-		std::memset(keys_, 0, sizeof(keys_));
-		preMouseState_ = mouseState_;
-		prevGamepadState_ = gamepadState_;
-		cursorInput_ = CursorInput{};
+		std::memset(mkeys, 0, sizeof(mkeys));
+		mPrevMouseState = mMouseState;
+		mPrevGamepadState = mGamepadState;
+		mCursorInput = CursorInput{};
 
-		if (SUCCEEDED(input_->GetCurrentReading(GameInputKindKeyboard, nullptr, &reading_)))
+		if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindKeyboard, nullptr, &mReading)))
 		{
 			// 押すキーの数
-			const uint32_t count = reading_->GetKeyCount();
+			const uint32_t count = mReading->GetKeyCount();
 			if (count > 0)
 			{
 				GameInputKeyState keyboardState[16];
 
 				// 押すキー状態
-				if (reading_->GetKeyState(_countof(keyboardState), keyboardState))
+				if (mReading->GetKeyState(_countof(keyboardState), keyboardState))
 				{
 					for (uint32_t i = 0; i < count; i++)
 					{
 						uint8_t virtualKey = keyboardState[i].virtualKey;
-						keys_[virtualKey] = true;
+						mkeys[virtualKey] = true;
 					}
 				}
-				deviceType_ = InputDeviceType::Keyboard;
+				mDeviceType = InputDeviceType::Keyboard;
 			}
-			//reading_->Release();
 		}
 #pragma endregion
 
 #pragma region マウス入力
-		if (SUCCEEDED(input_->GetCurrentReading(GameInputKindMouse, nullptr, &reading_)))
+		if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindMouse, nullptr, &mReading)))
 		{
 			static int64_t lastDeltaX = 0;
 			static int64_t lastDeltaY = 0;
 			static int64_t lastDeltaWheel = 0;
 			static GameInputMouseState lastState;
 
-			if (reading_->GetMouseState(&mouseState_))
+			if (mReading->GetMouseState(&mMouseState))
 			{
-				int64_t deltaX = mouseState_.positionX - lastState.positionX;
-				int64_t deltaY = mouseState_.positionY - lastState.positionY;
-				int64_t deltaWheel = mouseState_.wheelY - lastState.wheelY;
+				int64_t deltaX = mMouseState.positionX - lastState.positionX;
+				int64_t deltaY = mMouseState.positionY - lastState.positionY;
+				int64_t deltaWheel = mMouseState.wheelY - lastState.wheelY;
 
 				lastDeltaX = deltaX ? deltaX : lastDeltaX;
 				lastDeltaY = deltaY ? deltaY : lastDeltaY;
 				lastDeltaWheel = deltaWheel ? deltaWheel : static_cast<int>(lastDeltaWheel);
 
-				lastState = mouseState_;
+				lastState = mMouseState;
 
-				if (!cursorInput_.CursorInputSwitch)
-					cursorInput_.CursorInputSwitch = mouseState_.buttons & GameInputMouseRightButton;
+				if (!mCursorInput.CursorInputSwitch)
+					mCursorInput.CursorInputSwitch = mMouseState.buttons & GameInputMouseRightButton;
 
-				if (cursorInput_.CursorInputRotation == 0)
-					cursorInput_.CursorInputRotation = static_cast<int>(deltaX);
+				if (mCursorInput.CursorInputRotation == 0)
+					mCursorInput.CursorInputRotation = static_cast<int>(deltaX);
 			}
 		}
 #pragma endregion
 
 #pragma region GamePad
 
-		if (SUCCEEDED(input_->GetCurrentReading(GameInputKindGamepad, nullptr, &reading_)))
+		if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindGamepad, nullptr, &mReading)))
 		{
-			if (reading_->GetGamepadState(&gamepadState_))
+			if (mReading->GetGamepadState(&mGamepadState))
 			{
-				if (gamepadState_.buttons != 0 ||
-					std::abs(gamepadState_.leftThumbstickX) > 0.1f ||
-					std::abs(gamepadState_.leftThumbstickY) > 0.1f ||
-					std::abs(gamepadState_.rightThumbstickX) > 0.1f ||
-					std::abs(gamepadState_.rightThumbstickY) > 0.1f)
+				if (mGamepadState.buttons != 0 ||
+					std::abs(mGamepadState.leftThumbstickX) > 0.1f ||
+					std::abs(mGamepadState.leftThumbstickY) > 0.1f ||
+					std::abs(mGamepadState.rightThumbstickX) > 0.1f ||
+					std::abs(mGamepadState.rightThumbstickY) > 0.1f)
 				{
-					deviceType_ = InputDeviceType::Gamepad;
+					mDeviceType = InputDeviceType::Gamepad;
 				}
 
 				static int rotationMultiplier = 10;
-				cursorInput_.CursorInputAxisX = gamepadState_.leftThumbstickX;
-				cursorInput_.CursorInputAxisY = gamepadState_.leftThumbstickY;
-				cursorInput_.CursorInputRotation = static_cast<int>(gamepadState_.rightThumbstickX * rotationMultiplier);
+				mCursorInput.CursorInputAxisX = mGamepadState.leftThumbstickX;
+				mCursorInput.CursorInputAxisY = mGamepadState.leftThumbstickY;
+				mCursorInput.CursorInputRotation = static_cast<int>(mGamepadState.rightThumbstickX * rotationMultiplier);
 
 				// スティックとトリガーの値をメンバ変数に保存
-				sticks_.leftTrigger = gamepadState_.leftTrigger;
-				sticks_.rightTrigger = gamepadState_.rightTrigger;
-				sticks_.leftStickX = gamepadState_.leftThumbstickX;
-				sticks_.leftStickY = gamepadState_.leftThumbstickY;
-				sticks_.rightStickX = gamepadState_.rightThumbstickX;
-				sticks_.rightStickY = gamepadState_.rightThumbstickY;
+				mSticks.leftTrigger = mGamepadState.leftTrigger;
+				mSticks.rightTrigger = mGamepadState.rightTrigger;
+				mSticks.leftStickX = mGamepadState.leftThumbstickX;
+				mSticks.leftStickY = mGamepadState.leftThumbstickY;
+				mSticks.rightStickX = mGamepadState.rightThumbstickX;
+				mSticks.rightStickY = mGamepadState.rightThumbstickY;
 			}
 			else
 			{
 				// 読み取りに失敗した場合、現在の状態をクリア
-				gamepadState_ = {};
+				mGamepadState = {};
 			}
 		}
 		else
 		{
 			// 読み取りに失敗した場合、現在の状態をクリア
-			gamepadState_ = {};
+			mGamepadState = {};
 		}
 
 #pragma endregion
 
-		lastCursorInput_ = cursorInput_;
+		mLastCursorInput = mCursorInput;
 	}
 
 	bool Input::IsPressKey(uint8_t key)const
 	{
-		return keys_[key];
+		return mkeys[key];
 	}
 
 	bool Input::IsTriggerKey(uint8_t key)const
 	{
-		return keys_[key] && !preKeys_[key];
+		return mkeys[key] && !mPreKeys[key];
 	}
 
 	bool Input::IsPressMouse(int button)const
@@ -202,15 +201,15 @@ namespace AtomEngine
 		switch (button)
 		{
 		case MouseButton::Left:
-			return mouseState_.buttons & GameInputMouseLeftButton;
+			return mMouseState.buttons & GameInputMouseLeftButton;
 		case MouseButton::Right:
-			return mouseState_.buttons & GameInputMouseRightButton;
+			return mMouseState.buttons & GameInputMouseRightButton;
 		case MouseButton::Middle:
-			return mouseState_.buttons & GameInputMouseMiddleButton;
+			return mMouseState.buttons & GameInputMouseMiddleButton;
 		case MouseButton::Button4:
-			return mouseState_.buttons & GameInputMouseButton4;
+			return mMouseState.buttons & GameInputMouseButton4;
 		case MouseButton::Button5:
-			return mouseState_.buttons & GameInputMouseButton5;
+			return mMouseState.buttons & GameInputMouseButton5;
 		}
 		return false;
 	}
@@ -222,20 +221,20 @@ namespace AtomEngine
 		switch (button)
 		{
 		case MouseButton::Left:
-			return (mouseState_.buttons & GameInputMouseLeftButton) &&
-				!(preMouseState_.buttons & GameInputMouseLeftButton);
+			return (mMouseState.buttons & GameInputMouseLeftButton) &&
+				!(mPrevMouseState.buttons & GameInputMouseLeftButton);
 		case MouseButton::Right:
-			return (mouseState_.buttons & GameInputMouseRightButton) &&
-				!(preMouseState_.buttons & GameInputMouseRightButton);
+			return (mMouseState.buttons & GameInputMouseRightButton) &&
+				!(mPrevMouseState.buttons & GameInputMouseRightButton);
 		case MouseButton::Middle:
-			return (mouseState_.buttons & GameInputMouseMiddleButton) &&
-				!(preMouseState_.buttons & GameInputMouseMiddleButton);
+			return (mMouseState.buttons & GameInputMouseMiddleButton) &&
+				!(mPrevMouseState.buttons & GameInputMouseMiddleButton);
 		case MouseButton::Button4:
-			return (mouseState_.buttons & GameInputMouseButton4) &&
-				!(preMouseState_.buttons & GameInputMouseButton4);
+			return (mMouseState.buttons & GameInputMouseButton4) &&
+				!(mPrevMouseState.buttons & GameInputMouseButton4);
 		case MouseButton::Button5:
-			return (mouseState_.buttons & GameInputMouseButton5) &&
-				!(preMouseState_.buttons & GameInputMouseButton5);
+			return (mMouseState.buttons & GameInputMouseButton5) &&
+				!(mPrevMouseState.buttons & GameInputMouseButton5);
 		}
 		return false;
 	}
@@ -262,7 +261,7 @@ namespace AtomEngine
 		default: return false;
 		}
 
-		return (gamepadState_.buttons & flag) != 0;
+		return (mGamepadState.buttons & flag) != 0;
 	}
 
 	bool Input::IsTriggerGamePad(GamePadButton button) const
@@ -287,17 +286,17 @@ namespace AtomEngine
 		default: return false;
 		}
 		// 現在のフレームで押されていて、前のフレームで押されていないか
-		return ((gamepadState_.buttons & flag) != 0) && ((prevGamepadState_.buttons & flag) == 0);
+		return ((mGamepadState.buttons & flag) != 0) && ((mPrevGamepadState.buttons & flag) == 0);
 	}
 
 	bool Input::IsUseGamePad() const
 	{
-		return deviceType_ == InputDeviceType::Gamepad;
+		return mDeviceType == InputDeviceType::Gamepad;
 	}
 
 	bool Input::IsStickTriggerRepeat(float value, float threshold, float dt, float firstDelay, float repeatInterval) const
 	{
-		StickRepeatState& state = leftXState_;
+		StickRepeatState& state = mLeftXState;
 
 		if (std::abs(value) > threshold)
 		{

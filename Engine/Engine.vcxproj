@@ -48,18 +48,26 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\imgui;$(SolutionDir)External\assimp\include;$(IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\assimp\include;$(SolutionDir)External\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)External\assimp\lib\$(Configuration);$(SolutionDir)External\DirectXTex\lib\$(Configuration);$(SolutionDir)External\GameInput\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTex.lib;gameinput.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\assimp\lib\$(Configuration);$(SolutionDir)External\GameInput\lib;$(SolutionDir)External\DirectXTex\lib\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>gameinput.lib;DirectXTex.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+      <Command>copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
+copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dxil.dll"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -67,20 +75,72 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\imgui;$(SolutionDir)External\assimp\include;$(IncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\assimp\include;$(SolutionDir)External\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)External\assimp\lib\$(Configuration);$(SolutionDir)External\DirectXTex\lib\$(Configuration);$(SolutionDir)External\GameInput\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTex.lib;gameinput.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\assimp\lib\$(Configuration);$(SolutionDir)External\GameInput\lib;$(SolutionDir)External\DirectXTex\lib\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>gameinput.lib;DirectXTex.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+      <Command>copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
+copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dxil.dll"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPass\RenderPassBase.h" />
+    <ClInclude Include="Source\Runtime\Function\Physics\BoundingBox.h" />
+    <ClInclude Include="Source\Runtime\Core\LogSystem\LogSystem.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\D3dUtility\d3dInclude.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.h" />
+    <ClInclude Include="External\imgui\GraphEditor.h" />
+    <ClInclude Include="External\imgui\imconfig.h" />
+    <ClInclude Include="External\imgui\ImCurveEdit.h" />
+    <ClInclude Include="External\imgui\ImGradient.h" />
+    <ClInclude Include="External\imgui\imgui.h" />
+    <ClInclude Include="External\imgui\ImGuizmo.h" />
+    <ClInclude Include="External\imgui\imgui_impl_dx12.h" />
+    <ClInclude Include="External\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="External\imgui\imgui_internal.h" />
+    <ClInclude Include="External\imgui\ImSequencer.h" />
+    <ClInclude Include="External\imgui\imstb_rectpack.h" />
+    <ClInclude Include="External\imgui\imstb_textedit.h" />
+    <ClInclude Include="External\imgui\imstb_truetype.h" />
+    <ClInclude Include="External\imgui\ImZoomSlider.h" />
+    <ClInclude Include="Source\Runtime\Resource\Material.h" />
+    <ClInclude Include="Source\Runtime\Resource\Mesh.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCore.h" />
     <ClInclude Include="Source\Runtime\Function\Global\GlobalContext.h" />
     <ClInclude Include="Source\Runtime\EngineCore.h" />
     <ClInclude Include="Source\Editor\editor.h" />
@@ -92,15 +152,59 @@
     <ClInclude Include="Source\Runtime\Core\Math\Matrix4x4.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Random.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Math.h" />
-    <ClInclude Include="Source\Runtime\Core\Log\LogSystem.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Vector4.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Vector3.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Vector2.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Transform.h" />
     <ClInclude Include="Source\Runtime\Core\Utility\Utility.h" />
     <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h" />
+    <ClInclude Include="Source\Runtime\Resource\Texture.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SwapChain.h" />
+    <ClInclude Include="Source\Runtime\Resource\TexUtil.h" />
+    <ClInclude Include="Source\Runtime\Resource\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Physics\BoundingBox.cpp" />
+    <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Utility\Utility.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.cpp" />
+    <ClCompile Include="External\imgui\GraphEditor.cpp" />
+    <ClCompile Include="External\imgui\ImCurveEdit.cpp" />
+    <ClCompile Include="External\imgui\ImGradient.cpp" />
+    <ClCompile Include="External\imgui\imgui.cpp" />
+    <ClCompile Include="External\imgui\ImGuizmo.cpp" />
+    <ClCompile Include="External\imgui\imgui_demo.cpp" />
+    <ClCompile Include="External\imgui\imgui_draw.cpp" />
+    <ClCompile Include="External\imgui\imgui_impl_dx12.cpp" />
+    <ClCompile Include="External\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="External\imgui\imgui_tables.cpp" />
+    <ClCompile Include="External\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="External\imgui\ImSequencer.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\Material.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\Mesh.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCore.cpp" />
     <ClCompile Include="Source\Runtime\Function\Global\GlobalContext.cpp" />
     <ClCompile Include="Source\Runtime\EngineCore.cpp" />
     <ClCompile Include="Source\Editor\editor.cpp" />
@@ -112,11 +216,33 @@
     <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Random.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Math.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Log\LogSystem.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp" />
     <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\Texture.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SwapChain.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Asset\Shader\PresentPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Asset\Shader\PresentVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

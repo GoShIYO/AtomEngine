@@ -25,7 +25,7 @@ namespace AtomEngine
 		void CloseWindow();
 		bool ShouldClose();
 		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
+		const HWND GetWindowHandle() const { return mWindow; }
 	private:
 
 		HWND mWindow = nullptr;
@@ -39,6 +39,6 @@ namespace AtomEngine
 		bool mMaximized = false;
 		bool mAppPaused = false;
 
-		void OnResize();
+		void OnResize(uint32_t width,uint32_t height);
 	};
 }

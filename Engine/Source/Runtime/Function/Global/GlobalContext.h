@@ -18,7 +18,7 @@ namespace AtomEngine
 
 	};
 
-	extern GlobalContext g_GlobalContext;
+	extern GlobalContext gGlobalContext;
 }
 
 

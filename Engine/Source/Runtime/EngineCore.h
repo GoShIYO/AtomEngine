@@ -10,7 +10,7 @@ namespace AtomEngine
 
 		void Update();
 
-		void Shutdown();
+		bool Shutdown();
 
 		float FPS() const { return mFps; }
 

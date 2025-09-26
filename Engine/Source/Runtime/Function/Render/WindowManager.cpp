@@ -1,9 +1,13 @@
 #include "WindowManager.h"
 #include "Runtime/Core/Utility/Utility.h"
-#include <mfapi.h>
+#include "Runtime/Platform/DirectX12/Core/SwapChain.h"
+#include "Runtime/Platform/DirectX12/Core/GraphicsCore.h"
 #include "imgui_impl_win32.h"
+#include <mfapi.h>
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
+#pragma comment(lib, "mfplat.lib")
 
 namespace AtomEngine
 {
@@ -46,8 +50,10 @@ namespace AtomEngine
 		wndClass.lpszClassName = L"MainWnd";
 		wndClass.hIconSm = LoadIcon(0, IDI_APPLICATION);
 
+		RegisterClassExW(&wndClass);
+
 		mWindowWidth = info.width;
-        mWindowHeight = info.height;
+		mWindowHeight = info.height;
 
 		RECT rc = { 0, 0, static_cast<LONG>(mWindowWidth), static_cast<LONG>(mWindowHeight) };
 		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
@@ -66,6 +72,9 @@ namespace AtomEngine
 			wndClass.hInstance,
 			nullptr
 		);
+
+		InitializeDx12();
+
 		ShowWindow(mWindow, SW_SHOWDEFAULT);
 	}
 
@@ -76,9 +85,6 @@ namespace AtomEngine
 
 	bool WindowManager::ShouldClose()
 	{
-		if (mResized)
-			OnResize();
-
 		MSG msg;
 		BOOL hasMsg;
 		while (true)
@@ -113,7 +119,7 @@ namespace AtomEngine
 			mResized = true;
 
 			if (wParam == SIZE_MINIMIZED)
-			{
+		{
 				mAppPaused = true;
 				mMinimized = true;
 				mMaximized = false;
@@ -123,7 +129,7 @@ namespace AtomEngine
 				mAppPaused = false;
 				mMinimized = false;
 				mMaximized = true;
-				OnResize();
+				OnResize(mWindowWidth, mWindowHeight);
 			}
 			else if (wParam == SIZE_RESTORED)
 			{
@@ -131,24 +137,24 @@ namespace AtomEngine
 				{
 					mAppPaused = false;
 					mMinimized = false;
-					OnResize();
+					OnResize(mWindowWidth, mWindowHeight);
 				}
 				else if (mMaximized)
 				{
 					mAppPaused = false;
 					mMaximized = false;
-					OnResize();
+					OnResize(mWindowWidth, mWindowHeight);
 				}
 				else if (mResizing)
 				{
-					
-				}
+
+		}
 				else
 				{
-					OnResize();
+					OnResize(mWindowWidth, mWindowHeight);
 				}
 			}
-			return 0;
+		return 0;
 
 		case WM_ENTERSIZEMOVE:
 			mAppPaused = true;
@@ -158,7 +164,7 @@ namespace AtomEngine
 		case WM_EXITSIZEMOVE:
 			mAppPaused = false;
 			mResizing = false;
-			OnResize();
+			OnResize(mWindowWidth, mWindowHeight);
 			return 0;
 
 		case WM_DESTROY:
@@ -169,13 +175,8 @@ namespace AtomEngine
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 
-	void WindowManager::OnResize()
+	void WindowManager::OnResize(uint32_t width, uint32_t height)
 	{
-		/*auto renderAPI = RenderAPI::GetInstance();
-		if (renderAPI)
-		{
-			renderAPI->OnWindowSizeChange(mWindowWidth, mWindowHeight);
-			mResized = false;
-		}*/
+		SwapChain::OnResize(width, height);
 	}
 }

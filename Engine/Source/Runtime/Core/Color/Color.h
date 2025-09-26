@@ -25,6 +25,10 @@ namespace AtomEngine
         Color(float r_, float g_, float b_, float a_) : r(r_), g(g_), b(b_), a(a_) {}
         Color(const Vector3& v) : r(v.x), g(v.y), b(v.z), a(1.0f) {}
         Color(const Vector4& v) : r(v.x), g(v.y), b(v.z), a(v.w) {}
+
+		float* GetPtr(void) { return reinterpret_cast<float*>(this); }
+		float& operator[](int idx) { return GetPtr()[idx]; }
+
 		Color(uint32_t rgba)
 		{
 			r = ((rgba >> 24) & 0xFF) / 255.0f;
@@ -44,8 +48,19 @@ namespace AtomEngine
 		//十六進数に変換
 		uint32_t R10G10B10A2() const;
 		uint32_t R8G8B8A8() const;
-	};
 
+	public:
+		 static const Color Black;
+		 static const Color White;
+		 static const Color Magenta;
+		 static const Color Red;
+		 static const Color Green;
+		 static const Color Blue;
+		 static const Color Yellow;
+		 static const Color Cyan;
+		 static const Color Gray;
+	};
+	
 	inline Color Max(const Color& a, const Color& b)
 	{
 		return Color(
