@@ -1,8 +1,10 @@
 #include "ReadbackBuffer.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
+
     void ReadbackBuffer::Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize)
     {
         Destroy();

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -97,6 +97,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h" />
     <ClInclude Include="Source\Runtime\Function\Render\RenderPass\RenderPassBase.h" />
     <ClInclude Include="Source\Runtime\Function\Physics\BoundingBox.h" />
@@ -140,7 +142,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Resource\Mesh.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCore.h" />
     <ClInclude Include="Source\Runtime\Function\Global\GlobalContext.h" />
     <ClInclude Include="Source\Runtime\EngineCore.h" />
     <ClInclude Include="Source\Editor\editor.h" />
@@ -160,11 +161,12 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h" />
     <ClInclude Include="Source\Runtime\Resource\Texture.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SwapChain.h" />
     <ClInclude Include="Source\Runtime\Resource\TexUtil.h" />
     <ClInclude Include="Source\Runtime\Resource\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.cpp" />
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp" />
     <ClCompile Include="Source\Runtime\Function\Physics\BoundingBox.cpp" />
     <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp" />
@@ -204,7 +206,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Runtime\Resource\Mesh.cpp" />
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp" />
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCore.cpp" />
     <ClCompile Include="Source\Runtime\Function\Global\GlobalContext.cpp" />
     <ClCompile Include="Source\Runtime\EngineCore.cpp" />
     <ClCompile Include="Source\Editor\editor.cpp" />
@@ -222,7 +223,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp" />
     <ClCompile Include="Source\Runtime\Resource\Texture.cpp" />
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SwapChain.cpp" />
     <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp" />
     <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp" />
   </ItemGroup>
@@ -236,13 +236,24 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Asset\Shader\PresentVS.hlsl">
+    <FxCompile Include="Asset\Shader\FullScreenQuad.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
     </FxCompile>
+    <FxCompile Include="Asset\Shader\SharpeningUpsamplePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Asset\Shader\Unility.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

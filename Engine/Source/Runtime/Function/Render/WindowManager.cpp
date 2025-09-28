@@ -1,8 +1,13 @@
 #include "WindowManager.h"
 #include "Runtime/Core/Utility/Utility.h"
-#include "Runtime/Platform/DirectX12/Core/SwapChain.h"
-#include "Runtime/Platform/DirectX12/Core/GraphicsCore.h"
+#include "Runtime/Platform/DirectX12/Core/DescriptorHeap.h"
+#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+#include "Runtime/Platform/DirectX12/Core/RenderCore.h"
+#include "Runtime/Platform/DirectX12/Core/CommandListManager.h"
+
 #include "imgui_impl_win32.h"
+#include "imgui_impl_dx12.h"
+
 #include <mfapi.h>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -35,6 +40,8 @@ namespace AtomEngine
 		ThrowIfFailed(MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET));
 
 		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+		ImGui_ImplWin32_EnableDpiAwareness();
+		float mainScale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
 
 		WNDCLASSEXW wndClass = {};
 		wndClass.cbSize = sizeof(wndClass);
@@ -73,9 +80,57 @@ namespace AtomEngine
 			nullptr
 		);
 
-		InitializeDx12();
-
+		DX12Core::InitializeDx12();
 		ShowWindow(mWindow, SW_SHOWDEFAULT);
+		UpdateWindow(mWindow);
+		// ImGuiの初期化
+		{
+			IMGUI_CHECKVERSION();
+			ImGui::CreateContext();
+			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+			// セットImGuiスタイル
+			ImGui::StyleColorsDark();
+
+			//スケーリングの設定
+			ImGuiStyle& style = ImGui::GetStyle();
+			style.ScaleAllSizes(mainScale);
+			style.FontScaleDpi = mainScale;
+			io.ConfigDpiScaleFonts = true;
+			io.ConfigDpiScaleViewports = true;
+
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				style.WindowRounding = 0.0f;
+				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+			}
+
+			ImGui_ImplWin32_Init(mWindow);
+
+			ImGui_ImplDX12_InitInfo init_info = {};
+			init_info.Device = DX12Core::gDevice.Get();
+			init_info.CommandQueue = DX12Core::gCommandManager.GetGraphicsQueue().GetCommandQueue();
+			init_info.NumFramesInFlight = 3;
+			init_info.RTVFormat = DX12Core::gBackBufferFormat;
+			init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
+
+			init_info.SrvDescriptorHeap = RenderCore::gTextureHeap.GetHeapPointer();
+			init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle)
+				{
+					DescriptorHandle handle = RenderCore::gTextureHeap.Alloc();
+
+					*out_cpu_handle = (D3D12_CPU_DESCRIPTOR_HANDLE)handle;
+					*out_gpu_handle = (D3D12_GPU_DESCRIPTOR_HANDLE)handle;
+				};
+			init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) {};
+			ImGui_ImplDX12_Init(&init_info);
+
+		}
+
 	}
 
 	void WindowManager::CloseWindow()
@@ -177,6 +232,6 @@ namespace AtomEngine
 
 	void WindowManager::OnResize(uint32_t width, uint32_t height)
 	{
-		SwapChain::OnResize(width, height);
+		DX12Core::OnResize(width, height);
 	}
 }

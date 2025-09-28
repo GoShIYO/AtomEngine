@@ -1,11 +1,12 @@
 #include "ComputeContext.h"
 #include "../Buffer/ColorBuffer.h"
+#include "../Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
     ComputeContext& ComputeContext::Begin(const std::wstring& ID, bool Async)
     {
-        ComputeContext& NewContext = gContextManager.AllocateContext(
+        ComputeContext& NewContext = DX12Core::gContextManager.AllocateContext(
             Async ? D3D12_COMMAND_LIST_TYPE_COMPUTE : D3D12_COMMAND_LIST_TYPE_DIRECT)->GetComputeContext();
         NewContext.SetID(ID);
 

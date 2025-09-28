@@ -97,9 +97,6 @@
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.h">
       <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCore.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.h">
       <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClInclude>
@@ -181,12 +178,25 @@
     <ClInclude Include="Source\Runtime\Core\LogSystem\LogSystem.h">
       <Filter>Engine\Runtime\Core\Log</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SwapChain.h" />
-    <ClInclude Include="Source\Runtime\Resource\TexUtil.h" />
-    <ClInclude Include="Source\Runtime\Function\Physics\BoundingBox.h" />
-    <ClInclude Include="Source\Runtime\Resource\TextureManager.h" />
-    <ClInclude Include="Source\Runtime\Function\Render\RenderPass\RenderPassBase.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h" />
+    <ClInclude Include="Source\Runtime\Function\Physics\BoundingBox.h">
+      <Filter>Engine\Runtime\Function\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h">
+      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.h">
+      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPass\RenderPassBase.h">
+      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\TextureManager.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\TexUtil.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -270,9 +280,6 @@
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp">
       <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCore.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp">
       <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClCompile>
@@ -354,11 +361,22 @@
     <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp">
       <Filter>Engine\Runtime\Core\Log</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SwapChain.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Physics\BoundingBox.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Physics\BoundingBox.cpp">
+      <Filter>Engine\Runtime\Function\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -412,9 +430,27 @@
     <Filter Include="External\imgui">
       <UniqueIdentifier>{273b382e-72e5-4dd9-b81c-86b5ec5b5d25}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{f0e7771a-8cfb-41c1-883a-affe7a9bacb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Function\Physics">
+      <UniqueIdentifier>{87c6a47d-4ffa-4b1c-b37c-3e1fe49cb9f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Asset\Shader\PresentPS.hlsl" />
-    <FxCompile Include="Asset\Shader\PresentVS.hlsl" />
+    <FxCompile Include="Asset\Shader\FullScreenQuad.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shader\PresentPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shader\SharpeningUpsamplePS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Asset\Shader\Unility.hlsli">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

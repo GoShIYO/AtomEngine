@@ -1,10 +1,11 @@
 #include "ColorBuffer.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 #include "../Core/GraphicsCommon.h"
 #include "../Context/ComputeContext.h"
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
 
     void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips)
     {

@@ -3,13 +3,12 @@
 #include "Runtime/Function/Global/GlobalContext.h"
 #include "Runtime/Function/Render/WindowManager.h"
 #include "Runtime/Function/Input/Input.h"
-
-#include "Runtime/Platform/DirectX12/Core/SwapChain.h"
-#include "Runtime/Platform/DirectX12/Core/GraphicsCore.h"
+#include "Runtime/Platform/DirectX12/Core/RenderCore.h"
+#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
-	void AtomEngine::Initialize()
+	AtomEngine::AtomEngine()
 	{
 		gGlobalContext.Initialize();
 
@@ -29,9 +28,11 @@ namespace AtomEngine
 
 	bool AtomEngine::Shutdown()
 	{
-		Log("Engine ShutdownDx12");
+		DX12Core::ShutdownDx12();
+		Log("Shutdown Dx12\n");
 
 		gGlobalContext.Finalize();
+		Log("Shutdown Engine\n");
 		return mIsQuit;
 	}
 
@@ -43,8 +44,7 @@ namespace AtomEngine
 	void AtomEngine::RenderTick(float deltaTime)
 	{
 
-
-		SwapChain::Present();
+		RenderCore::Render(deltaTime);
 	}
 
 	float AtomEngine::CalculateDeltaTime()

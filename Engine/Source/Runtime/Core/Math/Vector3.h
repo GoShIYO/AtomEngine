@@ -235,7 +235,7 @@ namespace AtomEngine
             {
                 if (fallback_axis != Vector3::ZERO)
                 {
-                    q.FromAngleAxis(Radian(aPI), fallback_axis);
+                    q.FromAngleAxis(Radian(Math::PI), fallback_axis);
                 }
                 else
                 {
@@ -243,7 +243,7 @@ namespace AtomEngine
                     if (axis.IsZeroLength())
                         axis = Vector3::UP.Cross(*this);
                     axis.Normalize();
-                    q.FromAngleAxis(Radian(aPI), axis);
+                    q.FromAngleAxis(Radian(Math::PI), axis);
                 }
             }
             else

@@ -24,7 +24,7 @@ namespace AtomEngine
 			return Radian(0.0);
 		}
 
-		return Radian(aPI);
+		return Radian(PI);
 	}
 
 	Radian Math::asin(float value)
@@ -34,10 +34,10 @@ namespace AtomEngine
 			if (value < 1.0)
 				return Radian(::asin(value));
 
-			return Radian(aHalfPI);
+			return Radian(HalfPI);
 		}
 
-		return Radian(-aHalfPI);
+		return Radian(-HalfPI);
 	}
 
 	Matrix4x4 Math::MakeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflectMatrix)

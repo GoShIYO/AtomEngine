@@ -9,7 +9,7 @@ int WINAPI WinMain(
 {
 
 	AtomEngine::AtomEngine engine;
-	engine.Initialize();
+	
 	engine.Update();
 	
 	return engine.Shutdown();

@@ -1,12 +1,12 @@
 #include "Texture.h"
-#include "Runtime/Platform/DirectX12/Core/GraphicsCore.h"
+#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Context/CommandContext.h"
 #include <map>
 #include <thread>
 
 namespace AtomEngine
 {
-
+    using namespace DX12Core;
     void Texture::Create2D(size_t RowPitchBytes, size_t Width, size_t Height, DXGI_FORMAT Format, const void* InitialData)
     {
         Destroy();
@@ -102,8 +102,6 @@ namespace AtomEngine
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
         srvDesc.TextureCube.MipLevels = 1;
-        srvDesc.TextureCube.MostDetailedMip = 0;
-        srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
         gDevice->CreateShaderResourceView(mResource.Get(), &srvDesc, mCpuDescriptorHandle);
     }
 

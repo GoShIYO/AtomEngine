@@ -1,6 +1,6 @@
 #include "RootSignature.h"
 #include "Runtime/Core/Utility/Hash.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 #include <map>
 #include <thread>
 #include <mutex>
@@ -9,6 +9,8 @@ using Microsoft::WRL::ComPtr;
 
 namespace AtomEngine
 {
+	using namespace DX12Core;
+
 	static std::map<size_t, ComPtr<ID3D12RootSignature>> sRootSignatureHashMap;
 
 	void RootSignature::DestroyAll(void)

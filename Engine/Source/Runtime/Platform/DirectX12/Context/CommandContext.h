@@ -4,10 +4,10 @@
 #include "../Core/DynamicDescriptorHeap.h"
 #include "../Core/LinearAllocator.h"
 #include "../Core/GraphicsCommon.h"
-#include "../Core/GraphicsCore.h"
 #include "../Core/CommandSignature.h"
 #include "../Buffer/GpuBuffer.h"
 #include "../Buffer/PixelBuffer.h"
+#include "../Core/CommandListManager.h"
 
 namespace AtomEngine
 {

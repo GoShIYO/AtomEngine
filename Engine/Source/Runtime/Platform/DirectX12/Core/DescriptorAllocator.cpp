@@ -1,8 +1,10 @@
 #include "DescriptorAllocator.h"
-#include "GraphicsCore.h"
+#include "DirectX12Core.h"
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
+
     std::mutex DescriptorAllocator::mAllocationMutex;
     std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> DescriptorAllocator::mDescriptorHeapPool;
 

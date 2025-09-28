@@ -2,8 +2,6 @@
 #include "Runtime/Core/LogSystem/LogSystem.h"
 #include "Runtime/Function/Render/WindowManager.h"
 #include "Runtime/Function/Input/Input.h"
-#include "Runtime/Platform/DirectX12/Core/GraphicsCore.h"
-#include "Runtime/Platform/DirectX12/Core/SwapChain.h"
 
 namespace AtomEngine
 {
@@ -13,7 +11,6 @@ namespace AtomEngine
 	{
 		InitLog();
 
-		
 		WindowManager* windowManager = WindowManager::GetInstance();
 		WindowCreateInfo windowCreateInfo;
 		windowManager->Initialize(windowCreateInfo);
@@ -29,7 +26,6 @@ namespace AtomEngine
 		Input* input = Input::GetInstance();
 		input->Finalize();
 
-		ShutdownDx12();
 
 		FinalizeLog();
 	}

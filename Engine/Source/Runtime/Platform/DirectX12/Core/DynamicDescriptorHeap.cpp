@@ -1,10 +1,11 @@
 #include "DynamicDescriptorHeap.h"
 #include "../Context/CommandContext.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 #include "../Core/CommandListManager.h"
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
 
     std::mutex DynamicDescriptorHeap::sm_Mutex;
     std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> DynamicDescriptorHeap::sm_DescriptorHeapPool[2];

@@ -1,6 +1,6 @@
 #include "SamplerManager.h"
 #include "Runtime/Core/Utility/hash.h"
-#include "GraphicsCore.h"
+#include "DirectX12Core.h"
 #include <map>
 
 namespace
@@ -10,6 +10,7 @@ namespace
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
 
     D3D12_CPU_DESCRIPTOR_HANDLE SamplerDesc::CreateDescriptor()
     {

@@ -1,8 +1,10 @@
 #include "DescriptorHeap.h"
-#include "GraphicsCore.h"
+#include "DirectX12Core.h"
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
+
     void DescriptorHeap::Create(const std::wstring& Name, D3D12_DESCRIPTOR_HEAP_TYPE Type, uint32_t MaxCount)
     {
         mHeapDesc.Type = Type;

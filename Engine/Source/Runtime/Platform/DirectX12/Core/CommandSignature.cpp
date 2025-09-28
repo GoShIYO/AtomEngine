@@ -1,9 +1,11 @@
 #include "CommandSignature.h"
 #include "../Pipline/RootSignature.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
+
     void CommandSignature::Finalize(const RootSignature* RootSignature)
     {
         if (mFinalized)

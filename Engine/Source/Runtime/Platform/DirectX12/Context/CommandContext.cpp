@@ -3,12 +3,12 @@
 #include "../Buffer/DepthBuffer.h"
 #include "../Buffer/UploadBuffer.h"
 #include "../Buffer/ReadbackBuffer.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 #include "../Core/DescriptorHeap.h"
-#include "../Core/CommandListManager.h"
 
 namespace AtomEngine
 {
+    //using namespace DX12Core;
     void ContextManager::DestroyAllContexts(void)
     {
         for (uint32_t i = 0; i < 4; ++i)
@@ -52,12 +52,12 @@ namespace AtomEngine
     {
         LinearAllocator::DestroyAll();
         DynamicDescriptorHeap::DestroyAll();
-        gContextManager.DestroyAllContexts();
+        DX12Core::gContextManager.DestroyAllContexts();
     }
 
     CommandContext& CommandContext::Begin(const std::wstring ID)
     {
-        CommandContext* NewContext = gContextManager.AllocateContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
+        CommandContext* NewContext = DX12Core::gContextManager.AllocateContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
         NewContext->SetID(ID);
         return *NewContext;
     }
@@ -68,10 +68,10 @@ namespace AtomEngine
 
         ASSERT(mCurrentAllocator != nullptr);
 
-        uint64_t FenceValue = gCommandManager.GetQueue(mType).ExecuteCommandList(mCommandList);
+        uint64_t FenceValue = DX12Core::gCommandManager.GetQueue(mType).ExecuteCommandList(mCommandList);
 
         if (WaitForCompletion)
-            gCommandManager.WaitForFence(FenceValue);
+            DX12Core::gCommandManager.WaitForFence(FenceValue);
 
         //
         // コマンドリストをリセットして以前の状態を復元する
@@ -105,7 +105,7 @@ namespace AtomEngine
 
         ASSERT(mCurrentAllocator != nullptr);
 
-        CommandQueue& Queue = gCommandManager.GetQueue(mType);
+        CommandQueue& Queue = DX12Core::gCommandManager.GetQueue(mType);
 
         uint64_t FenceValue = Queue.ExecuteCommandList(mCommandList);
         Queue.DiscardAllocator(FenceValue, mCurrentAllocator);
@@ -117,9 +117,9 @@ namespace AtomEngine
         mDynamicSamplerDescriptorHeap.CleanupUsedHeaps(FenceValue);
 
         if (WaitForCompletion)
-            gCommandManager.WaitForFence(FenceValue);
+            DX12Core::gCommandManager.WaitForFence(FenceValue);
 
-        gContextManager.FreeContext(this);
+        DX12Core::gContextManager.FreeContext(this);
 
         return FenceValue;
     }
@@ -150,7 +150,7 @@ namespace AtomEngine
 
     void CommandContext::Initialize(void)
     {
-        gCommandManager.CreateNewCommandList(mType, &mCommandList, &mCurrentAllocator);
+        DX12Core::gCommandManager.CreateNewCommandList(mType, &mCommandList, &mCurrentAllocator);
     }
 
     void CommandContext::Reset(void)
@@ -158,7 +158,7 @@ namespace AtomEngine
         //Reset() は、以前に解放されたコンテキストに対してのみ呼び出します。コマンドリストは保持されますが、
         // 新しいアロケータを要求する必要があります。
         ASSERT(mCommandList != nullptr && mCurrentAllocator == nullptr);
-        mCurrentAllocator = gCommandManager.GetQueue(mType).RequestAllocator();
+        mCurrentAllocator = DX12Core::gCommandManager.GetQueue(mType).RequestAllocator();
         mCommandList->Reset(mCurrentAllocator, nullptr);
 
         mCurGraphicsRootSignature = nullptr;
@@ -379,7 +379,7 @@ namespace AtomEngine
         // フットプリントはリソースのデバイスによって異なる場合がありますが、デバイスは 1 つだけであると想定します。
         D3D12_PLACED_SUBRESOURCE_FOOTPRINT PlacedFootprint;
         const auto& desc = SrcBuffer.GetResource()->GetDesc();
-        gDevice->GetCopyableFootprints(&desc, 0, 1, 0,
+        DX12Core::gDevice->GetCopyableFootprints(&desc, 0, 1, 0,
             &PlacedFootprint, nullptr, nullptr, &CopySize);
 
         DstBuffer.Create(L"Readback", (uint32_t)CopySize, 1);

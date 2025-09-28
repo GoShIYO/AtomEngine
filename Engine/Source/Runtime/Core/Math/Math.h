@@ -6,15 +6,6 @@
 
 namespace AtomEngine
 {
-	constexpr float aInfinity = std::numeric_limits<float>::infinity();
-	constexpr float aNegInfinity = -std::numeric_limits<float>::infinity();
-	constexpr float aPI = 3.14159265358979323846264338327950288f;
-	constexpr float aOneOverPI = 1.0f / aPI;
-	constexpr float aTwoPI = 2.0f * aPI;
-	constexpr float aHalfPI = 0.5f * aPI;
-	constexpr float deg2Rad = aPI / 180.0f;
-	constexpr float rad2Deg = 180.0f / aPI;
-	constexpr float aEpsilon = 1e-6f;
 
 	class Radian;
 	class Angle;
@@ -192,6 +183,17 @@ namespace AtomEngine
 
 		static Matrix4x4
 			MakeOrthographicProjectionMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+
+	public:
+		static constexpr float Infinity = std::numeric_limits<float>::infinity();
+		static constexpr float NegInfinity = -std::numeric_limits<float>::infinity();
+		static constexpr float PI = 3.14159265358979323846264338327950288f;
+		static constexpr float OneOverPI = 1.0f / PI;
+		static constexpr float TwoPI = 2.0f * PI;
+		static constexpr float HalfPI = 0.5f * PI;
+		static constexpr float deg2Rad = PI / 180.0f;
+		static constexpr float rad2Deg = 180.0f / PI;
+		static constexpr float Epsilon = 1e-6f;
 	};
 
 	inline Radian::Radian(const Degree& d) : rad(d.GetRadians()) {}

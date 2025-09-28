@@ -1,8 +1,10 @@
 #include "UploadBuffer.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
+	using namespace DX12Core;
+
 	void UploadBuffer::Create(const std::wstring& name, size_t BufferSize)
 	{
 		Destroy();

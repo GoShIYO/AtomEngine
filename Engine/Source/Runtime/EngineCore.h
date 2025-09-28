@@ -6,7 +6,7 @@ namespace AtomEngine
 	class AtomEngine
 	{
 	public:
-		void Initialize();
+		AtomEngine();
 
 		void Update();
 

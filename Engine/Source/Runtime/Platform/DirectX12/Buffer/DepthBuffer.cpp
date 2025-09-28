@@ -1,8 +1,10 @@
 #include "DepthBuffer.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
+
     void DepthBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
     {
         Create(Name, Width, Height, 1, Format, VidMemPtr);

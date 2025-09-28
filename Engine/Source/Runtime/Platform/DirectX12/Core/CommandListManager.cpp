@@ -1,9 +1,8 @@
 #include "CommandListManager.h"
-#include "GraphicsCore.h"
+#include "DirectX12Core.h"
 
 namespace AtomEngine
 {
-
     CommandQueue::CommandQueue(D3D12_COMMAND_LIST_TYPE Type) :
         mType(Type),
         mCommandQueue(nullptr),
@@ -140,7 +139,7 @@ namespace AtomEngine
 
     void CommandQueue::StallForFence(uint64_t FenceValue)
     {
-        CommandQueue& Producer = gCommandManager.GetQueue((D3D12_COMMAND_LIST_TYPE)(FenceValue >> 56));
+        CommandQueue& Producer = DX12Core::gCommandManager.GetQueue((D3D12_COMMAND_LIST_TYPE)(FenceValue >> 56));
         mCommandQueue->Wait(Producer.mFence, FenceValue);
     }
 
@@ -170,7 +169,7 @@ namespace AtomEngine
 
     void CommandListManager::WaitForFence(uint64_t FenceValue)
     {
-        CommandQueue& Producer = gCommandManager.GetQueue((D3D12_COMMAND_LIST_TYPE)(FenceValue >> 56));
+        CommandQueue& Producer = DX12Core::gCommandManager.GetQueue((D3D12_COMMAND_LIST_TYPE)(FenceValue >> 56));
         Producer.WaitForFence(FenceValue);
     }
 

@@ -1,9 +1,10 @@
 #include "GpuBuffer.h"
 #include "../Context/CommandContext.h"
-#include "../Core/GraphicsCore.h"
+#include "../Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
+	using namespace DX12Core;
 
 	void GpuBuffer::Create(const std::wstring& name, uint32_t NumElements, uint32_t ElementSize, const void* initialData)
 	{
