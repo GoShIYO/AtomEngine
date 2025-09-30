@@ -1,9 +1,11 @@
 #include "Texture.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Context/CommandContext.h"
+#include "DirectXTex.h"
 #include <map>
 #include <thread>
 
+using namespace DirectX;
 namespace AtomEngine
 {
     using namespace DX12Core;
@@ -103,70 +105,5 @@ namespace AtomEngine
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
         srvDesc.TextureCube.MipLevels = 1;
         gDevice->CreateShaderResourceView(mResource.Get(), &srvDesc, mCpuDescriptorHandle);
-    }
-
-
-    void Texture::CreateTGAFromMemory(const void* _filePtr, size_t, bool sRGB)
-    {
-        const uint8_t* filePtr = (const uint8_t*)_filePtr;
-
-        // Skip first two bytes
-        filePtr += 2;
-
-        /*uint8_t imageTypeCode =*/ *filePtr++;
-
-        // Ignore another 9 bytes
-        filePtr += 9;
-
-        uint16_t imageWidth = *(uint16_t*)filePtr;
-        filePtr += sizeof(uint16_t);
-        uint16_t imageHeight = *(uint16_t*)filePtr;
-        filePtr += sizeof(uint16_t);
-        uint8_t bitCount = *filePtr++;
-
-        // Ignore another byte
-        filePtr++;
-
-        uint32_t* formattedData = new uint32_t[imageWidth * imageHeight];
-        uint32_t* iter = formattedData;
-
-        uint8_t numChannels = bitCount / 8;
-        uint32_t numBytes = imageWidth * imageHeight * numChannels;
-
-        switch (numChannels)
-        {
-        default:
-            break;
-        case 3:
-            for (uint32_t byteIdx = 0; byteIdx < numBytes; byteIdx += 3)
-            {
-                *iter++ = 0xff000000 | filePtr[0] << 16 | filePtr[1] << 8 | filePtr[2];
-                filePtr += 3;
-            }
-            break;
-        case 4:
-            for (uint32_t byteIdx = 0; byteIdx < numBytes; byteIdx += 4)
-            {
-                *iter++ = filePtr[3] << 24 | filePtr[0] << 16 | filePtr[1] << 8 | filePtr[2];
-                filePtr += 4;
-            }
-            break;
-        }
-
-        Create2D(4 * imageWidth, imageWidth, imageHeight, sRGB ? DXGI_FORMAT_R8G8B8A8_UNORM_SRGB : DXGI_FORMAT_R8G8B8A8_UNORM, formattedData);
-
-        delete[] formattedData;
-    }
-
-    bool Texture::CreateDDSFromMemory(const void* filePtr, size_t fileSize, bool sRGB)
-    {
-        //if (mCpuDescriptorHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
-        //    mCpuDescriptorHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-        //HRESULT hr = CreateDDSTextureFromMemory(gDevice,
-        //    (const uint8_t*)filePtr, fileSize, 0, sRGB, &mResource, mCpuDescriptorHandle);
-
-        //return SUCCEEDED(hr);
-        return false;
     }
 }

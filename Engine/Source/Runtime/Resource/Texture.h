@@ -15,9 +15,6 @@ namespace AtomEngine
         void Create2D(size_t RowPitchBytes, size_t Width, size_t Height, DXGI_FORMAT Format, const void* InitData);
         void CreateCube(size_t RowPitchBytes, size_t Width, size_t Height, DXGI_FORMAT Format, const void* InitialData);
 
-        void CreateTGAFromMemory(const void* memBuffer, size_t fileSize, bool sRGB);
-        bool CreateDDSFromMemory(const void* memBuffer, size_t fileSize, bool sRGB);
-
         virtual void Destroy() override
         {
             GpuResource::Destroy();

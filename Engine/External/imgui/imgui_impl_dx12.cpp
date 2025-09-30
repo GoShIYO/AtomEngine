@@ -795,10 +795,17 @@ bool    ImGui_ImplDX12_CreateDeviceObjects()
             SamplerState sampler0 : register(s0);\
             Texture2D texture0 : register(t0);\
             \
+            float3 ApplySRGBCurve(float3 x)\
+            {\
+              float3 a = 12.92 * x;\
+              float3 b = 1.055 * pow(x, 1.0 / 2.4) - 0.055;\
+              bool3 condition = x < 0.0031308;\
+              return lerp(b, a, condition);\
+            }\
             float4 main(PS_INPUT input) : SV_Target\
             {\
-              float4 out_col = input.col * texture0.Sample(sampler0, input.uv); \
-              return out_col; \
+              float4 out_col = input.col * texture0.Sample(sampler0, input.uv);\
+              return float4(ApplySRGBCurve(out_col.rgb), out_col.a);\
             }";
 
         if (FAILED(D3DCompile(pixelShader, strlen(pixelShader), nullptr, nullptr, nullptr, "main", "ps_5_0", 0, 0, &pixelShaderBlob, nullptr)))

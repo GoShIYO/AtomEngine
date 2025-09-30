@@ -2,6 +2,7 @@
 #include "Runtime/Core/Math/Math.h"
 #include <exception>
 #include <iostream>
+#include <vector>
 #define NOMINMAX
 #include <Windows.h>
 
@@ -93,6 +94,8 @@ namespace AtomEngine
 	std::wstring GetFileExtension(const std::wstring& str);
 	std::string RemoveExtension(const std::string& str);
 	std::wstring RemoveExtension(const std::wstring& str);
+
+	std::shared_ptr<std::vector<byte>> ReadFileSync(const std::wstring& fileName);
 
 #ifdef _DEBUG
 

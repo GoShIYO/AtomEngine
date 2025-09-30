@@ -1,13 +1,15 @@
 #pragma once
 #include "Texture.h"
-#include "Runtime/Platform/DirectX12/Core/GraphicsCommon.h"
+#include "TexUtil.h"
+
 #include <string>
+
+#include "../Platform/DirectX12/Core/GraphicsCommon.h"
 
 namespace AtomEngine
 {
     // テクスチャへの参照カウントポインタ
     class TextureRef;
-
     // テクスチャファイルの読み込みシステム。
     // テクスチャを共有できるように、テクスチャへの参照が渡されます。
     // テクスチャへのすべての参照が期限切れになると、テクスチャメモリが解放されます。
@@ -22,11 +24,11 @@ namespace AtomEngine
 
         // DDSファイルからテクスチャをロードします。null参照を返すことはありませんが、
         // テクスチャが見つからない場合は、ref->IsValid()はfalseを返します。
-        TextureRef LoadDDSFromFile(const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
-        TextureRef LoadDDSFromFile(const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
+        static TextureRef LoadDDSFromFile(const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
+        static TextureRef LoadDDSFromFile(const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);                                                                    
     };
 
-    //前方宣言。プライベート実装
+    //前方宣言。プライベートで実装
     class ManagedTexture;
 
     // ManagedTexture へのハンドル。コンストラクタとデストラクタは参照カウントを変更します。
@@ -41,6 +43,8 @@ namespace AtomEngine
 
         void operator= (std::nullptr_t);
         void operator= (TextureRef& rhs);
+        TextureRef& operator=(const TextureRef& rhs);
+        TextureRef& operator=(TextureRef&& rhs) noexcept;
 
         //これが有効なテクスチャ（正常にロードされたもの）を指していることを確認。
         bool IsValid() const;

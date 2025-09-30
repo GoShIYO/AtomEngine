@@ -1,6 +1,7 @@
 #include "Utility.h"
 #include <string>
 #include <locale>
+#include <fstream>
 
 namespace AtomEngine
 {
@@ -217,5 +218,30 @@ namespace AtomEngine
     std::wstring RemoveExtension(const std::wstring& filePath)
     {
         return filePath.substr(0, filePath.rfind(L"."));
+    }
+
+    std::shared_ptr<std::vector<byte>> NullFile = std::make_shared<std::vector<byte> >(std::vector<byte>());
+
+    std::shared_ptr<std::vector<byte>> ReadFileHelper(const std::wstring& fileName)
+    {
+        struct _stat64 fileStat;
+        int fileExists = _wstat64(fileName.c_str(), &fileStat);
+        if (fileExists == -1)
+            return NullFile;
+
+        std::ifstream file(fileName, std::ios::in | std::ios::binary);
+        if (!file)
+            return NullFile;
+
+        std::shared_ptr<std::vector<byte>> byteArray = std::make_shared<std::vector<byte> >(fileStat.st_size);
+        file.read((char*)byteArray->data(), byteArray->size());
+        file.close();
+
+        return byteArray;
+    }
+
+    std::shared_ptr<std::vector<byte>> ReadFileSync(const std::wstring& fileName)
+    {
+        return ReadFileHelper(*(std::make_shared<std::wstring>(fileName)));
     }
 }

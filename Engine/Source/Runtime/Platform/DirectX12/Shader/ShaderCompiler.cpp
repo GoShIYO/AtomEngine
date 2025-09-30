@@ -22,7 +22,7 @@ namespace AtomEngine
         includeHandler->Release();
 	}
 
-	const wchar_t* root = L"./Asset/shader/";
+	const wchar_t* root = L"./Asset/Shaders/";
 
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
 		const std::wstring& filePath, 

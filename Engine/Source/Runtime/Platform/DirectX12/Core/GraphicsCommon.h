@@ -58,7 +58,7 @@ namespace AtomEngine
 
     enum eDefaultTexture
     {
-        kMagenta2D = 0,         // 欠けているテクスチャを示すのに役立ちます
+        kMagenta2D = 0,         // 欠けているテクスチャを示す
         kBlackOpaque2D,         // 黒いテクスチャ
         kBlackTransparent2D,    // 透過する黒いテクスチャ
         kWhiteOpaque2D,         // 白いテクスチャ

@@ -196,7 +196,12 @@
     <ClInclude Include="Source\Runtime\Resource\TexUtil.h">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h">
+      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\MathInclude.h" />
+    <ClInclude Include="Source\Runtime\Resource\Model.h" />
+    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -325,9 +330,6 @@
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.cpp">
       <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\main.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp">
       <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClCompile>
@@ -376,7 +378,14 @@
     <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\main.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Model.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -438,18 +447,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Asset\Shader\FullScreenQuad.hlsl">
+    <FxCompile Include="Asset\Shaders\FullScreenQuad.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shader\PresentPS.hlsl">
+    <FxCompile Include="Asset\Shaders\PresentPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shader\SharpeningUpsamplePS.hlsl">
+    <FxCompile Include="Asset\Shaders\SharpeningUpsamplePS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Asset\Shader\Unility.hlsli">
+    <None Include="Asset\Shaders\Unility.hlsli">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

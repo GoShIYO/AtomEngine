@@ -5,6 +5,10 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Development|x64">
+      <Configuration>Development</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
@@ -32,6 +36,13 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -43,7 +54,22 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(SolutionDir)..\generated\obj\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\generated\outputs\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+    <IntDir>$(SolutionDir)..\generated\obj\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\generated\outputs\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(SolutionDir)..\generated\obj\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\generated\outputs\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -53,7 +79,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\assimp\include;$(SolutionDir)External\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -80,7 +106,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\assimp\include;$(SolutionDir)External\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -96,7 +122,40 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\assimp\include;$(SolutionDir)External\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\assimp\lib\Release;$(SolutionDir)External\GameInput\lib;$(SolutionDir)External\DirectXTex\lib\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>gameinput.lib;DirectXTex.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration />
+    </Link>
+    <PostBuildEvent>
+      <Message>
+      </Message>
+      <Command>copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
+copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dxil.dll"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h" />
+    <ClInclude Include="Source\Runtime\Resource\Model.h" />
+    <ClInclude Include="Source\Runtime\Core\Math\MathInclude.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h" />
@@ -165,31 +224,114 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Resource\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Physics\BoundingBox.cpp" />
-    <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Utility\Utility.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Model.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Physics\BoundingBox.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Utility\Utility.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
     <ClCompile Include="External\imgui\GraphEditor.cpp" />
     <ClCompile Include="External\imgui\ImCurveEdit.cpp" />
     <ClCompile Include="External\imgui\ImGradient.cpp" />
@@ -202,58 +344,136 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="External\imgui\imgui_tables.cpp" />
     <ClCompile Include="External\imgui\imgui_widgets.cpp" />
     <ClCompile Include="External\imgui\ImSequencer.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\Material.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\Mesh.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Global\GlobalContext.cpp" />
-    <ClCompile Include="Source\Runtime\EngineCore.cpp" />
-    <ClCompile Include="Source\Editor\editor.cpp" />
-    <ClCompile Include="Source\Editor\main.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Input\Input.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Color\Color.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Quaternion.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Matrix3x3.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Random.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Math.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp" />
-    <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\Texture.cpp" />
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\Material.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Mesh.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Global\GlobalContext.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\EngineCore.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\editor.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\main.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Input\Input.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Color\Color.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Quaternion.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix3x3.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Random.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Math.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Texture.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
+      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Asset\Shader\PresentPS.hlsl">
+    <FxCompile Include="Asset\Shaders\PresentPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
+      </ExcludedFromBuild>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">6.2</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Asset\Shader\FullScreenQuad.hlsl">
+    <FxCompile Include="Asset\Shaders\FullScreenQuad.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">6.2</ShaderModel>
     </FxCompile>
-    <FxCompile Include="Asset\Shader\SharpeningUpsamplePS.hlsl">
+    <FxCompile Include="Asset\Shaders\SharpeningUpsamplePS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.2</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">6.2</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Asset\Shader\Unility.hlsli" />
+    <None Include="Asset\Shaders\Unility.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

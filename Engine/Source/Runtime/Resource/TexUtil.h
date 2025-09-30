@@ -15,6 +15,8 @@
 
 #include <cstdint>
 #include <string>
+#include <DirectXTex.h>
+#include "../Platform/DirectX12/D3dUtility/d3dInclude.h"
 
 namespace AtomEngine
 {
@@ -43,6 +45,5 @@ namespace AtomEngine
         const std::wstring& filePath,	// UTF8でエンコードされたソースファイルへのパス
         uint32_t Flags                  // フラグをOR演算して指定
     );
-
 
 }

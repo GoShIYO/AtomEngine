@@ -81,6 +81,7 @@ namespace AtomEngine
 		);
 
 		DX12Core::InitializeDx12();
+
 		ShowWindow(mWindow, SW_SHOWDEFAULT);
 		UpdateWindow(mWindow);
 		// ImGuiの初期化
@@ -168,7 +169,7 @@ namespace AtomEngine
 
 		switch (msg)
 		{
-		case WM_SIZE:
+		/*case WM_SIZE:
 			mWindowWidth = static_cast<uint32_t>(LOWORD(lParam));
 			mWindowHeight = static_cast<uint32_t>(HIWORD(lParam));
 			mResized = true;
@@ -220,7 +221,7 @@ namespace AtomEngine
 			mAppPaused = false;
 			mResizing = false;
 			OnResize(mWindowWidth, mWindowHeight);
-			return 0;
+			return 0;*/
 
 		case WM_DESTROY:
 			PostQuitMessage(0);

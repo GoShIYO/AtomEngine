@@ -6,6 +6,9 @@
 #include "Runtime/Platform/DirectX12/Core/RenderCore.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx12.h"
+
 namespace AtomEngine
 {
 	AtomEngine::AtomEngine()
@@ -43,8 +46,15 @@ namespace AtomEngine
 
 	void AtomEngine::RenderTick(float deltaTime)
 	{
+		ImGui_ImplDX12_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
 
 		RenderCore::Render(deltaTime);
+
+
+		DX12Core::Present();
 	}
 
 	float AtomEngine::CalculateDeltaTime()

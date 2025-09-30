@@ -1,6 +1,5 @@
 #include "TexUtil.h"
 #include "../Core/Utility/Utility.h"
-#include <DirectXTex.h>
 
 #define GetFlag(f) ((Flags & f) != 0)
 
@@ -183,7 +182,7 @@ namespace AtomEngine
             }
         }
 
-        // Handle mipmaps
+        // ミップマップ
         if (info.mipLevels == 1)
         {
             std::unique_ptr<ScratchImage> timage(new ScratchImage);
@@ -236,5 +235,6 @@ namespace AtomEngine
 
         return true;
 	}
+
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "Runtime/Platform/DirectX12/Core/DescriptorHeap.h"
+#include "Runtime/Resource/TextureManager.h"
 
 namespace AtomEngine
 {
