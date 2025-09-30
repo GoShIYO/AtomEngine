@@ -1,0 +1,22 @@
+name: ReleaseBuild
+on:
+  push:
+    branches:
+      - master
+env:
+  solution_file_path: Engine/Engine.slnx
+  CONFIGURATION: Release
+jobs:
+  build:
+    runs-on: windows-2025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Add MSbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+      - name: Build
+        run: |
+          msbuild ${{env.SOLUTION_FILE_PATH}} /p:Platform=X64,Configuration=${{env.CONFIGURATION}}
