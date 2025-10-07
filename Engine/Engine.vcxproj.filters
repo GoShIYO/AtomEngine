@@ -232,17 +232,39 @@
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h">
       <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\RenderQueue.h" />
-    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.h" />
-    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.h" />
-    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\ECS\GameObject.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\TransformComponent.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\ECS\ECSCommon.h" />
-    <ClInclude Include="Source\Runtime\Application\GameApp.h" />
-    <ClInclude Include="Source\Game\Game.h" />
+    <ClInclude Include="Source\Runtime\Application\GameApp.h">
+      <Filter>Engine\Runtime\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\ECSCommon.h">
+      <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h">
+      <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\GameObject.h">
+      <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h">
+      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\TransformComponent.h">
+      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderQueue.h">
+      <Filter>Engine\Runtime\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.h">
+      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.h">
+      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.h">
+      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -446,16 +468,36 @@
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
       <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\RenderQueue.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\TransformComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\ECS\World.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\ECS\GameObject.cpp" />
-    <ClCompile Include="Source\Runtime\Application\GameApp.cpp" />
-    <ClCompile Include="Source\Game\Game.cpp" />
+    <ClCompile Include="Source\Runtime\Application\GameApp.cpp">
+      <Filter>Engine\Runtime\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\World.cpp">
+      <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\GameObject.cpp">
+      <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp">
+      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\TransformComponent.cpp">
+      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderQueue.cpp">
+      <Filter>Engine\Runtime\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.cpp">
+      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.cpp">
+      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp">
+      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -524,6 +566,24 @@
     <Filter Include="Engine\Runtime\Platform\DirectX12\Core">
       <UniqueIdentifier>{d3e827d2-efd8-4333-b94a-47849a7c3b05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{75a96ea4-fa8d-4f7d-94e6-3971d22e6ae8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Application">
+      <UniqueIdentifier>{4ff8fa58-1a30-4c7f-ab6d-885ab2ffa61d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Function\Framework">
+      <UniqueIdentifier>{6758b6d7-c049-44ca-b920-bd5b72d262a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Function\Framework\Component">
+      <UniqueIdentifier>{34915fc5-85c2-4b6a-b778-92389c32103a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Function\Framework\ECS">
+      <UniqueIdentifier>{a8f1aef5-af47-4a94-9edb-0236ea9096ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Function\Render\RenderPasses">
+      <UniqueIdentifier>{bd721c33-f474-44b3-840c-3a7326ccb71a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shaders\FullScreenQuad.hlsl">
@@ -540,6 +600,8 @@
     <None Include="Asset\Shaders\Unility.hlsli">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl" />
+    <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl">
+      <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
+    </None>
   </ItemGroup>
 </Project>
