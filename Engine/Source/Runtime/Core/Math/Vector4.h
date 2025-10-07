@@ -11,7 +11,7 @@ namespace AtomEngine
 		Vector4() = default;
 		Vector4(float x_, float y_, float z_, float w_) :x(x_), y(y_), z(z_), w(w_) {}
 		Vector4(const Vector3& v, float w_) :x(v.x), y(v.y), z(v.z), w(w_) {}
-		explicit Vector4(float coords[4]) : x{ coords[0] }, y{ coords[1] }, z{ coords[2] }, w{ coords[3] } {}
+        explicit Vector4(float coords[4]) : x{ coords[0] }, y{ coords[1] }, z{ coords[2] }, w{ coords[3] } {}
 
         float operator[](size_t i) const
         {
@@ -25,9 +25,9 @@ namespace AtomEngine
             return *(&x + i);
         }
 
-        /// Pointer accessor for direct copying
+        /// コピー用のポインタアクセサ
         float* ptr() { return &x; }
-        /// Pointer accessor for direct copying
+        /// コピー用のポインタアクセサ
         const float* ptr() const { return &x; }
 
         Vector4& operator=(float scalar)

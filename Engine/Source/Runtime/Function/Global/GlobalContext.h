@@ -1,9 +1,9 @@
 #pragma once
-#include<memory>
 
 namespace AtomEngine
 {
 	class WindowManager;
+	class Input;
 
 	class GlobalContext
 	{
@@ -14,11 +14,12 @@ namespace AtomEngine
 		void Finalize();
 	public:
 		/// グローバルコンテキストのコンポーネント
-
+		WindowManager* windowManager = nullptr;
+		Input* input = nullptr;
 
 	};
 
-	extern GlobalContext gGlobalContext;
+	extern GlobalContext gContext;
 }
 
 

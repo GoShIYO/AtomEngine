@@ -11,7 +11,7 @@ namespace AtomEngine
 		float mat[3][3];
 
 		Matrix3x3() { operator=(IDENTITY); }
-
+		Matrix3x3(const Matrix4x4& m);
 		explicit Matrix3x3(float arr[3][3])
 		{
 			memcpy(mat[0], arr[0], 3 * sizeof(float));
@@ -76,7 +76,16 @@ namespace AtomEngine
 		void SetColumn(int col, const Vector3& v);
 		void FromAxes(const Vector3& xAxis, const Vector3& yAxis, const Vector3& zAxis);
 
+		Quaternion GetRotation() const
+		{
+			return Quaternion(*this);
+		}
+
 		void CalculateQDUDecomposition(Matrix3x3& out_Q, Vector3& out_D, Vector3& out_U) const;
+
+		const Vector3 GetX() const { return Vector3(mat[0]); }
+		const Vector3 GetY() const { return Vector3(mat[1]); }
+		const Vector3 GetZ() const { return Vector3(mat[2]); }
 
 		bool operator==(const Matrix3x3& rhs) const
 		{
@@ -249,6 +258,7 @@ namespace AtomEngine
 			return det;
 		}
 
+		static Matrix3x3 MakeScale(const Vector3& v);
 
 		static const Matrix3x3 ZERO;
 		static const Matrix3x3 IDENTITY;

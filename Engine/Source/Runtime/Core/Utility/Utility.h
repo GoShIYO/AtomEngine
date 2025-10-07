@@ -92,6 +92,8 @@ namespace AtomEngine
 	std::wstring RemoveBasePath(const std::wstring& str);
 	std::string GetFileExtension(const std::string& str);
 	std::wstring GetFileExtension(const std::wstring& str);
+	std::string GetBasePath(const std::string& filePath);
+	std::wstring GetBasePath(const std::wstring& filePath);
 	std::string RemoveExtension(const std::string& str);
 	std::wstring RemoveExtension(const std::wstring& str);
 

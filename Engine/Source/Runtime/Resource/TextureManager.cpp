@@ -8,10 +8,14 @@
 namespace AtomEngine
 {
 
+	struct TextureData
+	{
+		DescriptorHandle handle;
+	};
+
 	// ManagedTexture を使用すると、複数のスレッドから同じファイルのテクスチャのロードを要求できます。
 	// また、テクスチャの参照カウントも保持されるため、参照されなくなったら解放できます。
-	// 生の ManagedTexture ポインタはクライアントには公開されません。
-
+	// 生のManagedTexture ポインタは公開されません
 	class ManagedTexture : public Texture
 	{
 		friend class TextureRef;
@@ -42,7 +46,7 @@ namespace AtomEngine
 		sRootPath = rootPath;
 	}
 
-	void TextureManager::Finalize()
+	void TextureManager::Shutdown()
 	{
 		sTextureCache.clear();
 	}
@@ -311,14 +315,18 @@ namespace AtomEngine
 			return GetDefaultTexture(kMagenta2D);
 	}
 
-	TextureRef TextureManager::LoadDDSFromFile(const std::wstring& filePath, eDefaultTexture fallback, bool forceSRGB)
+	TextureRef TextureManager::LoadTextureFile(const std::wstring& filePath, eDefaultTexture fallback, bool forceSRGB)
 	{
-		return FindOrLoadTexture(filePath, fallback, forceSRGB);
+		std::wstring originalFile = filePath;
+		CompileTextureOnDemand(originalFile, TextureOptions(true));
+
+		std::wstring ddsFile = RemoveExtension(originalFile) + L".dds";
+		return FindOrLoadTexture(ddsFile, fallback, forceSRGB);
 	}
 
-	TextureRef TextureManager::LoadDDSFromFile(const std::string& filePath, eDefaultTexture fallback, bool forceSRGB)
+	TextureRef TextureManager::LoadTextureFile(const std::string& filePath, eDefaultTexture fallback, bool forceSRGB)
 	{
-		return LoadDDSFromFile(UTF8ToWString(filePath), fallback, forceSRGB);
+		return LoadTextureFile(UTF8ToWString(filePath), fallback, forceSRGB);
 	}
 
 }

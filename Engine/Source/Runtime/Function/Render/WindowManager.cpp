@@ -1,8 +1,9 @@
 #include "WindowManager.h"
+#include "RenderSystem.h"
+
 #include "Runtime/Core/Utility/Utility.h"
 #include "Runtime/Platform/DirectX12/Core/DescriptorHeap.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
-#include "Runtime/Platform/DirectX12/Core/RenderCore.h"
 #include "Runtime/Platform/DirectX12/Core/CommandListManager.h"
 
 #include "imgui_impl_win32.h"
@@ -119,13 +120,15 @@ namespace AtomEngine
 			init_info.RTVFormat = DX12Core::gBackBufferFormat;
 			init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
 
-			init_info.SrvDescriptorHeap = RenderCore::gTextureHeap.GetHeapPointer();
+
+			init_info.SrvDescriptorHeap = RenderSystem::GetTextureHeap().GetHeapPointer();
 			init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle)
 				{
-					DescriptorHandle handle = RenderCore::gTextureHeap.Alloc();
+					auto textureHeap = RenderSystem::GetTextureHeap();
+					DescriptorHandle handle = textureHeap.Alloc();
 
-					*out_cpu_handle = (D3D12_CPU_DESCRIPTOR_HANDLE)handle;
-					*out_gpu_handle = (D3D12_GPU_DESCRIPTOR_HANDLE)handle;
+					*out_cpu_handle = handle;
+					*out_gpu_handle = handle;
 				};
 			init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) {};
 			ImGui_ImplDX12_Init(&init_info);
@@ -169,7 +172,7 @@ namespace AtomEngine
 
 		switch (msg)
 		{
-		/*case WM_SIZE:
+		case WM_SIZE:
 			mWindowWidth = static_cast<uint32_t>(LOWORD(lParam));
 			mWindowHeight = static_cast<uint32_t>(HIWORD(lParam));
 			mResized = true;
@@ -221,7 +224,7 @@ namespace AtomEngine
 			mAppPaused = false;
 			mResizing = false;
 			OnResize(mWindowWidth, mWindowHeight);
-			return 0;*/
+			return 0;
 
 		case WM_DESTROY:
 			PostQuitMessage(0);

@@ -1,11 +1,25 @@
 #include "Matrix3x3.h"
+#include "Matrix4x4.h"
 
 namespace AtomEngine
 {
 	const Matrix3x3 Matrix3x3::ZERO(0, 0, 0, 0, 0, 0, 0, 0, 0);
 	const Matrix3x3 Matrix3x3::IDENTITY(1, 0, 0, 0, 1, 0, 0, 0, 1);
 
-	Matrix3x3::Matrix3x3(const Quaternion& q)
+    Matrix3x3::Matrix3x3(const Matrix4x4& m)
+    {
+        mat[0][0] = m.mat[0][0];
+        mat[0][1] = m.mat[0][1];
+        mat[0][2] = m.mat[0][2];
+        mat[1][0] = m.mat[1][0];
+        mat[1][1] = m.mat[1][1];
+        mat[1][2] = m.mat[1][2];
+        mat[2][0] = m.mat[2][0];
+        mat[2][1] = m.mat[2][1];
+        mat[2][2] = m.mat[2][2];
+    }
+
+    Matrix3x3::Matrix3x3(const Quaternion& q)
 	{
 		float xx = q.x * q.x;
 		float yy = q.y * q.y;
@@ -105,5 +119,13 @@ namespace AtomEngine
         }
     }
 
+    Matrix3x3 Matrix3x3::MakeScale(const Vector3& v)
+    {
+        Matrix3x3 mat = Matrix3x3::IDENTITY;
+        mat.mat[0][0] = v.x;
+        mat.mat[1][1] = v.y;
+        mat.mat[2][2] = v.z;
+        return mat;
+    }
 }
 

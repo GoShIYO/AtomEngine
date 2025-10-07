@@ -54,6 +54,13 @@ namespace AtomEngine
 		}
 	}
 
+	void Quaternion::FromRotationMatrix(const Matrix4x4& rotation)
+	{
+		Matrix3x3 r(rotation);
+
+		FromRotationMatrix(r);
+	}
+
 	void Quaternion::ToRotationMatrix(Matrix3x3& kRot) const
 	{
 		float xx = x * x;

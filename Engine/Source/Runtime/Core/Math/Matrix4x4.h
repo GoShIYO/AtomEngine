@@ -115,6 +115,39 @@ namespace AtomEngine
 			MakeAffine(scale, rotation, position);
 		}
 
+		Matrix4x4(const Vector3& x, const Vector3& y, const Vector3& z)
+		{
+            SetMatrix3x3(Matrix3x3(x, y, z));
+		}
+
+		Matrix4x4(const Matrix3x3& xyz,const Vector3& w)
+		{
+			mat[0][0] = xyz.mat[0][0];
+			mat[0][1] = xyz.mat[0][1];
+			mat[0][2] = xyz.mat[0][2];
+			mat[0][3] = 0.0f;
+
+			mat[1][0] = xyz.mat[1][0];
+			mat[1][1] = xyz.mat[1][1];
+			mat[1][2] = xyz.mat[1][2];
+			mat[1][3] = 0.0f;
+
+			mat[2][0] = xyz.mat[2][0];
+			mat[2][1] = xyz.mat[2][1];
+			mat[2][2] = xyz.mat[2][2];
+			mat[2][3] = 0.0f;
+
+			mat[3][0] = w.x;
+			mat[3][1] = w.y;
+			mat[3][2] = w.z;
+			mat[3][3] = 1.0f;
+		}
+
+		Matrix4x4(const Quaternion& rot, const Vector3& position)
+		{
+			*this = Matrix4x4(Matrix3x3(rot), position);
+		}
+
 		void FromData(const float(&float_array)[16])
 		{
 			mat[0][0] = float_array[0];
@@ -393,6 +426,12 @@ namespace AtomEngine
 		}
 
 		Vector3 GetTrans() const { return Vector3(mat[0][3], mat[1][3], mat[2][3]); }
+
+		Quaternion GetRotation() const
+		{
+			Matrix3x3 mat3(*this);
+			return mat3.GetRotation();
+		}
 
 		Matrix4x4 MakeViewportMatrix(uint32_t width, uint32_t height)
 		{
@@ -803,6 +842,20 @@ namespace AtomEngine
 			float d33 = +(v3 * m00 - v1 * m01 + v0 * m02) * invDet;
 
 			return Matrix4x4(d00, d01, d02, d03, d10, d11, d12, d13, d20, d21, d22, d23, d30, d31, d32, d33);
+		}
+
+		const Vector3 GetX() const { return Vector3(mat[0]); }
+		const Vector3 GetY() const { return Vector3(mat[1]); }
+		const Vector3 GetZ() const { return Vector3(mat[2]); }
+		const Vector3 GetW() const { return Vector3(mat[3]); }
+
+		static Matrix4x4 MakeScale(const Vector3& scale)
+		{
+			Matrix4x4 m = Matrix4x4::IDENTITY;
+			m.mat[0][0] = scale.x;
+            m.mat[1][1] = scale.y;
+            m.mat[2][2] = scale.z;
+            return m;
 		}
 
 		Vector3 TransformCoord(const Vector3& v)const

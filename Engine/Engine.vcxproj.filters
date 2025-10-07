@@ -94,12 +94,6 @@
     <ClInclude Include="External\imgui\ImZoomSlider.h">
       <Filter>External\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Resource\Material.h">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
@@ -109,86 +103,14 @@
     <ClInclude Include="Source\Runtime\Resource\Texture.h">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Platform\DirectX12\D3dUtility\d3dInclude.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h">
       <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Core\LogSystem\LogSystem.h">
       <Filter>Engine\Runtime\Core\Log</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Physics\BoundingBox.h">
+    <ClInclude Include="Source\Runtime\Core\Math\BoundingBox.h">
       <Filter>Engine\Runtime\Function\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\RenderPass\RenderPassBase.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Resource\TextureManager.h">
       <Filter>Engine\Runtime\Resource</Filter>
@@ -196,12 +118,131 @@
     <ClInclude Include="Source\Runtime\Resource\TexUtil.h">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
+    <ClInclude Include="Source\Runtime\Resource\Animation.h">
+      <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Core\Math\MathInclude.h" />
-    <ClInclude Include="Source\Runtime\Resource\Model.h" />
-    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h" />
+    <ClInclude Include="Source\Runtime\Resource\Model.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Sprite\Sprite.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Sprite\SpriteCommon.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Camera\CameraBase.h">
+      <Filter>Engine\Runtime\Function\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\BoundingPlane.h">
+      <Filter>Engine\Runtime\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\BoundingSphere.h">
+      <Filter>Engine\Runtime\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Frustum.h">
+      <Filter>Engine\Runtime\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\MathInclude.h">
+      <Filter>Engine\Runtime\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Camera\CameraController.h">
+      <Filter>Engine\Runtime\Function\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ConstantBuffers.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderSystem.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderQueue.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\GameObject.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\TransformComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\ECSCommon.h" />
+    <ClInclude Include="Source\Runtime\Application\GameApp.h" />
+    <ClInclude Include="Source\Game\Game.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -282,80 +323,11 @@
     <ClCompile Include="External\imgui\ImSequencer.cpp">
       <Filter>External\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\Material.cpp">
-      <Filter>Engine\Runtime\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\Mesh.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\Texture.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Utility\Utility.cpp">
       <Filter>Engine\Runtime\Core\Utility</Filter>
@@ -363,29 +335,127 @@
     <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp">
       <Filter>Engine\Runtime\Core\Log</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Physics\BoundingBox.cpp">
-      <Filter>Engine\Runtime\Function\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\RenderCore.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp">
-      <Filter>Engine\Runtime\Platform\DirectX12</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Editor\main.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\Model.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\Animation.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Model.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Sprite\Sprite.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Sprite\SpriteCommon.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Camera\CameraBase.cpp">
+      <Filter>Engine\Runtime\Function\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\BoundingSphere.cpp">
+      <Filter>Engine\Runtime\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Frustum.cpp">
+      <Filter>Engine\Runtime\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Camera\CameraController.cpp">
+      <Filter>Engine\Runtime\Function\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderSystem.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
+      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderQueue.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\TransformComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\World.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\GameObject.cpp" />
+    <ClCompile Include="Source\Runtime\Application\GameApp.cpp" />
+    <ClCompile Include="Source\Game\Game.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -445,6 +515,15 @@
     <Filter Include="Engine\Runtime\Function\Physics">
       <UniqueIdentifier>{87c6a47d-4ffa-4b1c-b37c-3e1fe49cb9f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\Runtime\Function\Camera">
+      <UniqueIdentifier>{136281cb-8e20-49ea-b26b-e5fc445493be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Platform\DirectX12\Buffer">
+      <UniqueIdentifier>{bfb3cc24-2e48-4696-8711-a7d69e83ef38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Runtime\Platform\DirectX12\Core">
+      <UniqueIdentifier>{d3e827d2-efd8-4333-b94a-47849a7c3b05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shaders\FullScreenQuad.hlsl">
@@ -461,5 +540,6 @@
     <None Include="Asset\Shaders\Unility.hlsli">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl" />
   </ItemGroup>
 </Project>

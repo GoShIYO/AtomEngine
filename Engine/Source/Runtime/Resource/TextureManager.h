@@ -1,10 +1,10 @@
 #pragma once
 #include "Texture.h"
 #include "TexUtil.h"
-
 #include <string>
 
 #include "../Platform/DirectX12/Core/GraphicsCommon.h"
+#include "../Platform/DirectX12/Core/DescriptorHeap.h"
 
 namespace AtomEngine
 {
@@ -18,14 +18,14 @@ namespace AtomEngine
     public:
 
         static void Initialize(const std::wstring& RootPath);
-        static void Finalize();
+        static void Shutdown();
 
         static void DestroyTexture(const std::wstring& key);
 
         // DDSファイルからテクスチャをロードします。null参照を返すことはありませんが、
         // テクスチャが見つからない場合は、ref->IsValid()はfalseを返します。
-        static TextureRef LoadDDSFromFile(const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
-        static TextureRef LoadDDSFromFile(const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);                                                                    
+        static TextureRef LoadTextureFile(const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
+        static TextureRef LoadTextureFile(const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
     };
 
     //前方宣言。プライベートで実装

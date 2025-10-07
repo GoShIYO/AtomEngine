@@ -1,5 +1,6 @@
 #include "Runtime/Function/Render/WindowManager.h"
 #include "Runtime/EngineCore.h"
+#include "Game/Game.h"
 
 int WINAPI WinMain(
 	_In_ HINSTANCE hInstance,
@@ -9,8 +10,10 @@ int WINAPI WinMain(
 {
 
 	AtomEngine::AtomEngine engine;
-	
-	engine.Update();
+
+	Game game;
+
+	engine.Run(game);
 	
 	return engine.Shutdown();
 }

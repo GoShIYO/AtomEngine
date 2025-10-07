@@ -1,9 +1,9 @@
 #include "DirectX12Core.h"
 #include "CommandListManager.h"
-#include "RenderCore.h"
 
 #include "Runtime/Core/Utility/Utility.h"
 #include "Runtime/Function/Render/WindowManager.h"
+#include "Runtime/Function/Render/RenderSystem.h"
 
 #include "../Context/GraphicsContext.h"
 #include "../Buffer/BufferManager.h"
@@ -187,7 +187,9 @@ namespace AtomEngine
 			sPresentRS.Reset(2, 1);
 			sPresentRS[0].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
 			sPresentRS[1].InitAsConstants(0, 6, D3D12_SHADER_VISIBILITY_ALL);
+
 			sPresentRS.InitStaticSampler(0, SamplerLinearClampDesc);
+
 			sPresentRS.Finalize(L"Present");
 
 			auto FullScreenQuadBlob = ShaderCompiler::CompileBlob(L"FullScreenQuad.hlsl", L"vs_6_2");
@@ -401,7 +403,8 @@ namespace AtomEngine
 			gCommandManager.Create(gDevice.Get());
 			InitializeCommonState();
 			InitSwapChain();
-			RenderCore::Initialize();
+			TextureManager::Initialize(L"");
+			RenderSystem::Initialize();
 		}
 
 		void DX12Core::ShutdownDx12()
@@ -421,7 +424,8 @@ namespace AtomEngine
 			ImGui_ImplWin32_Shutdown();
 			ImGui::DestroyContext();
 
-			RenderCore::Shutdown();
+			RenderSystem::Shutdown();
+			TextureManager::Shutdown();
 
 			ShutdownSwapChain();
 
@@ -502,10 +506,11 @@ namespace AtomEngine
 			}
 			Context.Draw(3);
 
+			auto textureHeap = RenderSystem::GetTextureHeap();
 			//ImGui Present
 			{
 				ImGui::Render();
-				Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, RenderCore::gTextureHeap.GetHeapPointer());
+				Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, textureHeap.GetHeapPointer());
 				ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), Context.GetCommandList());
 			}
 

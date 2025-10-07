@@ -97,7 +97,7 @@ namespace AtomEngine
 		}
 
 		float GetDegrees() const { return deg; }
-		float GetRadians() const; // see bottom of this file
+		float GetRadians() const;
 
 		const Degree& operator+() const { return *this; }
 		Degree        operator+(const Degree& d) const { return Degree(deg + d.deg); }
@@ -168,10 +168,23 @@ namespace AtomEngine
 		static float  cos(float value) { return std::cos(value); }
 		static float  tan(const Radian& rad) { return std::tan(rad.GetRadians()); }
 		static float  tan(float value) { return std::tan(value); }
+		static float  Pow(float a, float b) { return std::pow(a, b); }
 		static Radian acos(float value);
 		static Radian asin(float value);
 		static Radian atan(float value) { return Radian(std::atan(value)); }
 		static Radian atan2(float y_v, float x_v) { return Radian(std::atan2(y_v, x_v)); }
+		static Vector3 Normalize(const Vector3& v);
+
+		static float Dot(const Vector3& lhs, const Vector3& rhs);
+		static Vector3 Cross(const Vector3& lhs, const Vector3& rhs);
+
+		static Vector3 Max(const Vector3& a, const Vector3& b);
+
+		static Vector3 Min(const Vector3& a, const Vector3& b);
+
+		static Vector3 Select(const Vector3& a, const Vector3& b, const Vector3& control);
+
+		static Vector3 Select(const Vector3& a, const Vector3& b, bool control);
 
 		static Matrix4x4
 			MakeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflectMatrix = nullptr);
@@ -184,6 +197,13 @@ namespace AtomEngine
 		static Matrix4x4
 			MakeOrthographicProjectionMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
 
+		template <typename T>
+		static T Lerp(const T& lhs, const T& rhs, float alpha)
+		{
+			return lhs + alpha * (rhs - lhs);
+		}
+
+
 	public:
 		static constexpr float Infinity = std::numeric_limits<float>::infinity();
 		static constexpr float NegInfinity = -std::numeric_limits<float>::infinity();
@@ -191,6 +211,7 @@ namespace AtomEngine
 		static constexpr float OneOverPI = 1.0f / PI;
 		static constexpr float TwoPI = 2.0f * PI;
 		static constexpr float HalfPI = 0.5f * PI;
+		static constexpr float PIDiv4 = PI / 4.0f;
 		static constexpr float deg2Rad = PI / 180.0f;
 		static constexpr float rad2Deg = 180.0f / PI;
 		static constexpr float Epsilon = 1e-6f;

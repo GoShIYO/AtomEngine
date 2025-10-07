@@ -40,6 +40,29 @@ namespace AtomEngine
 		return Radian(-HalfPI);
 	}
 
+	Vector3 Math::Normalize(const Vector3& v)
+	{
+        if (v.IsZero())
+			return Vector3::UNIT_SCALE;
+        return v.NormalizedCopy();
+	}
+
+	float Math::Dot(const Vector3& lhs, const Vector3& rhs)
+	{
+		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
+	}
+
+	Vector3 Math::Cross(const Vector3& lhs, const Vector3& rhs)
+	{
+        if (lhs.IsZero() || rhs.IsZero())
+			return Vector3::ZERO;
+        return Vector3(
+			lhs.y * rhs.z - lhs.z * rhs.y,
+			lhs.z * rhs.x - lhs.x * rhs.z,
+			lhs.x * rhs.y - lhs.y * rhs.x
+		);
+	}
+
 	Matrix4x4 Math::MakeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflectMatrix)
 	{
 		return Matrix4x4();

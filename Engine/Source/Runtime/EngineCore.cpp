@@ -3,8 +3,10 @@
 #include "Runtime/Function/Global/GlobalContext.h"
 #include "Runtime/Function/Render/WindowManager.h"
 #include "Runtime/Function/Input/Input.h"
-#include "Runtime/Platform/DirectX12/Core/RenderCore.h"
+#include "Runtime/Function/Render/RenderSystem.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+
+#include "Runtime/Application/GameApp.h"
 
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
@@ -13,19 +15,24 @@ namespace AtomEngine
 {
 	AtomEngine::AtomEngine()
 	{
-		gGlobalContext.Initialize();
+		gContext.Initialize();
 
 		Log("Engine Start");
 	}
 
-	void AtomEngine::Update()
+	void AtomEngine::Run(GameApp& app)
 	{
-		auto window = WindowManager::GetInstance();
-		while (!window->ShouldClose())
+		auto window = gContext.windowManager;
+
+		app.Initialize();
+
+		while (!window->ShouldClose() && !app.Exit())
 		{
 			const float deltaTime = CalculateDeltaTime();
-			Tick(deltaTime);
+			Tick(app,deltaTime);
 		}
+		app.Shutdown();
+
 		mIsQuit = true;
 	}
 
@@ -34,25 +41,25 @@ namespace AtomEngine
 		DX12Core::ShutdownDx12();
 		Log("Shutdown Dx12\n");
 
-		gGlobalContext.Finalize();
+		gContext.Finalize();
 		Log("Shutdown Engine\n");
 		return mIsQuit;
 	}
 
 	void AtomEngine::LogicalTick(float deltaTime)
 	{
-		Input::GetInstance()->Update();
+		gContext.input->Update();
 	}
 
-	void AtomEngine::RenderTick(float deltaTime)
+	void AtomEngine::RenderTick(GameApp& app,float deltaTime)
 	{
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-
-		RenderCore::Render(deltaTime);
-
+		app.Render();
+		
+		RenderSystem::Render(deltaTime);
 
 		DX12Core::Present();
 	}
@@ -86,13 +93,13 @@ namespace AtomEngine
 
 		mFps = 1.0f / mAverageDuration;
 	}
-	void AtomEngine::Tick(float deltaTime)
+	void AtomEngine::Tick(GameApp& app, float deltaTime)
 	{
 		LogicalTick(deltaTime);
 		CalculateFPS(deltaTime);
 
+		app.Update(deltaTime);
 
-		RenderTick(deltaTime);
+		RenderTick(app,deltaTime);
 	}
 }
-

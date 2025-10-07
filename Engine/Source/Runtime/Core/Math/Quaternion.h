@@ -11,6 +11,8 @@ namespace AtomEngine
 		Quaternion(float x_, float y_, float z_, float w_) : x{ x_ }, y{ y_ }, z{ z_ }, w{ w_ } {}
 
 		explicit Quaternion(const Matrix3x3& rot) { this->FromRotationMatrix(rot); }
+		explicit Quaternion(const Matrix4x4& rot) { this->FromRotationMatrix(rot); }
+
 		Quaternion(const Radian& angle, const Vector3& axis) { this->FromAngleAxis(angle, axis); }
 		Quaternion(const Vector3& xaxis, const Vector3& yaxis, const Vector3& zaxis)
 		{
@@ -21,6 +23,7 @@ namespace AtomEngine
 		const float* ptr() const { return &x; }
 
 		void FromRotationMatrix(const Matrix3x3& rotation);
+        void FromRotationMatrix(const Matrix4x4& rotation);
 		void ToRotationMatrix(Matrix3x3& rotation) const;
 		void ToRotationMatrix(Matrix4x4& rotation) const;
 
@@ -96,6 +99,13 @@ namespace AtomEngine
 		{
 			float factor = 1.0f / this->Length();
 			*this = *this * factor;
+		}
+
+		Quaternion NormalizeCopy() const 
+		{ 
+			Quaternion q = *this; 
+			q.Normalize(); 
+			return q; 
 		}
 
 		Quaternion Inverse() const

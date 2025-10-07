@@ -5,27 +5,24 @@
 
 namespace AtomEngine
 {
-	GlobalContext gGlobalContext;
+	GlobalContext gContext;
 
 	void GlobalContext::Initialize()
 	{
 		InitLog();
 
-		WindowManager* windowManager = WindowManager::GetInstance();
+		windowManager = WindowManager::GetInstance();
 		WindowCreateInfo windowCreateInfo;
 		windowManager->Initialize(windowCreateInfo);
 
-		Input* input = Input::GetInstance();
+		input = Input::GetInstance();
 		input->Initialize();
 
 	}
 
 	void GlobalContext::Finalize()
 	{
-
-		Input* input = Input::GetInstance();
 		input->Finalize();
-
 
 		FinalizeLog();
 	}
