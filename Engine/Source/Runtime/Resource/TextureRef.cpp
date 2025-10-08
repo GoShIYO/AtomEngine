@@ -1,99 +1,15 @@
-#include "TextureManager.h"
+#include "TextureRef.h"
+#include "AssetManager.h"
+
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Context/CommandContext.h"
 #include "DirectXTex.h"
+
 #include <map>
 #include <mutex>
 
 namespace AtomEngine
 {
-
-	struct TextureData
-	{
-		DescriptorHandle handle;
-	};
-
-	// ManagedTexture を使用すると、複数のスレッドから同じファイルのテクスチャのロードを要求できます。
-	// また、テクスチャの参照カウントも保持されるため、参照されなくなったら解放できます。
-	// 生のManagedTexture ポインタは公開されません
-	class ManagedTexture : public Texture
-	{
-		friend class TextureRef;
-		friend class TextureManager;
-	public:
-		ManagedTexture(const std::wstring& FileName);
-
-		void WaitForLoad(void) const;
-		void CreateFromMemory(std::shared_ptr<std::vector<byte>> memory, eDefaultTexture fallback, bool sRGB);
-
-	private:
-
-		bool IsValid(void) const { return mIsValid; }
-		void Unload();
-
-		std::wstring mMapKey;		// 後でマップから削除するため
-		bool mIsValid;
-		bool mIsLoading;
-		size_t mReferenceCount;
-	};
-
-	std::wstring sRootPath = L"";
-	std::map<std::wstring, std::unique_ptr<ManagedTexture>>sTextureCache;
-	std::mutex sMutex;
-
-	void TextureManager::Initialize(const std::wstring& rootPath)
-	{
-		sRootPath = rootPath;
-	}
-
-	void TextureManager::Shutdown()
-	{
-		sTextureCache.clear();
-	}
-
-	void TextureManager::DestroyTexture(const std::wstring& key)
-	{
-		std::lock_guard<std::mutex> Guard(sMutex);
-
-		auto iter = sTextureCache.find(key);
-		if (iter != sTextureCache.end())
-			sTextureCache.erase(iter);
-	}
-
-	ManagedTexture* FindOrLoadTexture(const std::wstring& fileName, eDefaultTexture fallback, bool forceSRGB)
-	{
-		ManagedTexture* tex = nullptr;
-
-		{
-			std::lock_guard<std::mutex> Guard(sMutex);
-
-			std::wstring key = fileName;
-			if (forceSRGB)
-				key += L"_sRGB";
-
-			// 既存の管理テクスチャを検索する
-			auto iter = sTextureCache.find(key);
-			if (iter != sTextureCache.end())
-			{
-				// テクスチャがすでに作成されている場合は、テクスチャにポイントを返す前に、読み込みが完了していることを確認
-				tex = iter->second.get();
-				tex->WaitForLoad();
-				return tex;
-			}
-			else
-			{
-				// 見つからない場合は、新しい管理テクスチャを作成し、読み込みを開始します
-				tex = new ManagedTexture(key);
-				sTextureCache[key].reset(tex);
-			}
-		}
-
-		std::shared_ptr<std::vector<byte>> ba = ReadFileSync(sRootPath + fileName);
-		tex->CreateFromMemory(ba, fallback, forceSRGB);
-
-		// これは初めての要求なので、呼び出し側がファイルを読み取る必要があることを示します。
-		return tex;
-	}
 
 	ManagedTexture::ManagedTexture(const std::wstring& FileName)
 		: mMapKey(FileName), mIsValid(false), mIsLoading(true), mReferenceCount(0)
@@ -214,7 +130,7 @@ namespace AtomEngine
 
 	void ManagedTexture::Unload()
 	{
-		TextureManager::DestroyTexture(mMapKey);
+		AssetManager::DestroyTexture(mMapKey);
 	}
 
 	TextureRef::TextureRef(const TextureRef& ref) : mRef(ref.mRef)
@@ -313,20 +229,6 @@ namespace AtomEngine
 			return mRef->GetSRV();
 		else
 			return GetDefaultTexture(kMagenta2D);
-	}
-
-	TextureRef TextureManager::LoadTextureFile(const std::wstring& filePath, eDefaultTexture fallback, bool forceSRGB)
-	{
-		std::wstring originalFile = filePath;
-		CompileTextureOnDemand(originalFile, TextureOptions(true));
-
-		std::wstring ddsFile = RemoveExtension(originalFile) + L".dds";
-		return FindOrLoadTexture(ddsFile, fallback, forceSRGB);
-	}
-
-	TextureRef TextureManager::LoadTextureFile(const std::string& filePath, eDefaultTexture fallback, bool forceSRGB)
-	{
-		return LoadTextureFile(UTF8ToWString(filePath), fallback, forceSRGB);
 	}
 
 }

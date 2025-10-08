@@ -42,12 +42,4 @@ namespace AtomEngine
         float time;
         AnimationState() : state(kStopped), time(0.0f) {}
     };
-
-	class Animation
-	{
-	public:
-
-	};
 }
-
-

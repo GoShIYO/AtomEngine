@@ -4,6 +4,7 @@
 #include "Runtime/Core/Utility/Utility.h"
 #include "Runtime/Function/Render/WindowManager.h"
 #include "Runtime/Function/Render/RenderSystem.h"
+#include "Runtime/Resource/AssetManager.h"
 
 #include "../Context/GraphicsContext.h"
 #include "../Buffer/BufferManager.h"
@@ -403,7 +404,7 @@ namespace AtomEngine
 			gCommandManager.Create(gDevice.Get());
 			InitializeCommonState();
 			InitSwapChain();
-			TextureManager::Initialize(L"");
+			AssetManager::Initialize(L"");
 			RenderSystem::Initialize();
 		}
 
@@ -425,7 +426,7 @@ namespace AtomEngine
 			ImGui::DestroyContext();
 
 			RenderSystem::Shutdown();
-			TextureManager::Shutdown();
+			AssetManager::Shutdown();
 
 			ShutdownSwapChain();
 

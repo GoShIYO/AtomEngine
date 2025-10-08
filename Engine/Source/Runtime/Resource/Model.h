@@ -1,7 +1,7 @@
 #pragma once
 #include "Mesh.h"
 #include "Animation.h"
-#include "TextureManager.h"
+#include "AssetManager.h"
 
 #include "../Platform/DirectX12/Buffer/GpuBuffer.h"
 #include "../Platform/DirectX12/Buffer/UploadBuffer.h"
@@ -34,6 +34,15 @@ namespace AtomEngine
 		uint32_t hasChildren : 1;	// 子ノードを持つ
 		uint32_t staleMatrix : 1;	// 変換行列が古くなっているかどうか
 		uint32_t skeletonRoot : 1;  // ボーンのルートかどうか
+	};
+
+	struct FrameItem
+	{
+		bool visible;
+		uint16_t pso;
+		D3D12_GPU_VIRTUAL_ADDRESS meshCBV;
+		D3D12_GPU_VIRTUAL_ADDRESS materialCBV;
+		D3D12_GPU_VIRTUAL_ADDRESS bufferPtr;
 	};
 
 	struct Joint

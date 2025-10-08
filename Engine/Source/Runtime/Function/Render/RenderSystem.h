@@ -1,7 +1,7 @@
 #pragma once
 #include "Runtime/Platform/DirectX12/Core/DescriptorHeap.h"
 #include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
-#include "Runtime/Resource/TextureManager.h"
+#include "Runtime/Resource/TextureRef.h"
 
 namespace AtomEngine
 {
@@ -50,5 +50,3 @@ namespace AtomEngine
 		static DescriptorHandle gCommonTextures;
 	};
 }
-
-

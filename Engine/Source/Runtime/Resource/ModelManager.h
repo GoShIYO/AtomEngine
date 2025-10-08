@@ -1,11 +1,10 @@
 #pragma once
+
 namespace AtomEngine
 {
-	class MeshComponent
+	class ModelManager
 	{
 	public:
-        MeshComponent() = default;
-
 
 	};
 }

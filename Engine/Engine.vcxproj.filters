@@ -112,7 +112,7 @@
     <ClInclude Include="Source\Runtime\Core\Math\BoundingBox.h">
       <Filter>Engine\Runtime\Function\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Resource\TextureManager.h">
+    <ClInclude Include="Source\Runtime\Resource\TextureRef.h">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Resource\TexUtil.h">
@@ -122,9 +122,6 @@
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Resource\Model.h">
-      <Filter>Engine\Runtime\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Function\Sprite\Sprite.h">
@@ -247,9 +244,6 @@
     <ClInclude Include="Source\Game\Game.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h">
-      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Function\Framework\Component\TransformComponent.h">
       <Filter>Engine\Runtime\Function\Framework\Component</Filter>
     </ClInclude>
@@ -265,6 +259,9 @@
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.h">
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ConstantBufferStructures.h" />
+    <ClInclude Include="Source\Runtime\Resource\ModelManager.h" />
+    <ClInclude Include="Source\Runtime\Resource\AssetManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -345,9 +342,6 @@
     <ClCompile Include="External\imgui\ImSequencer.cpp">
       <Filter>External\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\Material.cpp">
-      <Filter>Engine\Runtime\Resource</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\Texture.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
@@ -357,7 +351,7 @@
     <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp">
       <Filter>Engine\Runtime\Core\Log</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\TextureManager.cpp">
+    <ClCompile Include="Source\Runtime\Resource\TextureRef.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
@@ -370,9 +364,6 @@
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\Model.cpp">
-      <Filter>Engine\Runtime\Resource</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Sprite\Sprite.cpp">
@@ -480,12 +471,6 @@
     <ClCompile Include="Source\Game\Game.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp">
-      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\TransformComponent.cpp">
-      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Render\RenderQueue.cpp">
       <Filter>Engine\Runtime\Function\Render</Filter>
     </ClCompile>
@@ -498,6 +483,8 @@
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp">
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\ModelManager.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">

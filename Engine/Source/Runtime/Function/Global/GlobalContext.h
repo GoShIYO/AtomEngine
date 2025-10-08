@@ -16,7 +16,6 @@ namespace AtomEngine
 		/// グローバルコンテキストのコンポーネント
 		WindowManager* windowManager = nullptr;
 		Input* input = nullptr;
-
 	};
 
 	extern GlobalContext gContext;
