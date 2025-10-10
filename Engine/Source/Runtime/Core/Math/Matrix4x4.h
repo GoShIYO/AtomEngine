@@ -110,6 +110,26 @@ namespace AtomEngine
 			mat[3][3] = row3.w;
 		}
 
+		Matrix4x4(float* float_array)
+		{
+            mat[0][0] = float_array[0];
+			mat[0][1] = float_array[1];
+			mat[0][2] = float_array[2];
+			mat[0][3] = float_array[3];
+			mat[1][0] = float_array[4];
+			mat[1][1] = float_array[5];
+			mat[1][2] = float_array[6];
+			mat[1][3] = float_array[7];
+			mat[2][0] = float_array[8];
+			mat[2][1] = float_array[9];
+			mat[2][2] = float_array[10];
+			mat[2][3] = float_array[11];
+			mat[3][0] = float_array[12];
+			mat[3][1] = float_array[13];
+			mat[3][2] = float_array[14];
+			mat[3][3] = float_array[15];
+		}
+
 		Matrix4x4(const Vector3& scale, const Quaternion& rotation, const Vector3& position)
 		{
 			MakeAffine(scale, rotation, position);
@@ -881,6 +901,18 @@ namespace AtomEngine
 	};
 
 	Vector4 operator*(const Vector4& v, const Matrix4x4& mat);
+
+	inline Vector3 Math::Transfrom(const Vector3& v, const Matrix4x4& mat)
+	{
+		Vector4 temp(v, 1.0f);
+        return Vector3(temp * mat);
+	}
+	
+	inline Vector3 Math::TransformNormal(const Vector3& v, const Matrix4x4& mat)
+	{
+		Vector4 temp(v, 0.0f);
+        return Vector3(temp * mat).NormalizedCopy();
+	}
 };
 
 

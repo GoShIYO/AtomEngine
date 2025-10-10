@@ -128,17 +128,30 @@ namespace AtomEngine
 
 		Radian Yaw(bool reprojectAxis = true) const;
 
-		static Quaternion SLerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath = false);
-
-		static Quaternion Lerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath = false);
-
+		/// <summary>
+		/// 共役
+		/// </summary>
+		/// <returns>四元数</returns>
 		Quaternion Conjugate() const { return Quaternion(-x, -y, -z, w); }
 
 		static const Quaternion ZERO;
 		static const Quaternion IDENTITY;
-
-		static const float kEpsilon;
 	};
+
+	Quaternion Slerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath = false);
+
+	Quaternion Lerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath = false);
+
+	template <typename T>
+	inline Quaternion ToQuat(const T* rot)
+	{
+		return Quaternion(ToFloat(rot[0]), ToFloat(rot[1]), ToFloat(rot[2]), ToFloat(rot[3]));
+	}
+
+	inline Quaternion ToQuat(const float* rot)
+	{
+		return Quaternion(rot[0], rot[1], rot[2], rot[3]);
+	}
 }
 
 

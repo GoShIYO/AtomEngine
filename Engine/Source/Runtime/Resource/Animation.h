@@ -15,8 +15,8 @@ namespace AtomEngine
         enum { kLinear, kStep, kCatmullRomSpline, kCubicSpline };   // 補間方法
         enum { kSNorm8, kUNorm8, kSNorm16, kUNorm16, kFloat };      // format
 
-        uint32_t targetNode : 28;           // アニメーション化されるノード
-        uint32_t targetPath : 2;            // アニメーション化される変換の側面
+        uint32_t targetNode : 28;           // 目標ノート
+        uint32_t targetPath : 2;            // 目標パス
         uint32_t interpolation : 2;         // 補間方法
         uint32_t keyFrameOffset : 26;       // 最初のキーフレームへのバイトオフセット
         uint32_t keyFrameFormat : 3;        // キーフレームのデータ形式

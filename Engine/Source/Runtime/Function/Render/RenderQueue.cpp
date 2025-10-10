@@ -5,7 +5,7 @@
 #include "Runtime/Resource/Model.h"
 
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
-#include "Runtime/Platform/DirectX12/Buffer/ConstantBuffers.h"
+#include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 
 namespace AtomEngine
 {

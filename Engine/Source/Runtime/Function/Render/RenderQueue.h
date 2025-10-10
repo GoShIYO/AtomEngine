@@ -7,11 +7,12 @@
 #include "Runtime/Core/Math/Frustum.h"
 #include "Runtime/Core/Math/Matrix4x4.h"
 
+struct GlobalConstants;
+
 namespace AtomEngine
 {
 
 	class CameraBase;
-	struct GlobalConstants;
 	struct Mesh;
 	struct Joint;
 

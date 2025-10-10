@@ -243,6 +243,12 @@ namespace AtomEngine
 		return filePath.substr(0, filePath.rfind(L"."));
 	}
 
+	std::wstring GetDirectoryFromPath(const std::wstring& fullPath)
+	{
+		size_t pos = fullPath.find_last_of(L"/\\");
+		return (pos != std::wstring::npos) ? fullPath.substr(0, pos + 1) : L"";
+	}
+
 	std::shared_ptr<std::vector<byte>> NullFile = std::make_shared<std::vector<byte> >(std::vector<byte>());
 
 	std::shared_ptr<std::vector<byte>> ReadFileHelper(const std::wstring& fileName)

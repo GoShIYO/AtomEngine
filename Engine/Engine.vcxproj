@@ -153,8 +153,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h" />
     <ClInclude Include="Source\Runtime\Resource\AssetManager.h" />
-    <ClInclude Include="Source\Runtime\Resource\ModelManager.h" />
     <ClInclude Include="Source\Game\Game.h" />
     <ClInclude Include="Source\Runtime\Application\GameApp.h" />
     <ClInclude Include="Source\Runtime\Function\Framework\ECS\ECSCommon.h" />
@@ -164,7 +164,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.h" />
     <ClInclude Include="Source\Runtime\Function\Render\RenderQueue.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\CameraController.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ConstantBuffers.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\CameraBase.h" />
     <ClInclude Include="Source\Runtime\Core\Math\BoundingPlane.h" />
     <ClInclude Include="Source\Runtime\Core\Math\Frustum.h" />
@@ -244,8 +243,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
     <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\ModelManager.cpp" />
     <ClCompile Include="Source\Game\Game.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>

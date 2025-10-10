@@ -96,7 +96,7 @@ namespace AtomEngine
 	std::wstring GetBasePath(const std::wstring& filePath);
 	std::string RemoveExtension(const std::string& str);
 	std::wstring RemoveExtension(const std::wstring& str);
-
+	std::wstring GetDirectoryFromPath(const std::wstring& fullPath);
 	std::shared_ptr<std::vector<byte>> ReadFileSync(const std::wstring& fileName);
 
 #ifdef _DEBUG

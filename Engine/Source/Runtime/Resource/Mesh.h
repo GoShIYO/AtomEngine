@@ -7,7 +7,14 @@ namespace AtomEngine
 	{
 		Vector4 position;
 		Vector3 normal;
-		Vector2 uv;
+		Vector2 texcoord;
+	};
+
+	struct JointVertex
+	{
+		Vertex vertex;
+		uint16_t jointIndices[4];
+		float weights[4];
 	};
 
 	struct DrawCall

@@ -8,8 +8,6 @@ namespace AtomEngine
 	const Quaternion Quaternion::ZERO(0, 0, 0, 0);
 	const Quaternion Quaternion::IDENTITY(0, 0, 0, 1);
 
-	const float Quaternion::kEpsilon = 1e-03f;
-
 	Quaternion Quaternion::operator*(const Quaternion& q) const
 	{
 		return Quaternion(
@@ -328,7 +326,7 @@ namespace AtomEngine
 		}
 	}
 
-	Quaternion Quaternion::SLerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath)
+	Quaternion Slerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath)
 	{
 		float      cos_v = kp.Dot(kq);
 		Quaternion kt;
@@ -343,7 +341,7 @@ namespace AtomEngine
 			kt = kq;
 		}
 
-		if (Math::Abs(cos_v) < 1 - kEpsilon)
+		if (Math::Abs(cos_v) < 1 - Math::Epsilon)
 		{
 			float  sin_v = Math::Sqrt(1 - Math::Sqr(cos_v));
 			Radian angle = Math::atan2(sin_v, cos_v);
@@ -360,7 +358,7 @@ namespace AtomEngine
 		}
 	}
 
-	Quaternion Quaternion::Lerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath)
+	Quaternion Lerp(const Quaternion& kp, const Quaternion& kq, float t, bool shortestPath)
 	{
 		Quaternion result;
 		float      cos_value = kp.Dot(kq);

@@ -4,6 +4,7 @@
 
 namespace AtomEngine
 {
+	class Model;
 	class AssetManager
 	{
 	public:
@@ -16,6 +17,11 @@ namespace AtomEngine
 		static TextureRef LoadTextureFile(const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
 		static TextureRef LoadTextureFile(const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
 
+		static TextureRef LoadCovertTexture(const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
+        static TextureRef LoadCovertTexture(const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
+
+		std::shared_ptr<Model> LoadModel(const std::wstring& filePath);
+		std::shared_ptr<Model> LoadModel(const std::string& filePath);
 
 	};
 }

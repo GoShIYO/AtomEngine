@@ -1,5 +1,9 @@
 #include "AssetManager.h"
+#include "ModelLoader.h"
 #include "DirectXTex.h"
+#include "Runtime/Function/Render/RenderSystem.h"
+#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+
 #include <map>
 #include <mutex>
 
@@ -7,6 +11,9 @@ namespace
 {
 	std::wstring sRootPath = L"";
 	std::map<std::wstring, std::unique_ptr<AtomEngine::ManagedTexture>>sTextureCache;
+	std::map<std::wstring, std::shared_ptr<AtomEngine::Model>> sModelDataCache;
+	std::unordered_map<uint32_t, uint32_t> gSamplerPermutations;
+
 	std::mutex sMutex;
 }
 
@@ -68,6 +75,16 @@ namespace AtomEngine
 
 	TextureRef AssetManager::LoadTextureFile(const std::wstring& filePath, eDefaultTexture fallback, bool forceSRGB)
 	{
+		return FindOrLoadTexture(filePath, fallback, forceSRGB);
+	}
+
+	TextureRef AssetManager::LoadTextureFile(const std::string& filePath, eDefaultTexture fallback, bool forceSRGB)
+	{
+		return LoadTextureFile(UTF8ToWString(filePath), fallback, forceSRGB);
+	}
+
+	TextureRef AssetManager::LoadCovertTexture(const std::wstring& filePath, eDefaultTexture fallback, bool forceSRGB)
+	{
 		std::wstring originalFile = filePath;
 		CompileTextureOnDemand(originalFile, TextureOptions(true));
 
@@ -75,8 +92,211 @@ namespace AtomEngine
 		return FindOrLoadTexture(ddsFile, fallback, forceSRGB);
 	}
 
-	TextureRef AssetManager::LoadTextureFile(const std::string& filePath, eDefaultTexture fallback, bool forceSRGB)
+	TextureRef AssetManager::LoadCovertTexture(const std::string& filePath, eDefaultTexture fallback, bool forceSRGB)
 	{
-		return LoadTextureFile(UTF8ToWString(filePath), fallback, forceSRGB);
+		return LoadCovertTexture(UTF8ToWString(filePath), fallback, forceSRGB);
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSampler(uint32_t addressModes)
+	{
+		SamplerDesc samplerDesc;
+		samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE(addressModes & 0x3);
+		samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE(addressModes >> 2);
+		return samplerDesc.CreateDescriptor();
+	}
+
+	void LoadMaterials(Model& model,
+		const std::vector<MaterialTextureData>& materialTextures,
+		const std::vector<std::wstring>& textureNames,
+		const std::vector<uint8_t>& textureOptions,
+		const std::wstring& basePath)
+	{
+		// Load textures
+		const uint32_t numTextures = (uint32_t)textureNames.size();
+		model.textures.resize(numTextures);
+		for (size_t ti = 0; ti < numTextures; ++ti)
+		{
+			std::wstring originalFile = basePath + textureNames[ti];
+			CompileTextureOnDemand(originalFile, textureOptions[ti]);
+
+			std::wstring ddsFile = RemoveExtension(originalFile) + L".dds";
+			model.textures[ti] = AssetManager::LoadTextureFile(ddsFile);
+		}
+
+		// 記述子テーブルを生成し、各マテリアルのオフセットを記録する
+		const uint32_t numMaterials = (uint32_t)materialTextures.size();
+		std::vector<uint32_t> tableOffsets(numMaterials);
+
+		auto textureHeap = RenderSystem::GetTextureHeap();
+		auto samplerHeap = RenderSystem::GetSamplerHeap();
+
+		for (uint32_t matIdx = 0; matIdx < numMaterials; ++matIdx)
+		{
+			const MaterialTextureData& srcMat = materialTextures[matIdx];
+
+			DescriptorHandle TextureHandles = textureHeap.Alloc(kNumTextures);
+			uint32_t SRVDescriptorTable = textureHeap.GetOffsetOfHandle(TextureHandles);
+
+			uint32_t DestCount = kNumTextures;
+			uint32_t SourceCounts[kNumTextures] = { 1, 1, 1, 1, 1,1 };
+
+			D3D12_CPU_DESCRIPTOR_HANDLE DefaultTextures[kNumTextures] =
+			{
+				GetDefaultTexture(kWhiteOpaque2D),			//baseColor
+				GetDefaultTexture(kWhiteOpaque2D),			//matallic
+				GetDefaultTexture(kWhiteOpaque2D),			//roughness
+				GetDefaultTexture(kWhiteOpaque2D),			//occlusion
+				GetDefaultTexture(kBlackTransparent2D),		//emissive
+				GetDefaultTexture(kDefaultNormalMap)		//kNormalMap
+			};
+
+			D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[kNumTextures];
+			for (uint32_t j = 0; j < kNumTextures; ++j)
+			{
+				if (srcMat.stringIdx[j] == 0xffff)
+					SourceTextures[j] = DefaultTextures[j];
+				else
+					SourceTextures[j] = model.textures[srcMat.stringIdx[j]].GetSRV();
+			}
+
+			DX12Core::gDevice->CopyDescriptors(1, &TextureHandles, &DestCount,
+				DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			// このサンプラーの組み合わせが以前に使用されたことがあるかどうかを確認します
+			// 。使用されていない場合は、ヒープからさらに割り当て、記述子をコピーします。
+			uint32_t addressModes = srcMat.addressModes;
+			auto samplerMapLookup = gSamplerPermutations.find(addressModes);
+
+			if (samplerMapLookup == gSamplerPermutations.end())
+			{
+				DescriptorHandle SamplerHandles = samplerHeap.Alloc(kNumTextures);
+				uint32_t SamplerDescriptorTable = samplerHeap.GetOffsetOfHandle(SamplerHandles);
+
+				gSamplerPermutations[addressModes] = SamplerDescriptorTable;
+				tableOffsets[matIdx] = SRVDescriptorTable | SamplerDescriptorTable << 16;
+
+				D3D12_CPU_DESCRIPTOR_HANDLE SourceSamplers[kNumTextures];
+				for (uint32_t j = 0; j < kNumTextures; ++j)
+				{
+					SourceSamplers[j] = GetSampler(addressModes & 0xF);
+					addressModes >>= 4;
+				}
+				DX12Core::gDevice->CopyDescriptors(1, &SamplerHandles, &DestCount,
+					DestCount, SourceSamplers, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+			}
+			else
+			{
+				tableOffsets[matIdx] = SRVDescriptorTable | samplerMapLookup->second << 16;
+			}
+		}
+
+		//各メッシュのテーブルオフセットを更新します
+		uint8_t* meshPtr = model.mMeshData.get();
+		for (uint32_t i = 0; i < model.mNumMeshes; ++i)
+		{
+			Mesh& mesh = *(Mesh*)meshPtr;
+			uint32_t offsetPair = tableOffsets[mesh.materialCBV];
+			mesh.srvTable = offsetPair & 0xFFFF;
+			mesh.samplerTable = offsetPair >> 16;
+			mesh.pso = RenderSystem::GetPSO(mesh.psoFlags);
+			meshPtr += sizeof(Mesh) + (mesh.numDraws - 1) * sizeof(DrawCall);
+		}
+	}
+
+	std::shared_ptr<Model> AtomEngine::AssetManager::LoadModel(const std::wstring& filePath)
+	{
+		return  LoadModel(WStringToUTF8(filePath));
+	}
+
+	std::shared_ptr<Model> AssetManager::LoadModel(const std::string& filePath)
+	{
+		std::lock_guard<std::mutex> guard(sMutex);
+
+		auto it = sModelDataCache.find(UTF8ToWString(filePath));
+		if (it != sModelDataCache.end())
+			return it->second;
+
+		std::string basePath = GetBasePath(filePath);
+
+		auto model = std::make_shared<Model>();
+
+		ModelData modelData;
+		ModelLoader::LoadModel(modelData, filePath);
+
+		if (modelData.m_GeometryData.size() > 0)
+		{
+			UploadBuffer modelUploadBuffer;
+			modelUploadBuffer.Create(L"Model Data Upload", modelData.m_GeometryData.size());
+			memcpy(modelUploadBuffer.Map(), modelData.m_GeometryData.data(), modelData.m_GeometryData.size());
+			modelUploadBuffer.Unmap();
+			model->mDataBuffer.Create(L"Model Data", (uint32_t)modelData.m_GeometryData.size(), 1, modelUploadBuffer);
+		}
+
+		auto numMaterials = modelData.m_MaterialConstants.size();
+		auto numTextures = modelData.m_TextureNames.size();
+
+		if (numMaterials > 0)
+		{
+			UploadBuffer materialConstants;
+			materialConstants.Create(L"Material Constants Upload", numMaterials * sizeof(MaterialConstants));
+			auto materialCBV = (MaterialConstants*)materialConstants.Map();
+			for (uint32_t i = 0; i < numMaterials; ++i)
+			{
+				memcpy(&materialCBV[i], &modelData.m_MaterialConstants[i], sizeof(MaterialConstantData));
+			}
+			materialConstants.Unmap();
+			model->mMaterialConstants.Create(L"Material Constants", (uint32_t)numMaterials, sizeof(MaterialConstants), materialConstants);
+		}
+
+		std::vector<MaterialTextureData> materialTextures(numMaterials);
+		for (uint32_t i = 0; i < numMaterials; ++i)
+		{
+			materialTextures[i] = modelData.m_MaterialTextures[i];
+		}
+		std::vector<std::wstring> textureNames(numTextures);
+		for (uint32_t i = 0; i < numTextures; ++i)
+		{
+			textureNames[i] = UTF8ToWString(modelData.m_TextureNames[i]);
+		}
+		std::vector<uint8_t> textureOptions(numTextures);
+		for (uint32_t i = 0; i < numTextures; ++i)
+		{
+			textureOptions[i] = modelData.m_TextureOptions[i];
+		}
+
+		LoadMaterials(*model, materialTextures, textureNames, textureOptions, UTF8ToWString(basePath));
+
+		model->m_BoundingSphere = modelData.m_BoundingSphere;
+		model->m_BoundingBox = modelData.m_BoundingBox;
+		model->mNumAnimations = (uint32_t)modelData.m_Animations.size();
+
+		if (modelData.m_Animations.size() > 0)
+		{
+			ASSERT(modelData.m_AnimationKeyFrameData.size() > 0 && modelData.m_AnimationCurves.size() > 0);
+			model->mKeyFrameData.reset(new uint8_t[modelData.m_AnimationKeyFrameData.size()]);
+			for (uint32_t i = 0; i < modelData.m_AnimationKeyFrameData.size(); ++i)
+				model->mKeyFrameData[i] = modelData.m_AnimationKeyFrameData[i];
+			model->mCurveData.reset(new AnimationCurve[modelData.m_AnimationCurves.size()]);
+			for (uint32_t i = 0; i < modelData.m_AnimationCurves.size(); ++i)
+				model->mCurveData[i] = modelData.m_AnimationCurves[i];
+			model->mAnimations.reset(new AnimationSet[modelData.m_Animations.size()]);
+			for (uint32_t i = 0; i < modelData.m_Animations.size(); ++i)
+				model->mAnimations[i] = modelData.m_Animations[i];
+		}
+
+		model->mNumJoints = (uint32_t)modelData.m_JointIndices.size();
+
+		if (modelData.m_JointIndices.size() > 0)
+		{
+			model->mJointIndices.reset(new uint16_t[modelData.m_JointIndices.size()]);
+			for (uint32_t i = 0; i < modelData.m_JointIndices.size(); ++i)
+				model->mJointIndices[i] = modelData.m_JointIndices[i];
+			model->mJointIBMs.reset(new Matrix4x4[modelData.m_JointIBMs.size()]);
+			for (uint32_t i = 0; i < modelData.m_JointIBMs.size(); ++i)
+				model->mJointIBMs[i] = modelData.m_JointIBMs[i];
+		}
+
+		sModelDataCache[UTF8ToWString(filePath)] = model;
+		return model;
 	}
 }

@@ -108,4 +108,8 @@ namespace AtomEngine
 		};
 		return result;
 	}
+	float ToFloat(const int8_t x) { return std::max(x / 127.0f, -1.0f); }
+	float ToFloat(const uint8_t x) { return x / 255.0f; }
+	float ToFloat(const int16_t x) { return std::max(x / 32767.0f, -1.0f); }
+	float ToFloat(const uint16_t x) { return x / 65535.0f; }
 }

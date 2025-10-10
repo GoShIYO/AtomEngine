@@ -34,7 +34,7 @@ namespace AtomEngine
 			transition = w;
 		}
 
-		Matrix4x4 GetMatrix()
+		const Matrix4x4& GetMatrix()
 		{
 			matrix.MakeAffine(scale, rotation, transition);
 			return matrix;

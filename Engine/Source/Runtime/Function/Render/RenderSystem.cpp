@@ -207,7 +207,7 @@ namespace AtomEngine
 
 		//test
 		{
-			test = AssetManager::LoadTextureFile(L"Asset/textures/uvChecker.png");
+			test = AssetManager::LoadCovertTexture(L"Asset/textures/uvChecker.png");
 			gpuHandle = gTextureHeap.Alloc();
 
 			DX12Core::gDevice->CopyDescriptorsSimple(

@@ -186,6 +186,12 @@ namespace AtomEngine
 
 		static Vector3 Select(const Vector3& a, const Vector3& b, bool control);
 
+		static float Distance(const Vector3& a, const Vector3& b);
+
+		static Vector3 Transfrom(const Vector3& v, const Matrix4x4& mat);
+
+		static Vector3 TransformNormal(const Vector3& v, const Matrix4x4& mat);
+
 		static Matrix4x4
 			MakeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflectMatrix = nullptr);
 
@@ -216,6 +222,18 @@ namespace AtomEngine
 		static constexpr float rad2Deg = 180.0f / PI;
 		static constexpr float Epsilon = 1e-6f;
 	};
+
+	float ToFloat(const int8_t x);
+	float ToFloat(const uint8_t x);
+	float ToFloat(const int16_t x);
+	float ToFloat(const uint16_t x);
+
+	inline void Lerp3(float* Dest, const float* Key1, const float* Key2, float T)
+	{
+		Dest[0] = Math::Lerp(Key1[0], Key2[0], T);
+		Dest[1] = Math::Lerp(Key1[1], Key2[1], T);
+		Dest[2] = Math::Lerp(Key1[2], Key2[2], T);
+	}
 
 	inline Radian::Radian(const Degree& d) : rad(d.GetRadians()) {}
 	inline Radian& Radian::operator=(const Degree& d)

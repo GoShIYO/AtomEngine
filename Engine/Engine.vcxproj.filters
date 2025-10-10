@@ -169,9 +169,6 @@
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.h">
       <Filter>Engine\Runtime\Platform\DirectX12\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ConstantBuffers.h">
-      <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h">
       <Filter>Engine\Runtime\Platform\DirectX12\Buffer</Filter>
     </ClInclude>
@@ -260,8 +257,8 @@
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ConstantBufferStructures.h" />
-    <ClInclude Include="Source\Runtime\Resource\ModelManager.h" />
     <ClInclude Include="Source\Runtime\Resource\AssetManager.h" />
+    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -483,8 +480,8 @@
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp">
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\ModelManager.cpp" />
     <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">

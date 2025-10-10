@@ -3,10 +3,11 @@
 
 namespace AtomEngine
 {
-	enum
+	enum TextureType
 	{
 		kBaseColor,
-		kMetallicRoughness,
+		kMetallic,
+		kRoughness,
 		kOcclusion,
 		kEmissive,
 		kNormal,
