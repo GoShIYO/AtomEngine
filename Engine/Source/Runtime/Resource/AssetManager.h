@@ -1,10 +1,10 @@
 #pragma once
 #include "TextureRef.h"
+#include "Model.h"
 #include <string>
 
 namespace AtomEngine
 {
-	class Model;
 	class AssetManager
 	{
 	public:

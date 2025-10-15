@@ -1,7 +1,7 @@
 #pragma once
 #include "Mesh.h"
 #include "Animation.h"
-#include "AssetManager.h"
+#include "TextureRef.h"
 
 #include "../Platform/DirectX12/Buffer/GpuBuffer.h"
 #include "../Platform/DirectX12/Buffer/UploadBuffer.h"
@@ -27,7 +27,9 @@ namespace AtomEngine
 	// 描画するグラフノート
 	struct GraphNode
 	{
-		Transform transform;
+		Matrix4x4 xform;
+		Quaternion rotation;
+		Vector3 scale;
 
 		uint32_t matrixIndex : 28;	// 変換行列要素のインデックス
 		uint32_t hasSibling : 1;	// 同級ノードがあるかどうか

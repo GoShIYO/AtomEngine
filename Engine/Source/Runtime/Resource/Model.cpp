@@ -1,4 +1,6 @@
 #include "Model.h"
+#include "AssetManager.h"
+
 #include "Runtime/Function/Render/RenderQueue.h"
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 
@@ -157,16 +159,16 @@ namespace AtomEngine
 				{
 				case AnimationCurve::kTranslation:
 					ASSERT(curve.keyFrameFormat == AnimationCurve::kFloat);
-					Lerp3((float*)&node.transform.transition, (const float*)key1, (const float*)key2, lerpT);
+					Lerp3((float*)&node.xform + 12, (const float*)key1, (const float*)key2, lerpT);
 					break;
 				case AnimationCurve::kRotation:
 					node.staleMatrix = true;
-					Slerp(node.transform.rotation, key1, key2, lerpT, curve.keyFrameFormat);
+					Slerp(node.rotation, key1, key2, lerpT, curve.keyFrameFormat);
 					break;
 				case AnimationCurve::kScale:
 					ASSERT(curve.keyFrameFormat == AnimationCurve::kFloat);
 					node.staleMatrix = true;
-					Lerp3((float*)&node.transform.scale, (const float*)key1, (const float*)key2, lerpT);
+					Lerp3((float*)&node.scale, (const float*)key1, (const float*)key2, lerpT);
 					break;
 				default:
 				case AnimationCurve::kWeights:
@@ -313,7 +315,7 @@ namespace AtomEngine
 				if (node.staleMatrix)
 				{
 					node.staleMatrix = false;
-					node.transform.matrix = (Matrix4x4(node.transform.rotation) * Matrix4x4::MakeScale(node.transform.scale));
+					node.xform.SetMatrix3x3(Matrix3x3::MakeScale(node.scale) * Matrix3x3(node.rotation));
 				}
 			}
 		}
@@ -324,9 +326,10 @@ namespace AtomEngine
 		// ノードがメモリに格納される順序
 		for (const GraphNode* Node = sceneGraph; ; ++Node)
 		{
-			Matrix4x4 xform = Node->transform.matrix;
+			Matrix4x4 xform = Node->xform;
 			if (!Node->skeletonRoot)
-				xform = ParentMatrix * xform;
+				//左手？
+				xform = xform * ParentMatrix;
 
 			// // 変換を親の行列と連結し、行列リストを更新します
 			{

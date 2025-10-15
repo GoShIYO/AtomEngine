@@ -8,6 +8,7 @@
 #include "Runtime/Function/Camera/CameraBase.h"
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 #include "Runtime/Function/Render/RenderQueue.h"
+#include "Runtime/Resource/AssetManager.h"
 
 #include "Runtime/Resource/Model.h"
 #include "Runtime/Core/Utility/Utility.h"
@@ -232,12 +233,15 @@ namespace AtomEngine
 				test.GetSRV(),
 				D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
 			);
+
 		}
 
 	}
 
 	void RenderSystem::Update(float deltaTime)
 	{
+
+
 		if (/*SSAOFullScreenID == g_SSAOFullScreen.GetVersionID() &&*/
 			ShadowBufferID == gShadowBuffer.GetVersionID())
 		{

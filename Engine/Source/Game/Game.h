@@ -1,5 +1,6 @@
 #pragma once
 #include "Runtime/Application/GameApp.h"
+#include "Runtime/Resource/AssetManager.h"
 
 using namespace AtomEngine;
 class Game :
@@ -23,6 +24,12 @@ private:
 	Matrix4x4 m_ViewProjMatrix;
 	D3D12_VIEWPORT m_MainViewport;
 	D3D12_RECT m_MainScissor;
+
+	ModelInstance m_Model;
+
+	float	g_SunLightIntensity = 4.0f;
+	float g_SunOrientation = -0.5f;
+	float g_SunInclination = 0.75f;
 
 	float m_radius = 5.0f;
 	float m_xRotate = 0.0f;

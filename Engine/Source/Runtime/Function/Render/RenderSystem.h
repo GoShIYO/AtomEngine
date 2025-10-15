@@ -30,9 +30,9 @@ namespace AtomEngine
 
 		static void Shutdown();
 
-		static DescriptorHeap GetTextureHeap() { return gTextureHeap; }
-		static DescriptorHeap GetSamplerHeap() { return gSamplerHeap; }
-        static DescriptorHandle GetCommonTextures() { return gCommonTextures; }
+		static DescriptorHeap& GetTextureHeap() { return gTextureHeap; }
+		static DescriptorHeap& GetSamplerHeap() { return gSamplerHeap; }
+        static DescriptorHandle& GetCommonTextures() { return gCommonTextures; }
 
 		static const RootSignature& GetRootSignature() { return gRootSig; }
 

@@ -48,29 +48,33 @@ namespace AtomEngine
 	public:
 		OrientedBox() {}
 
+		OrientedBox(const Matrix3x3& basis, const Vector3& translation) : 
+			m_basis(basis), m_translation(translation) {}
 		OrientedBox(const AxisAlignedBox& box)
 		{
-			m_matrix = (Matrix4x4::MakeScale(box.GetMax() - box.GetMin()));
-			m_repr.transition = box.GetMin();
+			m_basis = (Matrix3x3::MakeScale(box.GetMax() - box.GetMin()));
+			m_translation = box.GetMin();
 		}
 
-		//friend OrientedBox operator* (const Transform& xform, const OrientedBox& obb)
-		//{
+		friend OrientedBox operator* (const Transform& xform, const OrientedBox& obb)
+		{
+			Matrix3x3 m = xform.GetMatrix3x3();
+			Matrix3x3 mat3 = m * obb.m_basis;
+			Vector3 translation = Math::TransformNormal(obb.m_translation, Matrix4x4(m)) + xform.transition;
+			return OrientedBox(mat3, translation);
+		}
 
-		//	return (OrientedBox&)(xform * obb.m_repr);
-		//}
-
-		Vector3 GetDimensions() const { return m_matrix.GetX() + m_matrix.GetY() + m_matrix.GetZ(); }
-		Vector3 GetCenter() const { return m_repr.transition + GetDimensions() * 0.5f; }
+		Vector3 GetDimensions() const { return m_basis.GetX() + m_basis.GetY() + m_basis.GetZ(); }
+		Vector3 GetCenter() const { return m_translation + GetDimensions() * 0.5f; }
 
 	private:
-		Transform m_repr;
-		Matrix4x4 m_matrix;
+		Matrix3x3 m_basis;
+		Vector3 m_translation;
 	};
 
-	//inline OrientedBox operator* (const Transform& xform, const AxisAlignedBox& aabb)
-	//{
-	//	return xform * OrientedBox(aabb);
-	//}
+	inline OrientedBox operator* (const Transform& xform, const AxisAlignedBox& aabb)
+	{
+		return xform * OrientedBox(aabb);
+	}
 }
 
