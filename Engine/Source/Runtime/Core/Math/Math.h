@@ -192,6 +192,8 @@ namespace AtomEngine
 
 		static Vector3 TransformNormal(const Vector3& v, const Matrix4x4& mat);
 
+		static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
+
 		static Matrix4x4
 			MakeViewMatrix(const Vector3& position, const Quaternion& orientation, const Matrix4x4* reflectMatrix = nullptr);
 
@@ -209,6 +211,15 @@ namespace AtomEngine
 			return lhs + alpha * (rhs - lhs);
 		}
 
+		template <typename T> __forceinline static T AlignUpWithMask(T value, size_t mask)
+		{
+			return (T)(((size_t)value + mask) & ~mask);
+		}
+
+		template <typename T> __forceinline static T AlignUp(T value, size_t alignment)
+		{
+			return AlignUpWithMask(value, alignment - 1);
+		}
 
 	public:
 		static constexpr float Infinity = std::numeric_limits<float>::infinity();

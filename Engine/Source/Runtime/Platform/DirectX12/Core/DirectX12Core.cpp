@@ -39,7 +39,7 @@ namespace AtomEngine
 		bool gbTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
 
 
-		constexpr uint32_t kSwapChainBufferCount = 3;
+		constexpr uint32_t kSwapChainBufferCount = 2;
 
 		uint32_t gNativeWidth = 0;
 		uint32_t gNativeHeight = 0;
@@ -463,33 +463,17 @@ namespace AtomEngine
 
 			gCommandManager.IdleGPU();
 		}
+
 		void Present()
 		{
-			MainViewport.Width = (float)gSceneColorBuffer.GetWidth();
-			MainViewport.Height = (float)gSceneColorBuffer.GetHeight();
-			MainViewport.MinDepth = 0.0f;
-			MainViewport.MaxDepth = 1.0f;
-
-			MainScissor.left = 0;
-			MainScissor.top = 0;
-			MainScissor.right = (LONG)gSceneColorBuffer.GetWidth();
-			MainScissor.bottom = (LONG)gSceneColorBuffer.GetHeight();
 
 			GraphicsContext& Context = GraphicsContext::Begin(L"Present");
-
-			Context.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-			Context.ClearColor(gSceneColorBuffer);
-
-			Context.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV_DepthReadOnly());
-			Context.SetViewportAndScissor(MainViewport, MainScissor);
 
 			Context.SetRootSignature(sPresentRS);
 			Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-			// バッファを読み取ってスワップチェーンバッファに書き込み
 			Context.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
 				D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-
 			Context.SetDynamicDescriptor(0, 0, gSceneColorBuffer.GetSRV());
 
 			bool NeedsScaling = gNativeWidth != gBackBufferWidth || gNativeHeight != gBackBufferHeight;
@@ -503,18 +487,19 @@ namespace AtomEngine
 				Context.SetPipelineState(PresentPS);
 				Context.TransitionResource(gFrameBuffers[gCurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
 				Context.SetRenderTarget(gFrameBuffers[gCurrentBuffer].GetRTV());
+				Context.ClearColor(gFrameBuffers[gCurrentBuffer]);
 				Context.SetViewportAndScissor(0, 0, gNativeWidth, gNativeHeight);
+				Context.Draw(3);
 			}
-			Context.Draw(3);
 
-			auto textureHeap = RenderSystem::GetTextureHeap();
+			auto& textureHeap = RenderSystem::GetTextureHeap();
 			//ImGui Present
 			{
 				ImGui::Render();
 				Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, textureHeap.GetHeapPointer());
 				ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), Context.GetCommandList());
 			}
-
+			
 			Context.TransitionResource(gFrameBuffers[gCurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
 			Context.Finish();
 

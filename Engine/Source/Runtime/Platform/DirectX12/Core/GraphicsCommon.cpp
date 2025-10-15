@@ -109,6 +109,21 @@ namespace AtomEngine
         SamplerPointBorderDesc.SetBorderColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
         SamplerPointBorder = SamplerPointBorderDesc.CreateDescriptor();
 
+        uint32_t MagentaPixel = 0xFFFF00FF;
+        DefaultTextures[kMagenta2D].Create2D(4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &MagentaPixel);
+        uint32_t BlackOpaqueTexel = 0xFF000000;
+        DefaultTextures[kBlackOpaque2D].Create2D(4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &BlackOpaqueTexel);
+        uint32_t BlackTransparentTexel = 0x00000000;
+        DefaultTextures[kBlackTransparent2D].Create2D(4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &BlackTransparentTexel);
+        uint32_t WhiteOpaqueTexel = 0xFFFFFFFF;
+        DefaultTextures[kWhiteOpaque2D].Create2D(4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &WhiteOpaqueTexel);
+        uint32_t WhiteTransparentTexel = 0x00FFFFFF;
+        DefaultTextures[kWhiteTransparent2D].Create2D(4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &WhiteTransparentTexel);
+        uint32_t FlatNormalTexel = 0x00FF8080;
+        DefaultTextures[kDefaultNormalMap].Create2D(4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, &FlatNormalTexel);
+        uint32_t BlackCubeTexels[6] = {};
+        DefaultTextures[kBlackCubeMap].CreateCube(4, 1, 1, DXGI_FORMAT_R8G8B8A8_UNORM, BlackCubeTexels);
+
         // Default rasterizer states
         RasterizerDefault.FillMode = D3D12_FILL_MODE_SOLID;
         RasterizerDefault.CullMode = D3D12_CULL_MODE_BACK;
@@ -232,6 +247,9 @@ namespace AtomEngine
 
 	void DestroyCommonState(void)
 	{
+        for (uint32_t i = 0; i < kNumDefaultTextures; ++i)
+            DefaultTextures[i].Destroy();
+
         DispatchIndirectCommandSignature.Destroy();
         DrawIndirectCommandSignature.Destroy();
 	}

@@ -11,7 +11,8 @@
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
 
-namespace AtomEngine
+using namespace AtomEngine;
+namespace Engine
 {
 	AtomEngine::AtomEngine()
 	{
@@ -31,6 +32,7 @@ namespace AtomEngine
 			const float deltaTime = CalculateDeltaTime();
 			Tick(app,deltaTime);
 		}
+		DX12Core::gCommandManager.IdleGPU();
 		app.Shutdown();
 
 		mIsQuit = true;
@@ -49,6 +51,8 @@ namespace AtomEngine
 	void AtomEngine::LogicalTick(float deltaTime)
 	{
 		gContext.input->Update();
+
+		RenderSystem::Update(deltaTime);
 	}
 
 	void AtomEngine::RenderTick(GameApp& app,float deltaTime)

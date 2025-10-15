@@ -24,7 +24,7 @@ namespace AtomEngine
 
 		static void Initialize();
 
-		static void Update();
+		static void Update(float deltaTime);
 
 		static void Render(float deltaTime);
 

@@ -16,6 +16,7 @@ namespace AtomEngine
         ResourceDesc.SampleDesc.Count = Samples;
 
         D3D12_CLEAR_VALUE ClearValue = {};
+        ClearValue.DepthStencil.Depth = 1.0f;
         ClearValue.Format = Format;
         CreateTextureResource(gDevice.Get(), Name, ResourceDesc, ClearValue, VidMemPtr);
         CreateDerivedViews(gDevice.Get(), Format);

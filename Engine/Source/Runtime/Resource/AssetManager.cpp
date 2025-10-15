@@ -138,13 +138,12 @@ namespace AtomEngine
 			uint32_t SRVDescriptorTable = textureHeap.GetOffsetOfHandle(TextureHandles);
 
 			uint32_t DestCount = kNumTextures;
-			uint32_t SourceCounts[kNumTextures] = { 1, 1, 1, 1, 1,1 };
+			uint32_t SourceCounts[kNumTextures] = { 1, 1, 1, 1, 1 };
 
 			D3D12_CPU_DESCRIPTOR_HANDLE DefaultTextures[kNumTextures] =
 			{
 				GetDefaultTexture(kWhiteOpaque2D),			//baseColor
-				GetDefaultTexture(kWhiteOpaque2D),			//matallic
-				GetDefaultTexture(kWhiteOpaque2D),			//roughness
+				GetDefaultTexture(kWhiteOpaque2D),			//matallicRoughness
 				GetDefaultTexture(kWhiteOpaque2D),			//occlusion
 				GetDefaultTexture(kBlackTransparent2D),		//emissive
 				GetDefaultTexture(kDefaultNormalMap)		//kNormalMap
@@ -199,7 +198,7 @@ namespace AtomEngine
 			mesh.srvTable = offsetPair & 0xFFFF;
 			mesh.samplerTable = offsetPair >> 16;
 			mesh.pso = RenderSystem::GetPSO(mesh.psoFlags);
-			meshPtr += sizeof(Mesh) + (mesh.numDraws - 1) * sizeof(DrawCall);
+			meshPtr += sizeof(Mesh) + (mesh.numDraws - 1) * sizeof(Mesh::Draw);
 		}
 	}
 
@@ -210,7 +209,7 @@ namespace AtomEngine
 
 	std::shared_ptr<Model> AssetManager::LoadModel(const std::string& filePath)
 	{
-		std::lock_guard<std::mutex> guard(sMutex);
+		//std::lock_guard<std::mutex> guard(sMutex);
 
 		auto it = sModelDataCache.find(UTF8ToWString(filePath));
 		if (it != sModelDataCache.end())
@@ -223,6 +222,23 @@ namespace AtomEngine
 		ModelData modelData;
 		ModelLoader::LoadModel(modelData, filePath);
 
+		model->mNumNodes = (uint32_t)modelData.m_SceneGraph.size();
+		model->mSceneGraph.reset(new GraphNode[modelData.m_SceneGraph.size()]);
+
+		uint32_t meshDataSize = 0;
+		for (const auto& mesh : modelData.m_Meshes)
+			meshDataSize += (uint32_t)sizeof(Mesh) + (mesh->numDraws - 1) * (uint32_t)sizeof(Mesh::Draw);
+		model->mNumMeshes = (uint32_t)modelData.m_Meshes.size();
+		model->mMeshData.reset(new uint8_t[meshDataSize]);
+
+		uint8_t* meshDst = model->mMeshData.get();
+		for (const auto& mesh : modelData.m_Meshes)
+		{
+			size_t meshSize = sizeof(Mesh) + (mesh->numDraws - 1) * sizeof(Mesh::Draw);
+			memcpy(meshDst, mesh.get(), meshSize);
+			meshDst += meshSize;
+		}
+
 		if (modelData.m_GeometryData.size() > 0)
 		{
 			UploadBuffer modelUploadBuffer;
@@ -231,6 +247,9 @@ namespace AtomEngine
 			modelUploadBuffer.Unmap();
 			model->mDataBuffer.Create(L"Model Data", (uint32_t)modelData.m_GeometryData.size(), 1, modelUploadBuffer);
 		}
+
+		memcpy(model->mSceneGraph.get(), modelData.m_SceneGraph.data(), modelData.m_SceneGraph.size() * sizeof(GraphNode));
+
 
 		auto numMaterials = modelData.m_MaterialConstants.size();
 		auto numTextures = modelData.m_TextureNames.size();
@@ -242,7 +261,17 @@ namespace AtomEngine
 			auto materialCBV = (MaterialConstants*)materialConstants.Map();
 			for (uint32_t i = 0; i < numMaterials; ++i)
 			{
-				memcpy(&materialCBV[i], &modelData.m_MaterialConstants[i], sizeof(MaterialConstantData));
+				MaterialConstants materialCB;
+
+				const MaterialConstantData& src = modelData.m_MaterialConstants[i];
+				memcpy(materialCB.baseColorFactor, src.baseColorFactor, 4 * sizeof(float));
+				memcpy(materialCB.emissiveFactor, src.emissiveFactor, 3 * sizeof(float));
+				materialCB.emissiveFactor[3] = 1.0f;
+				materialCB.metallicFactor = src.metallicFactor;
+				materialCB.roughnessFactor = src.roughnessFactor;
+				materialCB.flags = src.flags;
+
+				memcpy(&materialCBV[i], &materialCB, sizeof(MaterialConstants));
 			}
 			materialConstants.Unmap();
 			model->mMaterialConstants.Create(L"Material Constants", (uint32_t)numMaterials, sizeof(MaterialConstants), materialConstants);
@@ -272,16 +301,17 @@ namespace AtomEngine
 
 		if (modelData.m_Animations.size() > 0)
 		{
+
 			ASSERT(modelData.m_AnimationKeyFrameData.size() > 0 && modelData.m_AnimationCurves.size() > 0);
 			model->mKeyFrameData.reset(new uint8_t[modelData.m_AnimationKeyFrameData.size()]);
-			for (uint32_t i = 0; i < modelData.m_AnimationKeyFrameData.size(); ++i)
-				model->mKeyFrameData[i] = modelData.m_AnimationKeyFrameData[i];
+			memcpy(model->mKeyFrameData.get(), modelData.m_AnimationKeyFrameData.data(), modelData.m_AnimationKeyFrameData.size() * sizeof(uint8_t));
+
 			model->mCurveData.reset(new AnimationCurve[modelData.m_AnimationCurves.size()]);
-			for (uint32_t i = 0; i < modelData.m_AnimationCurves.size(); ++i)
-				model->mCurveData[i] = modelData.m_AnimationCurves[i];
+			memcpy(model->mCurveData.get(), modelData.m_AnimationCurves.data(), modelData.m_AnimationCurves.size() * sizeof(AnimationCurve));
+
 			model->mAnimations.reset(new AnimationSet[modelData.m_Animations.size()]);
-			for (uint32_t i = 0; i < modelData.m_Animations.size(); ++i)
-				model->mAnimations[i] = modelData.m_Animations[i];
+			memcpy(model->mAnimations.get(), modelData.m_Animations.data(), modelData.m_Animations.size() * sizeof(AnimationSet));
+
 		}
 
 		model->mNumJoints = (uint32_t)modelData.m_JointIndices.size();

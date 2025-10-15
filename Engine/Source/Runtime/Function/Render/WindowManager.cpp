@@ -120,15 +120,14 @@ namespace AtomEngine
 			init_info.RTVFormat = DX12Core::gBackBufferFormat;
 			init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
 
-
 			init_info.SrvDescriptorHeap = RenderSystem::GetTextureHeap().GetHeapPointer();
 			init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle)
 				{
-					auto textureHeap = RenderSystem::GetTextureHeap();
+					auto& textureHeap = RenderSystem::GetTextureHeap();
 					DescriptorHandle handle = textureHeap.Alloc();
 
-					*out_cpu_handle = handle;
-					*out_gpu_handle = handle;
+					*out_cpu_handle = D3D12_CPU_DESCRIPTOR_HANDLE(handle);
+					*out_gpu_handle = D3D12_GPU_DESCRIPTOR_HANDLE(handle);
 				};
 			init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) {};
 			ImGui_ImplDX12_Init(&init_info);
@@ -178,7 +177,7 @@ namespace AtomEngine
 			mResized = true;
 
 			if (wParam == SIZE_MINIMIZED)
-		{
+			{
 				mAppPaused = true;
 				mMinimized = true;
 				mMaximized = false;
@@ -207,13 +206,13 @@ namespace AtomEngine
 				else if (mResizing)
 				{
 
-		}
+				}
 				else
 				{
 					OnResize(mWindowWidth, mWindowHeight);
 				}
 			}
-		return 0;
+			return 0;
 
 		case WM_ENTERSIZEMOVE:
 			mAppPaused = true;

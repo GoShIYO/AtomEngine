@@ -3,7 +3,7 @@
 
 class GameApp;
 
-namespace AtomEngine
+namespace Engine
 {
 	class AtomEngine
 	{

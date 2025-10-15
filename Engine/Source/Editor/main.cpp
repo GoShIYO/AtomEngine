@@ -9,7 +9,7 @@ int WINAPI WinMain(
 	_In_ int nShowCmd)
 {
 
-	AtomEngine::AtomEngine engine;
+	Engine::AtomEngine engine;
 
 	Game game;
 

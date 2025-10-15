@@ -43,29 +43,19 @@ namespace AtomEngine
         std::vector<GraphNode> m_SceneGraph;
         std::vector<std::string> m_TextureNames;
         std::vector<uint8_t> m_TextureOptions;
-
-        ByteAddressBuffer m_GeometryBuffer;
-        D3D12_VERTEX_BUFFER_VIEW m_VertexBuffer;
-        D3D12_INDEX_BUFFER_VIEW m_IndexBuffer;
-        D3D12_VERTEX_BUFFER_VIEW m_VertexBufferDepth;
-        D3D12_INDEX_BUFFER_VIEW m_IndexBufferDepth;
     };
-
-	class ModelLoader
-	{
-	public:
-
-        static bool LoadModel(ModelData& model,const std::string& filePath);
     
-    private:
-        static void ProcessNode(ModelData& model, aiNode* node, const aiScene* scene, const Matrix4x4& parentTransform);
-        static std::unique_ptr<Mesh> ProcessMesh(ModelData& model, aiMesh* mesh, const aiScene* scene);
-        static void ProcessMaterial(ModelData& model, aiMaterial* mat);
-        static void ProcessAnimations(ModelData& model, const aiScene* scene);
-        static void ComputeBoundingVolumes(ModelData& model, const aiScene* scene);
+    class ModelLoader
+    {
+    public:
 
-        static void BuildGeometryData(ModelData& model, const aiScene* scene);
-        static void CreateVertexData(aiMesh* srcMesh, std::vector<uint8_t>& vertexData, uint32_t& vertexStride);
-        static void CreateIndexData(aiMesh* srcMesh, std::vector<uint16_t>& indexData);
-	};
+        static bool LoadModel(ModelData& model, const std::string& filePath);
+
+    private:
+        static uint32_t ProcessNode(ModelData& model, const aiScene* scene,const aiNode* node, uint32_t curPos, const Matrix4x4& parentTransform);
+        static void ProcessMaterial(ModelData& model, const aiScene* scene);
+        static void ProcessAnimations(ModelData& model, const aiScene* scene);
+        static void ProcessSkins(ModelData& model, const aiScene* scene);
+        static void CompileMesh(ModelData& model, const aiScene* scene,const Matrix4x4& localTransform, BoundingSphere& boundingSphere, AxisAlignedBox& aabb);
+    };
 }

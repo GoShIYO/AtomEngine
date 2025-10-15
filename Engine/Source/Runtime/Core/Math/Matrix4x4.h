@@ -7,7 +7,7 @@
 
 namespace AtomEngine
 {
-	class Matrix4x4
+	__declspec(align(16))class Matrix4x4
 	{
 	public:
 		float mat[4][4];
@@ -30,7 +30,12 @@ namespace AtomEngine
 			mat[3][0] = m.mat[3][0];
 			mat[3][1] = m.mat[3][1];
 			mat[3][2] = m.mat[3][2];
-			mat[3][3] = m.mat[3][3];
+			mat[3][3] = 1.0f;
+		}
+
+		Matrix4x4(const Matrix3x3& m)
+		{
+			SetMatrix3x3(m);
 		}
 
 		Matrix4x4() { operator=(IDENTITY); }
@@ -53,6 +58,26 @@ namespace AtomEngine
 			mat[3][1] = float_array[13];
 			mat[3][2] = float_array[14];
 			mat[3][3] = float_array[15];
+		}
+
+		Matrix4x4(const Vector3& x, const Vector3& y, const Vector3& z, const Vector3& w)
+		{
+			mat[0][0] = x.x;
+			mat[0][1] = x.y;
+			mat[0][2] = x.z;
+			mat[0][3] = 0.0f;
+			mat[1][0] = y.x;
+			mat[1][1] = y.y;
+			mat[1][2] = y.z;
+			mat[1][3] = 0.0f;
+			mat[2][0] = z.x;
+			mat[2][1] = z.y;
+			mat[2][2] = z.z;
+			mat[2][3] = 0.0f;
+			mat[3][0] = w.x;
+			mat[3][1] = w.y;
+			mat[3][2] = w.z;
+			mat[3][3] = 1.0f;
 		}
 
 		Matrix4x4(float m00,
@@ -112,7 +137,7 @@ namespace AtomEngine
 
 		Matrix4x4(float* float_array)
 		{
-            mat[0][0] = float_array[0];
+			mat[0][0] = float_array[0];
 			mat[0][1] = float_array[1];
 			mat[0][2] = float_array[2];
 			mat[0][3] = float_array[3];
@@ -137,10 +162,28 @@ namespace AtomEngine
 
 		Matrix4x4(const Vector3& x, const Vector3& y, const Vector3& z)
 		{
-            SetMatrix3x3(Matrix3x3(x, y, z));
+			mat[0][0] = x.x;
+			mat[0][1] = x.y;
+			mat[0][2] = x.z;
+			mat[0][3] = 0.0f;
+
+			mat[1][0] = y.x;
+			mat[1][1] = y.y;
+			mat[1][2] = y.z;
+			mat[1][3] = 0.0f;
+
+			mat[2][0] = z.x;
+			mat[2][1] = z.y;
+			mat[2][2] = z.z;
+			mat[2][3] = 0.0f;
+
+			mat[3][0] = 0.0f;
+			mat[3][1] = 0.0f;
+			mat[3][2] = 0.0f;
+			mat[3][3] = 1.0f;
 		}
 
-		Matrix4x4(const Matrix3x3& xyz,const Vector3& w)
+		Matrix4x4(const Matrix3x3& xyz, const Vector3& w)
 		{
 			mat[0][0] = xyz.mat[0][0];
 			mat[0][1] = xyz.mat[0][1];
@@ -445,12 +488,21 @@ namespace AtomEngine
 			mat[3][2] = v.z;
 		}
 
-		Vector3 GetTrans() const { return Vector3(mat[0][3], mat[1][3], mat[2][3]); }
+		Vector3 GetTrans() const { return Vector3(mat[3][0], mat[3][1], mat[3][2]); }
 
 		Quaternion GetRotation() const
 		{
 			Matrix3x3 mat3(*this);
 			return mat3.GetRotation();
+		}
+
+		Vector3 GetScale() const
+		{
+			Vector3 result;
+			result.x = mat[0][0];
+			result.y = mat[1][1];
+			result.z = mat[2][2];
+			return result;
 		}
 
 		Matrix4x4 MakeViewportMatrix(uint32_t width, uint32_t height)
@@ -806,6 +858,16 @@ namespace AtomEngine
 				v.w);
 		}
 
+		friend Vector3 operator*(const Vector3& v, const Matrix4x4& m)
+		{
+			assert(m.IsAffine());
+			return Vector3(
+				m.mat[0][0] * v.x + m.mat[0][1] * v.y + m.mat[0][2] * v.z + m.mat[0][3],
+				m.mat[1][0] * v.x + m.mat[1][1] * v.y + m.mat[1][2] * v.z + m.mat[1][3],
+				m.mat[2][0] * v.x + m.mat[2][1] * v.y + m.mat[2][2] * v.z + m.mat[2][3]
+			);
+		}
+
 		Matrix4x4 Inverse() const
 		{
 			float m00 = mat[0][0], m01 = mat[0][1], m02 = mat[0][2], m03 = mat[0][3];
@@ -873,9 +935,9 @@ namespace AtomEngine
 		{
 			Matrix4x4 m = Matrix4x4::IDENTITY;
 			m.mat[0][0] = scale.x;
-            m.mat[1][1] = scale.y;
-            m.mat[2][2] = scale.z;
-            return m;
+			m.mat[1][1] = scale.y;
+			m.mat[2][2] = scale.z;
+			return m;
 		}
 
 		Vector3 TransformCoord(const Vector3& v)const
@@ -905,13 +967,37 @@ namespace AtomEngine
 	inline Vector3 Math::Transfrom(const Vector3& v, const Matrix4x4& mat)
 	{
 		Vector4 temp(v, 1.0f);
-        return Vector3(temp * mat);
+		return Vector3(temp * mat);
 	}
-	
+
 	inline Vector3 Math::TransformNormal(const Vector3& v, const Matrix4x4& mat)
 	{
 		Vector4 temp(v, 0.0f);
-        return Vector3(temp * mat).NormalizedCopy();
+		return Vector3(temp * mat).NormalizedCopy();
+	}
+	inline Matrix4x4 Math::Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
+	{
+		Matrix4x4 result;
+		result.mat[0][0] = m1.mat[0][0] * m2.mat[0][0] + m1.mat[0][1] * m2.mat[1][0] + m1.mat[0][2] * m2.mat[2][0] + m1.mat[0][3] * m2.mat[3][0];
+		result.mat[0][1] = m1.mat[0][0] * m2.mat[0][1] + m1.mat[0][1] * m2.mat[1][1] + m1.mat[0][2] * m2.mat[2][1] + m1.mat[0][3] * m2.mat[3][1];
+		result.mat[0][2] = m1.mat[0][0] * m2.mat[0][2] + m1.mat[0][1] * m2.mat[1][2] + m1.mat[0][2] * m2.mat[2][2] + m1.mat[0][3] * m2.mat[3][2];
+		result.mat[0][3] = m1.mat[0][0] * m2.mat[0][3] + m1.mat[0][1] * m2.mat[1][3] + m1.mat[0][2] * m2.mat[2][3] + m1.mat[0][3] * m2.mat[3][3];
+						   								   							   				  				 				
+		result.mat[1][0] = m1.mat[1][0] * m2.mat[0][0] + m1.mat[1][1] * m2.mat[1][0] + m1.mat[1][2] * m2.mat[2][0] + m1.mat[1][3] * m2.mat[3][0];
+		result.mat[1][1] = m1.mat[1][0] * m2.mat[0][1] + m1.mat[1][1] * m2.mat[1][1] + m1.mat[1][2] * m2.mat[2][1] + m1.mat[1][3] * m2.mat[3][1];
+		result.mat[1][2] = m1.mat[1][0] * m2.mat[0][2] + m1.mat[1][1] * m2.mat[1][2] + m1.mat[1][2] * m2.mat[2][2] + m1.mat[1][3] * m2.mat[3][2];
+		result.mat[1][3] = m1.mat[1][0] * m2.mat[0][3] + m1.mat[1][1] * m2.mat[1][3] + m1.mat[1][2] * m2.mat[2][3] + m1.mat[1][3] * m2.mat[3][3];
+						   								   							   				  				 				
+		result.mat[2][0] = m1.mat[2][0] * m2.mat[0][0] + m1.mat[2][1] * m2.mat[1][0] + m1.mat[2][2] * m2.mat[2][0] + m1.mat[2][3] * m2.mat[3][0];
+		result.mat[2][1] = m1.mat[2][0] * m2.mat[0][1] + m1.mat[2][1] * m2.mat[1][1] + m1.mat[2][2] * m2.mat[2][1] + m1.mat[2][3] * m2.mat[3][1];
+		result.mat[2][2] = m1.mat[2][0] * m2.mat[0][2] + m1.mat[2][1] * m2.mat[1][2] + m1.mat[2][2] * m2.mat[2][2] + m1.mat[2][3] * m2.mat[3][2];
+		result.mat[2][3] = m1.mat[2][0] * m2.mat[0][3] + m1.mat[2][1] * m2.mat[1][3] + m1.mat[2][2] * m2.mat[2][3] + m1.mat[2][3] * m2.mat[3][3];
+						   								   							   				  				 				
+		result.mat[3][0] = m1.mat[3][0] * m2.mat[0][0] + m1.mat[3][1] * m2.mat[1][0] + m1.mat[3][2] * m2.mat[2][0] + m1.mat[3][3] * m2.mat[3][0];
+		result.mat[3][1] = m1.mat[3][0] * m2.mat[0][1] + m1.mat[3][1] * m2.mat[1][1] + m1.mat[3][2] * m2.mat[2][1] + m1.mat[3][3] * m2.mat[3][1];
+		result.mat[3][2] = m1.mat[3][0] * m2.mat[0][2] + m1.mat[3][1] * m2.mat[1][2] + m1.mat[3][2] * m2.mat[2][2] + m1.mat[3][3] * m2.mat[3][2];
+		result.mat[3][3] = m1.mat[3][0] * m2.mat[0][3] + m1.mat[3][1] * m2.mat[1][3] + m1.mat[3][2] * m2.mat[2][3] + m1.mat[3][3] * m2.mat[3][3];
+		return result;
 	}
 };
 

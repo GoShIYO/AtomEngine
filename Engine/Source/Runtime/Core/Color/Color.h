@@ -7,7 +7,7 @@ namespace AtomEngine
 	/// <summary>
 	/// カラークラス(デフォルト色空間はLinearColorSpace)
 	/// </summary>
-	class Color
+	__declspec(align(16))class Color
 	{
 	public:
 		float r, g, b, a;

@@ -3,12 +3,12 @@
 
 namespace AtomEngine
 {
-	class CommandQueue
-	{
+    class CommandQueue
+    {
         friend class CommandListManager;
         friend class CommandContext;
-    public:
 
+    public:
         CommandQueue(D3D12_COMMAND_LIST_TYPE Type);
         ~CommandQueue();
 
@@ -17,7 +17,7 @@ namespace AtomEngine
 
         inline bool IsReady()
         {
-            return mCommandQueue != nullptr;
+            return m_CommandQueue != nullptr;
         }
 
         uint64_t IncrementFence(void);
@@ -27,9 +27,9 @@ namespace AtomEngine
         void WaitForFence(uint64_t FenceValue);
         void WaitForIdle(void) { WaitForFence(IncrementFence()); }
 
-        ID3D12CommandQueue* GetCommandQueue() { return mCommandQueue; }
+        ID3D12CommandQueue* GetCommandQueue() { return m_CommandQueue; }
 
-        uint64_t GetNextFenceValue() { return mNextFenceValue; }
+        uint64_t GetNextFenceValue() { return m_NextFenceValue; }
 
     private:
 
@@ -37,23 +37,24 @@ namespace AtomEngine
         ID3D12CommandAllocator* RequestAllocator(void);
         void DiscardAllocator(uint64_t FenceValueForReset, ID3D12CommandAllocator* Allocator);
 
-        ID3D12CommandQueue* mCommandQueue;
+        ID3D12CommandQueue* m_CommandQueue;
 
-        const D3D12_COMMAND_LIST_TYPE mType;
+        const D3D12_COMMAND_LIST_TYPE m_Type;
 
-        CommandAllocatorPool mAllocatorPool;
-        std::mutex mFenceMutex;
-        std::mutex mEventMutex;
+        CommandAllocatorPool m_AllocatorPool;
+        std::mutex m_FenceMutex;
+        std::mutex m_EventMutex;
 
-        //これらのオブジェクトの有効期間は記述子キャッシュによって管理されます
-        ID3D12Fence* mFence;
-        uint64_t mNextFenceValue;
-        uint64_t mLastCompletedFenceValue;
-        HANDLE mFenceEventHandle = nullptr;
+        // Lifetime of these objects is managed by the descriptor cache
+        ID3D12Fence* m_pFence;
+        uint64_t m_NextFenceValue;
+        uint64_t m_LastCompletedFenceValue;
+        HANDLE m_FenceEventHandle;
 
-	};
-	class CommandListManager
-	{
+    };
+
+    class CommandListManager
+    {
         friend class CommandContext;
 
     public:
@@ -63,23 +64,23 @@ namespace AtomEngine
         void Create(ID3D12Device* pDevice);
         void Shutdown();
 
-        CommandQueue& GetGraphicsQueue(void) { return mGraphicsQueue; }
-        CommandQueue& GetComputeQueue(void) { return mComputeQueue; }
-        CommandQueue& GetCopyQueue(void) { return mCopyQueue; }
+        CommandQueue& GetGraphicsQueue(void) { return m_GraphicsQueue; }
+        CommandQueue& GetComputeQueue(void) { return m_ComputeQueue; }
+        CommandQueue& GetCopyQueue(void) { return m_CopyQueue; }
 
         CommandQueue& GetQueue(D3D12_COMMAND_LIST_TYPE Type = D3D12_COMMAND_LIST_TYPE_DIRECT)
         {
             switch (Type)
             {
-            case D3D12_COMMAND_LIST_TYPE_COMPUTE: return mComputeQueue;
-            case D3D12_COMMAND_LIST_TYPE_COPY: return mCopyQueue;
-            default: return mGraphicsQueue;
+            case D3D12_COMMAND_LIST_TYPE_COMPUTE: return m_ComputeQueue;
+            case D3D12_COMMAND_LIST_TYPE_COPY: return m_CopyQueue;
+            default: return m_GraphicsQueue;
             }
         }
 
         ID3D12CommandQueue* GetCommandQueue()
         {
-            return mGraphicsQueue.GetCommandQueue();
+            return m_GraphicsQueue.GetCommandQueue();
         }
 
         void CreateNewCommandList(
@@ -87,31 +88,31 @@ namespace AtomEngine
             ID3D12GraphicsCommandList** List,
             ID3D12CommandAllocator** Allocator);
 
-        // フェンスにすでに到達しているかどうかを確認するテスト
+        // Test to see if a fence has already been reached
         bool IsFenceComplete(uint64_t FenceValue)
         {
             return GetQueue(D3D12_COMMAND_LIST_TYPE(FenceValue >> 56)).IsFenceComplete(FenceValue);
         }
 
-        // GPUが空になるまで待つ
+        // The CPU will wait for a fence to reach a specified value
         void WaitForFence(uint64_t FenceValue);
 
-        // CPUはすべてのコマンドキューが空になるまで待機します
+        // The CPU will wait for all command queues to empty (so that the GPU is idle)
         void IdleGPU(void)
         {
-            mGraphicsQueue.WaitForIdle();
-            mComputeQueue.WaitForIdle();
-            mCopyQueue.WaitForIdle();
+            m_GraphicsQueue.WaitForIdle();
+            m_ComputeQueue.WaitForIdle();
+            m_CopyQueue.WaitForIdle();
         }
 
     private:
 
-        ID3D12Device* mDevice;
+        ID3D12Device* m_Device;
 
-        CommandQueue mGraphicsQueue;
-        CommandQueue mComputeQueue;
-        CommandQueue mCopyQueue;
-	};
+        CommandQueue m_GraphicsQueue;
+        CommandQueue m_ComputeQueue;
+        CommandQueue m_CopyQueue;
+    };
 }
 
 

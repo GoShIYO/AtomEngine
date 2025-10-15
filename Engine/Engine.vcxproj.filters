@@ -94,9 +94,6 @@
     <ClInclude Include="External\imgui\ImZoomSlider.h">
       <Filter>External\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Resource\Material.h">
-      <Filter>Engine\Runtime\Resource</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Resource\Mesh.h">
       <Filter>Engine\Runtime\Resource</Filter>
     </ClInclude>
@@ -259,6 +256,9 @@
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ConstantBufferStructures.h" />
     <ClInclude Include="Source\Runtime\Resource\AssetManager.h" />
     <ClInclude Include="Source\Runtime\Resource\ModelLoader.h" />
+    <ClInclude Include="Source\Runtime\Function\Light\LightManager.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h" />
+    <ClInclude Include="Source\Runtime\Resource\Material.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -482,6 +482,7 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp" />
     <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -579,6 +580,33 @@
     <FxCompile Include="Asset\Shaders\SharpeningUpsamplePS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\Object3D.PS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Object3D.VS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\SkyboxPS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\SkyboxVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\testShader.hlsl" />
+    <FxCompile Include="Asset\Shaders\DepthOnlyVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\CutoutDepthPS.hlsl" />
+    <FxCompile Include="Asset\Shaders\CutoutDepthSkinVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\CutoutDepthVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoTangentNoUV1PS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoTangentNoUV1SkinVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoTangentNoUV1VS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoTangentPS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoTangentSkinVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoTangentVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoUV1PS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoUV1SkinVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DefaultNoUV1VS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DepthOnlySkinVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Unility.hlsli">
@@ -587,5 +615,7 @@
     <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl">
       <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
     </None>
+    <None Include="Asset\Shaders\Object3D.hlsli" />
+    <None Include="Asset\Shaders\Common.hlsli" />
   </ItemGroup>
 </Project>

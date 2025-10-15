@@ -119,11 +119,12 @@ namespace AtomEngine
 
 	void Quaternion::FromAngleAxis(const Radian& angle, const Vector3& axis)
 	{
+        Vector3 v = axis.NormalizedCopy();
 		Radian halfAngle(0.5 * angle);
 		float  sin_v = Math::sin(halfAngle);
-		x = sin_v * axis.x;
-		y = sin_v * axis.y;
-		z = sin_v * axis.z;
+		x = sin_v * v.x;
+		y = sin_v * v.y;
+		z = sin_v * v.z;
 		w = Math::cos(halfAngle);
 	}
 

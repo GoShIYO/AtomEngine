@@ -4,7 +4,7 @@
 namespace AtomEngine
 {
 
-	std::unordered_map<std::string, uint32_t> nodeNameToIndex;
+	std::unordered_map<std::string, uint32_t> sNodeNameToIndex;
 
 	Transform ConvertTransform(const aiMatrix4x4& matrix)
 	{
@@ -20,16 +20,40 @@ namespace AtomEngine
 		return transform;
 	}
 
-
-	uint32_t FindNodeIndex(const std::unordered_map<std::string, uint32_t>& nameMap, const std::string& name)
+	uint32_t FindNodeIndex(const std::string& name)
 	{
-		auto it = nameMap.find(name);
-		if (it != nameMap.end())
+		auto it = sNodeNameToIndex.find(name);
+		if (it != sNodeNameToIndex.end())
 			return it->second;
 		return 0xFFFFFFFF;
 	}
 
+	uint32_t CalculateVertexStride(uint16_t psoFlags)
+	{
+		uint32_t stride = 0;
+		stride += 12;
+		if (psoFlags & PSOFlags::kHasNormal) stride += 12;
+		if (psoFlags & PSOFlags::kHasTangent) stride += 12;
+		if (psoFlags & PSOFlags::kHasUV0) stride += 8;
+		if (psoFlags & PSOFlags::kHasUV1) stride += 8;
+		return stride;
+	}
 
+	void AppendVec2(std::vector<byte>& buffer, const aiVector3D& v)
+	{
+		float data[2] = { v.x, v.y };
+		buffer.insert(buffer.end(),
+			reinterpret_cast<byte*>(data),
+			reinterpret_cast<byte*>(data + 2));
+	}
+
+	void AppendVec2(std::vector<byte>& buffer, const aiVector2D& v)
+	{
+		float data[2] = { v.x, v.y };
+		buffer.insert(buffer.end(),
+			reinterpret_cast<byte*>(data),
+			reinterpret_cast<byte*>(data + 2));
+	}
 	void AppendVec3(std::vector<byte>& buffer, const aiVector3D& v)
 	{
 		float data[3] = { v.x, v.y, v.z };
@@ -42,37 +66,35 @@ namespace AtomEngine
 		buffer.insert(buffer.end(), reinterpret_cast<byte*>(data), reinterpret_cast<byte*>(data + 4));
 	}
 
-
-	void LoadTexture(ModelData& model, MaterialTextureData& textureData, aiMaterial* mat, aiTextureType type, TextureType slot)
+	void LoadTexture(ModelData& model, MaterialTextureData& textureData, const aiMaterial* mat, aiTextureType type, TextureType slot, bool useAlphaTest = false)
 	{
+		assert(mat);
 
 		aiString path;
 		if (mat->GetTexture(type, 0, &path) == AI_SUCCESS)
 		{
-			std::string texName = path.C_Str();
-			model.m_TextureNames.push_back(texName);
 			textureData.stringIdx[slot] = (uint16_t)(model.m_TextureNames.size() - 1);
+			textureData.addressModes = 0x55555;
+
 			switch (type)
 			{
-			case aiTextureType_DIFFUSE:
-				model.m_TextureOptions.push_back(TextureOptions(true));
-				textureData.addressModes |= (D3D12_TEXTURE_ADDRESS_MODE_CLAMP << (slot *2));
+			case aiTextureType_BASE_COLOR:
+				model.m_TextureOptions.push_back(TextureOptions(true, useAlphaTest));
 				break;
 			case aiTextureType_EMISSIVE:
 				model.m_TextureOptions.push_back(TextureOptions(true));
-				textureData.addressModes |= (D3D12_TEXTURE_ADDRESS_MODE_CLAMP << (slot * 2));
 				break;
-			case aiTextureType_METALNESS:
+			case aiTextureType_GLTF_METALLIC_ROUGHNESS:
 				model.m_TextureOptions.push_back(TextureOptions(false));
-				textureData.addressModes |= (D3D12_TEXTURE_ADDRESS_MODE_CLAMP << (slot * 2));
-				break;
-			case aiTextureType_DIFFUSE_ROUGHNESS:
-				model.m_TextureOptions.push_back(TextureOptions(false));
-				textureData.addressModes |= (D3D12_TEXTURE_ADDRESS_MODE_CLAMP << (slot * 2));
 				break;
 			case aiTextureType_NORMALS:
-				model.m_TextureOptions.push_back(TextureOptions(true));
-				textureData.addressModes |= (D3D12_TEXTURE_ADDRESS_MODE_WRAP << (slot * 2));
+				model.m_TextureOptions.push_back(TextureOptions(false));
+				break;
+			case aiTextureType_LIGHTMAP:
+				model.m_TextureOptions.push_back(TextureOptions(false));
+				break;
+			default:
+				model.m_TextureOptions.push_back(TextureOptions(false));
 				break;
 			}
 		}
@@ -82,54 +104,48 @@ namespace AtomEngine
 		}
 	}
 
+	uint32_t CountNodes(const aiNode* node)
+	{
+		if (!node) return 0;
+
+		uint32_t count = 1;
+		for (unsigned int i = 0; i < node->mNumChildren; ++i)
+		{
+			count += CountNodes(node->mChildren[i]);
+		}
+		return count;
+	}
+
 	bool ModelLoader::LoadModel(ModelData& model, const std::string& filePath)
 	{
-		uint32_t flag = 
+		uint32_t flag =
 			aiProcess_MakeLeftHanded |
 			aiProcess_FlipWindingOrder |
 			aiProcess_Triangulate |
-			aiProcess_RemoveRedundantMaterials |
-			aiProcess_OptimizeMeshes |
-			aiProcess_OptimizeGraph |
 			aiProcess_CalcTangentSpace |
 			aiProcess_GenSmoothNormals |
-			aiProcess_JoinIdenticalVertices |
-			aiProcess_ImproveCacheLocality |
 			aiProcess_LimitBoneWeights |
 			aiProcess_SplitLargeMeshes |
 			aiProcess_GenUVCoords |
-			aiProcess_TransformUVCoords |
-			aiProcess_FindInvalidData;
+			aiProcess_TransformUVCoords;
 
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(filePath, flag);
-		assert(scene && scene->mRootNode);
-
-		for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
+		if (!scene || !scene->mRootNode)
 		{
-			ProcessMaterial(model, scene->mMaterials[i]);
+			return false;
 		}
 
-		model.m_Meshes.reserve(scene->mNumMeshes);
-		for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
-		{
-			auto mesh = ProcessMesh(model, scene->mMeshes[i], scene);
-			if (mesh)
-			{
-				model.m_Meshes.push_back(std::move(mesh));
-			}
-		}
+		ProcessMaterial(model, scene);
 
-		ProcessNode(model, scene->mRootNode, scene, Matrix4x4());
+		model.m_BoundingSphere = BoundingSphere();
+		model.m_BoundingBox = AxisAlignedBox();
+		uint32_t numNodes = ProcessNode(model, scene, scene->mRootNode, 0, Matrix4x4::IDENTITY);
+		model.m_SceneGraph.resize(numNodes);
 
-		if (scene->HasAnimations())
-		{
-			ProcessAnimations(model, scene);
-		}
+		ProcessAnimations(model, scene);
 
-		BuildGeometryData(model, scene);
-
-		ComputeBoundingVolumes(model,scene);
+		ProcessSkins(model, scene);
 
 		return true;
 	}
@@ -139,123 +155,102 @@ namespace AtomEngine
 		return (uint32_t)model.m_SceneGraph.size() - 1;
 	}
 
-	void ModelLoader::ProcessNode(ModelData& model, aiNode* node, const aiScene* scene, const Matrix4x4& parentTransform)
+	uint32_t ModelLoader::ProcessNode(ModelData& model, const aiScene* scene, const aiNode* node, uint32_t curPos, const Matrix4x4& parentTransform)
 	{
-		uint32_t nodeIndex = static_cast<uint32_t>(model.m_SceneGraph.size());
+		if (!node) return curPos;
 
-		GraphNode graphNode{};
+		if (model.m_SceneGraph.size() <= curPos)
+			model.m_SceneGraph.resize(curPos + 1);
+
+		GraphNode& graphNode = model.m_SceneGraph[curPos];
+		graphNode.matrixIndex = curPos;
+		graphNode.hasChildren = node->mNumChildren > 0 ? 1 : 0;
+		graphNode.hasSibling = (node->mParent && node != node->mParent->mChildren[node->mParent->mNumChildren - 1]) ? 1 : 0;
+		graphNode.skeletonRoot = node->mParent == nullptr ? 1 : 0;
 		graphNode.transform = ConvertTransform(node->mTransformation);
-		graphNode.matrixIndex = nodeIndex;
-		graphNode.hasChildren = (node->mNumChildren > 0) ? 1u : 0u;
-		graphNode.staleMatrix = true;
-		graphNode.skeletonRoot = false;
-		graphNode.parentIndex = (node->mParent) ? FindNodeIndex(nodeNameToIndex, node->mParent->mName.C_Str()) : 0xFFFFFFFFu;
 
-		if (node->mNumMeshes > 0)
-		{
-			graphNode.meshStart = static_cast<uint32_t>(model.m_Meshes.size());
+		const Matrix4x4 LocalXform = parentTransform * graphNode.transform.GetMatrix();
 
-			graphNode.meshStart = static_cast<uint32_t>(node->mMeshes[0]);
-			graphNode.meshCount = node->mNumMeshes;
-		}
-		else
-		{
-			graphNode.meshStart = 0xFFFFFFFFu;
-			graphNode.meshCount = 0;
-		}
+		BoundingSphere sphereOS;
+		AxisAlignedBox boxOS;
+		CompileMesh(model, scene,LocalXform, sphereOS, boxOS);
+		model.m_BoundingSphere = model.m_BoundingSphere.Union(sphereOS);
+		model.m_BoundingBox.AddBoundingBox(boxOS);
 
-		model.m_SceneGraph.push_back(graphNode);
-		nodeNameToIndex[node->mName.C_Str()] = nodeIndex;
 
-		// children
+		uint32_t nextPos = curPos + 1;
+
 		for (uint32_t i = 0; i < node->mNumChildren; ++i)
-			ProcessNode(model, node->mChildren[i], scene, parentTransform);
+		{
+			nextPos = ProcessNode(model, scene, node->mChildren[i], nextPos, LocalXform);
+		}
+
+		return nextPos;
+
 	}
 
-
-	std::unique_ptr<Mesh> ModelLoader::ProcessMesh(ModelData& model, aiMesh* srcMesh, const aiScene* scene)
+	void ModelLoader::ProcessMaterial(ModelData& model, const aiScene* scene)
 	{
-		auto mesh = std::make_unique<Mesh>();
-		mesh->materialCBV = srcMesh->mMaterialIndex;
-
-		mesh->psoFlags = PSOFlags::kHasPosition | PSOFlags::kHasNormal;
-
-		// TANGENT
-		if (srcMesh->HasTangentsAndBitangents())
+		model.m_TextureNames.resize(scene->mNumTextures);
+		for (uint32_t i = 0; i < scene->mNumTextures; ++i)
 		{
-			mesh->psoFlags |= PSOFlags::kHasTangent;
+			model.m_TextureNames[i] = scene->mTextures[i]->mFilename.C_Str();
 		}
 
-		// UV0
-		if (srcMesh->HasTextureCoords(0))
-		{
-			mesh->psoFlags |= PSOFlags::kHasUV0;
-		}
+		model.m_MaterialConstants.resize(scene->mNumMaterials);
+		model.m_MaterialTextures.resize(scene->mNumMaterials);
 
-		// UV1
-		if (srcMesh->HasTextureCoords(1))
+		for (uint32_t i = 0; i < scene->mNumMaterials; ++i)
 		{
-			mesh->psoFlags |= PSOFlags::kHasUV1;
-		}
+			const aiMaterial* mat = scene->mMaterials[i];
+			MaterialConstantData constants{};
+			bool alphaTest = mat->GetTextureCount(aiTextureType_OPACITY) > 0;
 
-		// Skinning (BLENDINDICES/BLENDWEIGHT)
-		if (srcMesh->HasBones())
-		{
-			mesh->numJoints = srcMesh->mNumBones;
-			mesh->startJoint = static_cast<uint16_t>(model.m_JointIndices.size());
-			mesh->startJoint = static_cast<uint16_t>(model.m_JointIndices.size());
-
-			for (uint32_t i = 0; i < srcMesh->mNumBones; ++i)
+			aiColor4D color;
+			if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_DIFFUSE, color))
 			{
-				const aiBone* bone = srcMesh->mBones[i];
-				std::string boneName = bone->mName.C_Str();
-
-				uint32_t nodeIndex = FindNodeIndex(nodeNameToIndex, boneName);
-	
-				Matrix4x4 inverseBindMatrix = Matrix4x4((float*)&bone->mOffsetMatrix);
-				model.m_JointIBMs.push_back(inverseBindMatrix);
-
-				model.m_JointIndices.push_back(static_cast<uint16_t>(nodeIndex));
+				constants.baseColorFactor[0] = color.r;
+				constants.baseColorFactor[1] = color.g;
+				constants.baseColorFactor[2] = color.b;
+				constants.baseColorFactor[3] = color.a;
 			}
-			mesh->psoFlags |= PSOFlags::kHasSkin;
+			aiColor3D emissive;
+			if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_EMISSIVE, emissive))
+			{
+				constants.emissiveFactor[0] = emissive.r;
+				constants.emissiveFactor[1] = emissive.g;
+				constants.emissiveFactor[2] = emissive.b;
+			}
+			float metallic = 0.0f;
+			if (AI_SUCCESS == mat->Get(AI_MATKEY_METALLIC_FACTOR, metallic))
+			{
+				constants.metallicFactor = metallic;
+			}
+			float roughness = 0.5f;
+			if (AI_SUCCESS == mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness))
+			{
+				constants.roughnessFactor = roughness;
+			}
+
+			constants.normalTextureScale = 1.0f;
+			constants.flags = 0x3C000000;
+			if (alphaTest)
+				constants.flags |= 0x60;
+			MaterialTextureData textureData{};
+
+			LoadTexture(model, textureData, mat, aiTextureType_BASE_COLOR, TextureType::kBaseColor, alphaTest);
+			LoadTexture(model, textureData, mat, aiTextureType_NORMALS, TextureType::kNormal);
+			LoadTexture(model, textureData, mat, aiTextureType_GLTF_METALLIC_ROUGHNESS, TextureType::kMetallicRoughness);
+			LoadTexture(model, textureData, mat, aiTextureType_EMISSIVE, TextureType::kEmissive);
+			LoadTexture(model, textureData, mat, aiTextureType_LIGHTMAP, TextureType::kOcclusion);
+
+			model.m_MaterialConstants.push_back(constants);
+			model.m_MaterialTextures.push_back(textureData);
 		}
 
-		mesh->vbStride = sizeof(float) * (4 + 2 + 3 + 3 + 3);
-		mesh->ibFormat = DXGI_FORMAT_R16_UINT;
-
-		DrawCall drawCall;
-		drawCall.primCount = srcMesh->mNumFaces * 3;
-		drawCall.startIndex = 0;
-		drawCall.baseVertex = 0;
-		mesh->draw.push_back(drawCall);
-		mesh->numDraws = 1;
-
-		return mesh;
+		ASSERT(model.m_TextureOptions.size() == model.m_TextureNames.size());
 	}
 
-	void ModelLoader::ProcessMaterial(ModelData& model, aiMaterial* mat)
-	{
-		MaterialConstantData constants{};
-		constants.baseColorFactor[0] = 1.0f;
-		constants.baseColorFactor[1] = 1.0f;
-		constants.baseColorFactor[2] = 1.0f;
-		constants.baseColorFactor[3] = 1.0f;
-		constants.metallicFactor = 1.0f;
-		constants.roughnessFactor = 1.0f;
-		constants.normalTextureScale = 1.0f;
-
-		MaterialTextureData textureData{};
-
-		LoadTexture(model, textureData, mat, aiTextureType_BASE_COLOR, TextureType::kBaseColor);
-		LoadTexture(model, textureData, mat, aiTextureType_NORMALS, TextureType::kNormal);
-		LoadTexture(model, textureData, mat, aiTextureType_METALNESS, TextureType::kMetallic);
-		LoadTexture(model, textureData, mat, aiTextureType_DIFFUSE_ROUGHNESS, TextureType::kRoughness);
-		LoadTexture(model, textureData, mat, aiTextureType_EMISSIVE, TextureType::kEmissive);
-		LoadTexture(model, textureData, mat, aiTextureType_AMBIENT_OCCLUSION, TextureType::kOcclusion);
-
-		model.m_MaterialConstants.push_back(constants);
-		model.m_MaterialTextures.push_back(textureData);
-	}
 	void ModelLoader::ProcessAnimations(ModelData& model, const aiScene* scene)
 	{
 		model.m_Animations.clear();
@@ -274,8 +269,7 @@ namespace AtomEngine
 			{
 				const aiNodeAnim* channel = aiAnim->mChannels[j];
 				AnimationCurve curve{};
-
-				curve.targetNode = FindNodeIndex(nodeNameToIndex, channel->mNodeName.C_Str());
+				curve.targetNode = FindNodeIndex(channel->mNodeName.C_Str());
 
 				if (channel->mNumPositionKeys > 0)
 					curve.targetPath = AnimationCurve::kTranslation;
@@ -317,7 +311,6 @@ namespace AtomEngine
 
 				curve.keyFrameFormat = AnimationCurve::kFloat;
 				curve.keyFrameStride = (curve.targetPath == AnimationCurve::kRotation) ? 4 : 3;
-
 				curve.keyFrameOffset = static_cast<uint32_t>(model.m_AnimationKeyFrameData.size());
 
 				for (uint32_t k = 0; k < numKeys; ++k)
@@ -346,243 +339,163 @@ namespace AtomEngine
 		}
 	}
 
-	void ModelLoader::ComputeBoundingVolumes(ModelData& model, const aiScene* scene)
+	void ModelLoader::ProcessSkins(ModelData& model, const aiScene* scene)
 	{
-		AxisAlignedBox totalAABB;
 
-		for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
+	}
+	void ModelLoader::CompileMesh(
+		ModelData& model,
+		const aiScene* scene,
+		const Matrix4x4& localTransform,
+		BoundingSphere& boundingSphere,
+		AxisAlignedBox& aabb)
+	{
+		struct PrimitiveTemp
+		{
+			std::vector<Vertex> vertices;
+			std::vector<uint32_t> indices;
+			AxisAlignedBox boxOS;
+			BoundingSphere sphereOS;
+			uint32_t materialIndex;
+		};
+
+		std::vector<PrimitiveTemp> primitives;
+		primitives.reserve(scene->mNumMeshes);
+
+		size_t totalVertexSize = 0;
+		size_t totalIndexSize = 0;
+
+		BoundingSphere sphereOS;
+		AxisAlignedBox bboxOS;
+
+		for (uint32_t i = 0; i < scene->mNumMeshes; ++i)
 		{
 			const aiMesh* srcMesh = scene->mMeshes[i];
+			PrimitiveTemp prim;
 
-			for (unsigned int v = 0; v < srcMesh->mNumVertices; ++v)
+			prim.vertices.reserve(srcMesh->mNumVertices);
+			prim.indices.reserve(srcMesh->mNumFaces * 3);
+
+			for (uint32_t v = 0; v < srcMesh->mNumVertices; ++v)
 			{
-				const aiVector3D& pos = srcMesh->mVertices[v];
+				Vertex vert{};
 
-				totalAABB.AddPoint(Vector3(pos.x, pos.y, pos.z));
-			}
-		}
-
-		model.m_BoundingBox = totalAABB;
-
-		Vector3 center = totalAABB.GetCenter();
-
-		Vector3 dimensions = totalAABB.GetDimensions();
-
-		float radius = dimensions.Length() * 0.5f;
-
-		model.m_BoundingSphere = BoundingSphere(center, radius);
-	}
-
-	void ModelLoader::BuildGeometryData(ModelData& model, const aiScene* scene)
-	{
-		// CPUデータバッファを構築
-		std::vector<uint8_t> totalVertexData;
-		std::vector<uint16_t> totalIndexData;
-
-		uint32_t currentVertexByteOffset = 0;
-		uint32_t totalIndexCount = 0;
-		uint32_t maxVertexStride = 0;
-
-		// 各メッシュのデータを収集し、オフセットを計算
-		for (size_t i = 0; i < model.m_Meshes.size(); ++i)
-		{
-			aiMesh* srcMesh = scene->mMeshes[i];
-			auto& mesh = model.m_Meshes[i];
-
-			std::vector<uint8_t> meshVertexData;
-			std::vector<uint16_t> meshIndexData;
-			uint32_t currentStride = 0;
-
-			// 頂点データとストライドを生成
-			CreateVertexData(srcMesh, meshVertexData, currentStride);
-
-			// インデックスデータを生成
-			CreateIndexData(srcMesh, meshIndexData);
-
-			totalVertexData.insert(totalVertexData.end(), meshVertexData.begin(), meshVertexData.end());
-			totalIndexData.insert(totalIndexData.end(), meshIndexData.begin(), meshIndexData.end());
-
-			if (mesh->vbStride != currentStride)
-			{
-				mesh->vbStride = (uint8_t)currentStride;
-			}
-			maxVertexStride = std::max(maxVertexStride, currentStride);
-
-			// サイズを正確に設定
-			mesh->vbSize = (uint32_t)meshVertexData.size();
-			mesh->ibSize = (uint32_t)meshIndexData.size() * sizeof(uint16_t);
-
-			// オフセットを設定
-			mesh->vbOffset = currentVertexByteOffset;
-			// 深度用もフルサイズと仮定
-			mesh->vbDepthOffset = mesh->vbOffset;
-			mesh->vbDepthSize = mesh->vbSize;
-
-			// インデックスバッファのオフセットは、全頂点データの総バイトサイズからの相対位置
-			mesh->ibOffset = (uint32_t)totalVertexData.size() - mesh->ibSize;
-
-			// 全体サイズを更新
-			currentVertexByteOffset += mesh->vbSize;
-			totalIndexCount += (uint32_t)meshIndexData.size();
-
-			// DrawCallのプリミティブ数も再確認
-			mesh->draw[0].primCount = (uint32_t)meshIndexData.size();
-		}
-
-		uint32_t totalVertexByteSize = (uint32_t)totalVertexData.size();
-		uint32_t totalIndexByteSize = (uint32_t)totalIndexData.size() * sizeof(uint16_t);
-
-		model.m_GeometryData.resize(totalVertexByteSize + totalIndexByteSize);
-
-		// データコピー
-		if (totalVertexByteSize > 0)
-		{
-			std::memcpy(model.m_GeometryData.data(), totalVertexData.data(), totalVertexByteSize);
-		}
-		if (totalIndexByteSize > 0)
-		{
-			std::memcpy(model.m_GeometryData.data() + totalVertexByteSize, totalIndexData.data(), totalIndexByteSize);
-		}
-
-		// ビューの構築
-		model.m_VertexBuffer.BufferLocation = 0;
-		model.m_VertexBuffer.SizeInBytes = totalVertexByteSize;
-		model.m_VertexBuffer.StrideInBytes = maxVertexStride;
-
-		model.m_IndexBuffer.BufferLocation = totalVertexByteSize;
-		model.m_IndexBuffer.SizeInBytes = totalIndexByteSize;
-		model.m_IndexBuffer.Format = DXGI_FORMAT_R16_UINT;
-
-		// 深度バッファビュー
-		model.m_VertexBufferDepth = model.m_VertexBuffer;
-		model.m_IndexBufferDepth = model.m_IndexBuffer;
-	}
-
-	void ModelLoader::CreateVertexData(aiMesh* srcMesh, std::vector<uint8_t>& vertexData, uint32_t& vertexStride)
-	{
-		const bool hasTangents = srcMesh->HasTangentsAndBitangents();
-		const bool hasUV0 = srcMesh->HasTextureCoords(0);
-		const bool hasBones = srcMesh->HasBones();
-
-		// stride (floats + uint16)
-		uint32_t floatCount = 4 + 2 + 3; // pos(4) + uv(2) + normal(3)
-		if (hasTangents) floatCount += 3 + 3; // tangent + bitangent
-		uint32_t floatBytes = floatCount * sizeof(float);
-		uint32_t extraBytes = hasBones ? (sizeof(uint16_t) * 8) : 0; // 4 indices + 4 weights
-		vertexStride = floatBytes + extraBytes;
-
-		vertexData.reserve(srcMesh->mNumVertices * vertexStride);
-
-		std::unordered_map<uint32_t, std::vector<std::pair<uint16_t, float>>> vertexBoneMap;
-		if (hasBones)
-		{
-			for (uint32_t bi = 0; bi < srcMesh->mNumBones; ++bi)
-			{
-				const aiBone* bone = srcMesh->mBones[bi];
-				uint16_t localIndex = static_cast<uint16_t>(bi);
-				for (uint32_t w = 0; w < bone->mNumWeights; ++w)
+				Vector3 pos(srcMesh->mVertices[v].x, srcMesh->mVertices[v].y, srcMesh->mVertices[v].z);
+				vert.position = pos;
+				if (srcMesh->HasNormals())
+					vert.normal = Vector3(srcMesh->mNormals[v].x, srcMesh->mNormals[v].y, srcMesh->mNormals[v].z);
+				if (srcMesh->HasTextureCoords(0))
 				{
-					const aiVertexWeight& vw = bone->mWeights[w];
-					vertexBoneMap[vw.mVertexId].push_back({ localIndex, vw.mWeight });
+					vert.texcoord.x = srcMesh->mTextureCoords[0][v].x;
+					vert.texcoord.y = srcMesh->mTextureCoords[0][v].y;
+				}
+				if (srcMesh->HasTangentsAndBitangents())
+				{
+					Vector3 tangent(srcMesh->mTangents[v].x, srcMesh->mTangents[v].y, srcMesh->mTangents[v].z);
+					Vector3 bitangent(srcMesh->mBitangents[v].x, srcMesh->mBitangents[v].y, srcMesh->mBitangents[v].z);
+					float handedness = (Math::Dot(Math::Cross(vert.normal, tangent), bitangent) < 0.0f) ? -1.0f : 1.0f;
+					vert.tangent = Vector4(tangent.x, tangent.y, tangent.z, handedness);
+				}
+
+				vert.position = Math::Transfrom(vert.position, localTransform);
+				vert.normal = Math::TransformNormal(vert.normal, localTransform);
+
+				prim.vertices.push_back(vert);
+			}
+
+			for (uint32_t f = 0; f < srcMesh->mNumFaces; ++f)
+			{
+				const aiFace& face = srcMesh->mFaces[f];
+				if (face.mNumIndices == 3)
+				{
+					prim.indices.push_back(face.mIndices[0]);
+					prim.indices.push_back(face.mIndices[1]);
+					prim.indices.push_back(face.mIndices[2]);
 				}
 			}
+
+			prim.boxOS = aabb;
+			for (size_t v = 1; v < prim.vertices.size(); ++v)
+			{
+				prim.boxOS.AddPoint(prim.vertices[v].position);
+			}
+
+			Vector3 center = (prim.boxOS.GetMin() + prim.boxOS.GetMax()) * 0.5f;
+			float radius = (prim.boxOS.GetMax() - prim.boxOS.GetMin()).Length() * 0.5f;
+			prim.sphereOS = BoundingSphere(center, radius);
+
+			sphereOS = sphereOS.Union(prim.sphereOS);
+			bboxOS.AddBoundingBox(prim.boxOS);
+
+			totalVertexSize += prim.vertices.size() * sizeof(Vertex);
+			totalIndexSize += prim.indices.size() * sizeof(uint32_t);
+			prim.materialIndex = srcMesh->mMaterialIndex;
+
+			primitives.push_back(std::move(prim));
 		}
 
-		for (unsigned int i = 0; i < srcMesh->mNumVertices; ++i)
+		boundingSphere = sphereOS;
+		aabb = bboxOS;
+		model.m_BoundingSphere = sphereOS;
+		model.m_BoundingBox = bboxOS;
+
+		uint32_t totalBufferSize = (uint32_t)(totalVertexSize + AlignUp((uint32_t)totalIndexSize, 4));
+		uint32_t vbStartOffset = (uint32_t)model.m_GeometryData.size();
+		model.m_GeometryData.resize(vbStartOffset + totalBufferSize);
+		uint8_t* uploadMem = model.m_GeometryData.data() + vbStartOffset;
+
+		uint32_t curVBOffset = 0;
+		uint32_t curIBOffset = (uint32_t)totalVertexSize;
+
+		for (auto& prim : primitives)
 		{
-			float px = srcMesh->mVertices[i].x;
-			float py = srcMesh->mVertices[i].y;
-			float pz = srcMesh->mVertices[i].z;
-			float pw = 1.0f;
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&px), reinterpret_cast<uint8_t*>(&px) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&py), reinterpret_cast<uint8_t*>(&py) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&pz), reinterpret_cast<uint8_t*>(&pz) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&pw), reinterpret_cast<uint8_t*>(&pw) + sizeof(float));
+			size_t numDraws = 1;
+			Mesh* mesh = (Mesh*)malloc(sizeof(Mesh) + sizeof(Mesh::Draw) * (numDraws - 1));
+			std::unique_ptr<Mesh> meshObj(mesh);
 
-			float uvx = 0.0f, uvy = 0.0f;
-			if (hasUV0)
-			{
-				uvx = srcMesh->mTextureCoords[0][i].x;
-				uvy = srcMesh->mTextureCoords[0][i].y;
-			}
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&uvx), reinterpret_cast<uint8_t*>(&uvx) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&uvy), reinterpret_cast<uint8_t*>(&uvy) + sizeof(float));
+			size_t vbSize = prim.vertices.size() * sizeof(Vertex);
+			size_t ibSize = prim.indices.size() * sizeof(uint32_t);
 
-			if (srcMesh->HasNormals())
-			{
-				float nx = srcMesh->mNormals[i].x;
-				float ny = srcMesh->mNormals[i].y;
-				float nz = srcMesh->mNormals[i].z;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&nx), reinterpret_cast<uint8_t*>(&nx) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&ny), reinterpret_cast<uint8_t*>(&ny) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&nz), reinterpret_cast<uint8_t*>(&nz) + sizeof(float));
-			}
-			else
-			{
-				float z0 = 0.0f;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&z0), reinterpret_cast<uint8_t*>(&z0) + sizeof(float) * 3);
-			}
+			meshObj->bounds[0] = prim.sphereOS.GetCenter().x;
+			meshObj->bounds[1] = prim.sphereOS.GetCenter().y;
+			meshObj->bounds[2] = prim.sphereOS.GetCenter().z;
+			meshObj->bounds[3] = prim.sphereOS.GetRadius();
 
-			if (hasTangents)
-			{
-				float tx = srcMesh->mTangents[i].x;
-				float ty = srcMesh->mTangents[i].y;
-				float tz = srcMesh->mTangents[i].z;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&tx), reinterpret_cast<uint8_t*>(&tx) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&ty), reinterpret_cast<uint8_t*>(&ty) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&tz), reinterpret_cast<uint8_t*>(&tz) + sizeof(float));
+			meshObj->vbOffset = vbStartOffset + curVBOffset;
+			meshObj->vbSize = (uint32_t)vbSize;
+			meshObj->vbStride = sizeof(Vertex);
 
-				float bx = srcMesh->mBitangents[i].x;
-				float by = srcMesh->mBitangents[i].y;
-				float bz = srcMesh->mBitangents[i].z;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&bx), reinterpret_cast<uint8_t*>(&bx) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&by), reinterpret_cast<uint8_t*>(&by) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&bz), reinterpret_cast<uint8_t*>(&bz) + sizeof(float));
-			}
+			meshObj->vbDepthOffset = 0;
+			meshObj->vbDepthSize = 0;
 
-			if (hasBones)
-			{
-				uint16_t indices[4] = { 0,0,0,0 };
-				uint16_t weights[4] = { 0,0,0,0 };
+			meshObj->ibOffset = vbStartOffset + curIBOffset;
+			meshObj->ibSize = (uint32_t)ibSize;
+			meshObj->ibFormat = DXGI_FORMAT_R32_UINT;
 
-				auto it = vertexBoneMap.find(i);
-				if (it != vertexBoneMap.end())
-				{
-					auto& vec = it->second;
-					std::sort(vec.begin(), vec.end(), [](auto& a, auto& b) { return a.second > b.second; });
-					float total = 0.0f;
-					size_t k = 0;
-					for (; k < vec.size() && k < 4; ++k)
-					{
-						indices[k] = vec[k].first;
-						total += vec[k].second;
-					}
+			meshObj->meshCBV = 0;                     
+			meshObj->materialCBV = prim.materialIndex;
+			meshObj->srvTable = 0xFFFF;
+			meshObj->samplerTable = 0xFFFF;
+			meshObj->psoFlags = 0;
+			meshObj->pso = 0xFFFF;
 
-					for (size_t j = 0; j < k; ++j)
-					{
-						float norm = (total > 0.0f) ? (vec[j].second / total) : 0.0f;
-						weights[j] = static_cast<uint16_t>(std::round(norm * 65535.0f));
-					}
-				}
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(indices), reinterpret_cast<uint8_t*>(indices) + sizeof(indices));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(weights), reinterpret_cast<uint8_t*>(weights) + sizeof(weights));
-			}
+
+			meshObj->numDraws = (uint16_t)numDraws;
+
+			Mesh::Draw& d = meshObj->draw[0];
+			d.primCount = (uint32_t)prim.indices.size();
+			d.baseVertex = curVBOffset / sizeof(Vertex);
+			d.startIndex = curIBOffset / sizeof(uint32_t);
+
+
+			std::memcpy(uploadMem + curVBOffset, prim.vertices.data(), vbSize);
+
+			std::memcpy(uploadMem + curIBOffset, prim.indices.data(), ibSize);
+
+			curVBOffset += (uint32_t)vbSize;
+			curIBOffset += (uint32_t)AlignUp((uint32_t)ibSize, 4);
+
+			model.m_Meshes.push_back(std::move(meshObj));
 		}
 	}
-
-
-	void ModelLoader::CreateIndexData(aiMesh* srcMesh, std::vector<uint16_t>& indexData)
-	{
-		indexData.reserve(srcMesh->mNumFaces * 3);
-
-		for (unsigned int i = 0; i < srcMesh->mNumFaces; ++i)
-		{
-			const aiFace& face = srcMesh->mFaces[i];
-			assert(face.mNumIndices == 3);
-			indexData.push_back(static_cast<uint16_t>(face.mIndices[0]));
-			indexData.push_back(static_cast<uint16_t>(face.mIndices[1]));
-			indexData.push_back(static_cast<uint16_t>(face.mIndices[2]));
-		}
-	}
-
 }

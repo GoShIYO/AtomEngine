@@ -19,7 +19,7 @@ namespace AtomEngine
 		gSceneNormalBuffer.Create(L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 		gPostEffectsBuffer.Create(L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 
-		gSceneDepthBuffer.Create(L"Scene Depth Buffer", bufferWidth, bufferHeight, DXGI_FORMAT_D32_FLOAT);
+		gSceneDepthBuffer.Create(L"Scene Depth Buffer", bufferWidth, bufferHeight, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 		gShadowBuffer.Create(L"Shadow Map", 2048, 2048);
 

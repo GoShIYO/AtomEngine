@@ -104,6 +104,8 @@ namespace AtomEngine
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
         srvDesc.TextureCube.MipLevels = 1;
+        srvDesc.TextureCube.MostDetailedMip = 0;
+        srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
         gDevice->CreateShaderResourceView(mResource.Get(), &srvDesc, mCpuDescriptorHandle);
     }
 }

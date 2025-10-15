@@ -22,7 +22,6 @@ namespace AtomEngine
         BoundingSphere Union(const BoundingSphere& rhs);
 
     private:
-
         Vector4 mRepr;
     };
 

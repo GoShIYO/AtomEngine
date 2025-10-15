@@ -33,17 +33,17 @@ namespace AtomEngine
 		{
 			const Mesh& mesh = *(const Mesh*)pMesh;
 
-			const Transform& sphereXform = sphereTransforms[mesh.meshCBV];
-			float scaleXSqr = sphereXform.matrix.GetX().LengthSqr();
-			float scaleYSqr = sphereXform.matrix.GetY().LengthSqr();
-			float scaleZSqr = sphereXform.matrix.GetZ().LengthSqr();
+			const Matrix3x3& sphereXform = sphereTransforms[mesh.meshCBV].GetMatrix3x3();
+			float scaleXSqr = sphereXform.GetX().LengthSqr();
+			float scaleYSqr = sphereXform.GetY().LengthSqr();
+			float scaleZSqr = sphereXform.GetZ().LengthSqr();
 			float sphereScale = Math::Sqrt(std::max(std::max(scaleXSqr, scaleYSqr), scaleZSqr));
 
 			BoundingSphere sphereLS((const Vector4&)mesh.bounds);
 			BoundingSphere sphereWS = BoundingSphere(sphereXform * sphereLS.GetCenter(), sphereScale * sphereLS.GetRadius());
 			BoundingSphere sphereVS = BoundingSphere(viewMat * sphereWS.GetCenter(), sphereWS.GetRadius());
 
-			if (frustum.IntersectSphere(sphereVS))
+			//if (frustum.IntersectSphere(sphereVS))
 			{
 				float distance = -sphereVS.GetCenter().z - sphereVS.GetRadius();
 				sorter.AddMesh(mesh, distance,
@@ -52,7 +52,7 @@ namespace AtomEngine
 					mDataBuffer.GetGpuVirtualAddress(), skeleton);
 			}
 
-			pMesh += sizeof(Mesh) + (mesh.numDraws - 1) * sizeof(DrawCall);
+			pMesh += sizeof(Mesh) + (mesh.numDraws - 1) * sizeof(Mesh::Draw);
 		}
 	}
 

@@ -1,6 +1,9 @@
 #pragma once
 #include "Math.h"
 #include "Quaternion.h"
+#include <DirectXMath.h>
+using namespace DirectX;
+
 
 namespace AtomEngine
 {
@@ -13,6 +16,7 @@ namespace AtomEngine
 		Vector3() = default;
 		Vector3(float x_, float y_, float z_) : x{ x_ }, y{ y_ }, z{ z_ } {}
 		Vector3(const Vector4& v);
+		Vector3(float val) : x(val), y(val), z(val) {}
 		explicit Vector3(const float coords[3]) : x{ coords[0] }, y{ coords[1] }, z{ coords[2] } {}
 
 		float operator[](size_t i) const
@@ -338,23 +342,35 @@ namespace AtomEngine
 		);
 	}
 
-	inline Vector3 Math::Select(const Vector3& a, const Vector3& b, const Vector3& c)
+	inline Vector3 Math::Select(const Vector3& a, const Vector3& b, const Vector3& control)
 	{
-		return Vector3(
-			c.x != 0.0f ? b.x : a.x,
-			c.y != 0.0f ? b.y : a.y,
-			c.z != 0.0f ? b.z : a.z
-		);
+		XMVECTOR va = XMVectorSet(a.x, a.y, a.z, 0.0f);
+		XMVECTOR vb = XMVectorSet(b.x, b.y, b.z, 0.0f);
+		XMVECTOR vc = XMVectorSet(control.x, control.y, control.z, 0.0f);
+
+		XMVECTOR result = XMVectorSelect(va, vb, vc);
+
+		Vector3 out;
+		XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(&out), result);
+		return out;
 	}
+
 
 	inline Vector3 Math::Select(const Vector3& a, const Vector3& b, bool control)
 	{
-        return Vector3(
-            control ? b.x : a.x,
-            control ? b.y : a.y,
-            control ? b.z : a.z
-        );
+		XMVECTOR va = XMVectorSet(a.x, a.y, a.z, 0.0f);
+		XMVECTOR vb = XMVectorSet(b.x, b.y, b.z, 0.0f);
+
+		uint32_t maskValue = control ? 0xFFFFFFFF : 0x00000000;
+		XMVECTOR mask = XMVectorSetInt(maskValue, maskValue, maskValue, maskValue);
+
+		XMVECTOR result = XMVectorSelect(va, vb, mask);
+
+		Vector3 out;
+		XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(&out), result);
+		return out;
 	}
+
 
 	inline float Math::Distance(const Vector3& a, const Vector3& b)
 	{

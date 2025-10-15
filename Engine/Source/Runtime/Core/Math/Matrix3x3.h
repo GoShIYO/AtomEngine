@@ -5,7 +5,7 @@
 
 namespace AtomEngine
 {
-	class Matrix3x3
+	__declspec(align(16))class Matrix3x3
 	{
 	public:
 		float mat[3][3];
