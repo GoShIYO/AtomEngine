@@ -31,11 +31,14 @@ namespace AtomEngine
 			return *this;
 		}
 		Radian& operator=(const Degree& d);
+		operator float() const { return rad; }
 
 		float GetRadians() const { return rad; }
 		float GetDegrees() const;
 
 		void SetValue(float f) { rad = f; }
+
+		float* operator&() const { return (float*)&rad; }
 
 		const Radian& operator+() const { return *this; }
 		Radian        operator+(const Radian& r) const { return Radian(rad + r.rad); }
@@ -95,6 +98,7 @@ namespace AtomEngine
 			deg = r.GetDegrees();
 			return *this;
 		}
+		operator float() const { return deg; }
 
 		float GetDegrees() const { return deg; }
 		float GetRadians() const;
@@ -209,16 +213,6 @@ namespace AtomEngine
 		static T Lerp(const T& lhs, const T& rhs, float alpha)
 		{
 			return lhs + alpha * (rhs - lhs);
-		}
-
-		template <typename T> __forceinline static T AlignUpWithMask(T value, size_t mask)
-		{
-			return (T)(((size_t)value + mask) & ~mask);
-		}
-
-		template <typename T> __forceinline static T AlignUp(T value, size_t alignment)
-		{
-			return AlignUpWithMask(value, alignment - 1);
 		}
 
 	public:

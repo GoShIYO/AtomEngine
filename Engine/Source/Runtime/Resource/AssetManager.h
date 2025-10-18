@@ -13,7 +13,7 @@ namespace AtomEngine
 		static void Shutdown();
 
 		static void DestroyTexture(const std::wstring& key);
-
+		static void DestroyModel(const std::wstring& key);
 		static TextureRef LoadTextureFile(const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
 		static TextureRef LoadTextureFile(const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false);
 

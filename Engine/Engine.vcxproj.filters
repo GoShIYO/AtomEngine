@@ -259,6 +259,9 @@
     <ClInclude Include="Source\Runtime\Function\Light\LightManager.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h" />
     <ClInclude Include="Source\Runtime\Resource\Material.h" />
+    <ClInclude Include="Source\Runtime\Resource\Skeleton.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\SeletonComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -483,6 +486,9 @@
     <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp" />
     <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
     <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\SeletonComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -594,18 +600,7 @@
     </FxCompile>
     <FxCompile Include="Asset\Shaders\testShader.hlsl" />
     <FxCompile Include="Asset\Shaders\DepthOnlyVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\CutoutDepthPS.hlsl" />
-    <FxCompile Include="Asset\Shaders\CutoutDepthSkinVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\CutoutDepthVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoTangentNoUV1PS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoTangentNoUV1SkinVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoTangentNoUV1VS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoTangentPS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoTangentSkinVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoTangentVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoUV1PS.hlsl" />
     <FxCompile Include="Asset\Shaders\DefaultNoUV1SkinVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoUV1VS.hlsl" />
     <FxCompile Include="Asset\Shaders\DepthOnlySkinVS.hlsl" />
   </ItemGroup>
   <ItemGroup>

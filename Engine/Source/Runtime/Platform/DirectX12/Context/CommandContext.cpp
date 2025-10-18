@@ -205,7 +205,7 @@ namespace AtomEngine
             BarrierDesc.Transition.StateBefore = OldState;
             BarrierDesc.Transition.StateAfter = NewState;
 
-            // 移行がすでに開始されているかどうかを確認
+            // Check to see if we already started the transition
             if (NewState == Resource.mTransitioningState)
             {
                 BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;

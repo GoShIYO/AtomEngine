@@ -11,7 +11,7 @@ namespace AtomEngine
     class CommandContext;
 
     // このクラスは、動的に生成される記述子テーブルのための線形割り当てシステムです。
-    // 内部的にCPU記述子ハンドルをキャッシュするため、現在のヒープに十分なスペースがない場合でも、
+    //内部的にCPU記述子ハンドルをキャッシュするため、現在のヒープに十分なスペースがない場合でも、
     // 必要な記述子を新しいヒープに再コピーできます。
     class DynamicDescriptorHeap
     {
@@ -52,7 +52,7 @@ namespace AtomEngine
             m_ComputeHandleCache.ParseRootSignature(m_DescriptorType, RootSig);
         }
 
-        // キャッシュ内の新しい記述子をシェーダーが認識できるヒープにアップロードします。
+        //キャッシュ内の新しい記述子をシェーダーが認識できるヒープにアップロードします。
         inline void CommitGraphicsRootDescriptorTables(ID3D12GraphicsCommandList* CmdList)
         {
             if (m_GraphicsHandleCache.m_StaleRootParamsBitMap != 0)
@@ -67,18 +67,15 @@ namespace AtomEngine
 
     private:
 
-        // 静的メンバー
         static const uint32_t kNumDescriptorsPerHeap = 1024;
         static std::mutex sm_Mutex;
         static std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> sm_DescriptorHeapPool[2];
         static std::queue<std::pair<uint64_t, ID3D12DescriptorHeap*>> sm_RetiredDescriptorHeaps[2];
         static std::queue<ID3D12DescriptorHeap*> sm_AvailableDescriptorHeaps[2];
 
-        // 静的メソッド
         static ID3D12DescriptorHeap* RequestDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE HeapType);
         static void DiscardDescriptorHeaps(D3D12_DESCRIPTOR_HEAP_TYPE HeapType, uint64_t FenceValueForReset, const std::vector<ID3D12DescriptorHeap*>& UsedHeaps);
 
-        // メンバー変数
         CommandContext& m_OwningContext;
         ID3D12DescriptorHeap* m_CurrentHeapPtr;
         const D3D12_DESCRIPTOR_HEAP_TYPE m_DescriptorType;
@@ -87,12 +84,12 @@ namespace AtomEngine
         DescriptorHandle m_FirstDescriptor;
         std::vector<ID3D12DescriptorHeap*> m_RetiredHeaps;
 
-        // 記述子テーブルエントリを記述します。ハンドルキャッシュの領域と、設定されているハンドルです。
+        //記述子テーブルエントリを記述します。ハンドルキャッシュの領域と、設定されているハンドル
         struct DescriptorTableCache
         {
             DescriptorTableCache() : AssignedHandlesBitMap(0) {}
             uint32_t AssignedHandlesBitMap;
-            D3D12_CPU_DESCRIPTOR_HANDLE* TableStart = nullptr;
+            D3D12_CPU_DESCRIPTOR_HANDLE* TableStart;
             uint32_t TableSize;
         };
 

@@ -305,7 +305,7 @@ namespace AtomEngine
 		mArraySize = ResourceDesc.DepthOrArraySize;
 		mFormat = ResourceDesc.Format;
 
-#ifdef _DEBUG
+#ifndef RELEASE
 		mResource->SetName(Name.c_str());
 #else
 		(Name);
@@ -351,7 +351,7 @@ namespace AtomEngine
 		mUsageState = D3D12_RESOURCE_STATE_COMMON;
 		mGpuVirtualAddress = D3D12_GPU_VIRTUAL_ADDRESS_NULL;
 
-#ifdef _DEBUG
+#ifndef RELEASE
 		mResource->SetName(Name.c_str());
 #else
 		(Name);

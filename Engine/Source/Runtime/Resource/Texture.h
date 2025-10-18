@@ -22,7 +22,6 @@ namespace AtomEngine
         }
 
         const D3D12_CPU_DESCRIPTOR_HANDLE& GetSRV() const { return mCpuDescriptorHandle; }
-
         uint32_t GetWidth() const { return mWidth; }
         uint32_t GetHeight() const { return mHeight; }
         uint32_t GetDepth() const { return mDepth; }

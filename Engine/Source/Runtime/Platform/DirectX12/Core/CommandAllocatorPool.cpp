@@ -3,7 +3,7 @@
 namespace AtomEngine
 {
     CommandAllocatorPool::CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE Type) :
-        mCommandListType(Type),
+        m_cCommandListType(Type),
         mDevice(nullptr)
     {
     }
@@ -44,10 +44,10 @@ namespace AtomEngine
             }
         }
 
-        //再利用できるアロケータがない場合は、新しいアロケータを作成します
+        // 利用できるアロケータがない場合は、新しいアロケータを作成します。
         if (pAllocator == nullptr)
         {
-            ThrowIfFailed(mDevice->CreateCommandAllocator(mCommandListType, IID_PPV_ARGS(&pAllocator)));
+            ThrowIfFailed(mDevice->CreateCommandAllocator(m_cCommandListType, IID_PPV_ARGS(&pAllocator)));
             wchar_t AllocatorName[32];
             swprintf(AllocatorName, 32, L"CommandAllocator %zu", mAllocatorPool.size());
             pAllocator->SetName(AllocatorName);
@@ -64,4 +64,5 @@ namespace AtomEngine
         //このフェンス値は、アロケータを自由にリセットできることを示しています
         mReadyAllocators.push(std::make_pair(FenceValue, Allocator));
     }
+
 }

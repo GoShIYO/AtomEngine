@@ -30,7 +30,7 @@ namespace AtomEngine
 
 	void* WindowManager::GetWindow()
 	{
-		return static_cast<void*>(mWindow);
+		return static_cast<void*>(mHwnd);
 	}
 
 	void WindowManager::Initialize(WindowCreateInfo info)
@@ -68,7 +68,7 @@ namespace AtomEngine
 		int width = static_cast<int>(rc.right - rc.left);
 		int height = static_cast<int>(rc.bottom - rc.top);
 
-		mWindow = CreateWindowW(
+		mHwnd = CreateWindowW(
 			wndClass.lpszClassName,
 			info.title,
 			WS_OVERLAPPEDWINDOW,
@@ -81,19 +81,18 @@ namespace AtomEngine
 			nullptr
 		);
 
+		ASSERT(mHwnd != 0);
+
 		DX12Core::InitializeDx12();
 
-		ShowWindow(mWindow, SW_SHOWDEFAULT);
-		UpdateWindow(mWindow);
+		ShowWindow(mHwnd, SW_SHOWDEFAULT);
 		// ImGuiの初期化
 		{
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
 			ImGuiIO& io = ImGui::GetIO(); (void)io;
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
 			// セットImGuiスタイル
 			ImGui::StyleColorsDark();
@@ -111,7 +110,7 @@ namespace AtomEngine
 				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 			}
 
-			ImGui_ImplWin32_Init(mWindow);
+			ImGui_ImplWin32_Init(mHwnd);
 
 			ImGui_ImplDX12_InitInfo init_info = {};
 			init_info.Device = DX12Core::gDevice.Get();
@@ -144,24 +143,16 @@ namespace AtomEngine
 	bool WindowManager::ShouldClose()
 	{
 		MSG msg;
-		BOOL hasMsg;
-		while (true)
+		bool done = false;
+		while (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
 		{
-			hasMsg = PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE);
-
-			if (!hasMsg && !mAppPaused)
-				break;
-
-			if (!hasMsg)
-				continue;
-
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 			if (msg.message == WM_QUIT)
-				return true;
+				done = true;
 		}
 
-		return false;
+		return done;
 	}
 
 	LRESULT WindowManager::WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -172,65 +163,18 @@ namespace AtomEngine
 		switch (msg)
 		{
 		case WM_SIZE:
-			mWindowWidth = static_cast<uint32_t>(LOWORD(lParam));
-			mWindowHeight = static_cast<uint32_t>(HIWORD(lParam));
-			mResized = true;
-
-			if (wParam == SIZE_MINIMIZED)
-			{
-				mAppPaused = true;
-				mMinimized = true;
-				mMaximized = false;
-			}
-			else if (wParam == SIZE_MAXIMIZED)
-			{
-				mAppPaused = false;
-				mMinimized = false;
-				mMaximized = true;
-				OnResize(mWindowWidth, mWindowHeight);
-			}
-			else if (wParam == SIZE_RESTORED)
-			{
-				if (mMinimized)
-				{
-					mAppPaused = false;
-					mMinimized = false;
-					OnResize(mWindowWidth, mWindowHeight);
-				}
-				else if (mMaximized)
-				{
-					mAppPaused = false;
-					mMaximized = false;
-					OnResize(mWindowWidth, mWindowHeight);
-				}
-				else if (mResizing)
-				{
-
-				}
-				else
-				{
-					OnResize(mWindowWidth, mWindowHeight);
-				}
-			}
-			return 0;
-
-		case WM_ENTERSIZEMOVE:
-			mAppPaused = true;
-			mResizing = true;
-			return 0;
-
-		case WM_EXITSIZEMOVE:
-			mAppPaused = false;
-			mResizing = false;
+			mWindowWidth = (UINT)(UINT64)lParam & 0xFFFF;
+			mWindowHeight = (UINT)(UINT64)lParam >> 16;
 			OnResize(mWindowWidth, mWindowHeight);
-			return 0;
-
+			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
-			return 0;
+			break;
+		default:
+			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
 
-		return DefWindowProc(hWnd, msg, wParam, lParam);
+		return 0;
 	}
 
 	void WindowManager::OnResize(uint32_t width, uint32_t height)

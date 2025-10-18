@@ -39,7 +39,7 @@ namespace AtomEngine
 		bool gbTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
 
 
-		constexpr uint32_t kSwapChainBufferCount = 2;
+		constexpr uint32_t kSwapChainBufferCount = 3;
 
 		uint32_t gNativeWidth = 0;
 		uint32_t gNativeHeight = 0;
@@ -59,12 +59,14 @@ namespace AtomEngine
 		GraphicsPSO PresentPS(L"Core: PresentSDR");
 		GraphicsPSO SharpeningUpsamplePS(L"Image Scaling: Sharpen Upsample PSO");
 
-		D3D12_VIEWPORT MainViewport;
-		D3D12_RECT MainScissor;
-
 		float sharpeningSpread = 1.0f;
 		float sharpeningRotation = 45.0f;
 		float sharpeningStrength = 0.1f;
+
+		float s_FrameTime = 0.0f;
+		uint64_t s_FrameIndex = 0;
+		int64_t s_FrameStartTick = 0;
+		bool s_EnableVSync = false;
 
 		void ResolutionToUINT(eResolution res, uint32_t& width, uint32_t& height)
 		{
@@ -133,6 +135,11 @@ namespace AtomEngine
 
 		void BilinearSharpeningScale(GraphicsContext& Context, ColorBuffer& dest, ColorBuffer& source)
 		{
+			Context.SetRootSignature(sPresentRS);
+			Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			Context.TransitionResource(source, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			Context.SetDynamicDescriptor(0, 0, source.GetSRV());
+
 			Context.SetPipelineState(SharpeningUpsamplePS);
 			Context.TransitionResource(dest, D3D12_RESOURCE_STATE_RENDER_TARGET);
 			Context.SetRenderTarget(dest.GetRTV());
@@ -163,16 +170,21 @@ namespace AtomEngine
 			swapChainDesc.BufferCount = kSwapChainBufferCount;
 			swapChainDesc.SampleDesc.Count = 1;
 			swapChainDesc.SampleDesc.Quality = 0;
+			swapChainDesc.Scaling = DXGI_SCALING_NONE;
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-			swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+			swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+			swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 			auto window = WindowManager::GetInstance();
+
+			DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
+			fsSwapChainDesc.Windowed = TRUE;
 
 			ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(
 				gCommandManager.GetCommandQueue(),
 				window->GetWindowHandle(),
 				&swapChainDesc,
-				nullptr,
+				&fsSwapChainDesc,
 				nullptr,
 				reinterpret_cast<IDXGISwapChain1**>(gSwapChain.GetAddressOf())));
 
@@ -224,6 +236,9 @@ namespace AtomEngine
 				SharpeningUpsamplePS.SetRenderTargetFormat(gBackBufferFormat, DXGI_FORMAT_UNKNOWN);
 				SharpeningUpsamplePS.Finalize();
 			}
+
+
+
 		}
 
 		void ShutdownSwapChain()
@@ -238,9 +253,7 @@ namespace AtomEngine
 		void DX12Core::InitializeDx12(bool RequireDXRSupport)
 		{
 			uint32_t useDebugLayers = 0;
-
 #if _DEBUG
-			// デバッグビルドの場合はデフォルトでtrue
 			useDebugLayers = 1;
 #endif
 
@@ -248,15 +261,24 @@ namespace AtomEngine
 
 			if (useDebugLayers)
 			{
-				ComPtr<ID3D12Debug1> debugController = nullptr;
-				if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+				Microsoft::WRL::ComPtr<ID3D12Debug> debugInterface;
+				if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
 				{
-					debugController->EnableDebugLayer();
-					debugController->SetEnableGPUBasedValidation(TRUE);
+					debugInterface->EnableDebugLayer();
+
+					uint32_t useGPUBasedValidation = 0;
+					if (useGPUBasedValidation)
+					{
+						Microsoft::WRL::ComPtr<ID3D12Debug1> debugInterface1;
+						if (SUCCEEDED((debugInterface->QueryInterface(IID_PPV_ARGS(&debugInterface1)))))
+						{
+							debugInterface1->SetEnableGPUBasedValidation(true);
+						}
+					}
 				}
 				else
 				{
-					Log(L"[WARNING]:  Unable to enable D3D12 debug validation layer\n");
+					Print("[WARNING]: Unable to enable D3D12 debug validation layer\n");
 				}
 
 #if _DEBUG
@@ -270,8 +292,8 @@ namespace AtomEngine
 
 					DXGI_INFO_QUEUE_MESSAGE_ID hide[] =
 					{
-						80 /*
-						   IDXGISwapChain::GetContainingOutput:
+						80 /* 
+						     IDXGISwapChain::GetContainingOutput:
 						   スワップチェーンのアダプターは、スワップチェーンのウィンドウが存在する出力を制御しません
 						   */,
 					};
@@ -450,7 +472,7 @@ namespace AtomEngine
 				gFrameBuffers[i].Destroy();
 
 			ASSERT(gSwapChain != nullptr);
-			ThrowIfFailed(gSwapChain->ResizeBuffers(kSwapChainBufferCount, width, height, gBackBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+			ThrowIfFailed(gSwapChain->ResizeBuffers(kSwapChainBufferCount, width, height, gBackBufferFormat, 0));
 
 			for (uint32_t i = 0; i < kSwapChainBufferCount; ++i)
 			{
@@ -464,14 +486,13 @@ namespace AtomEngine
 			gCommandManager.IdleGPU();
 		}
 
-		void Present()
+		void DX12Core::Present()
 		{
 
-			GraphicsContext& Context = GraphicsContext::Begin(L"Present");
 
+			GraphicsContext& Context = GraphicsContext::Begin(L"Present");
 			Context.SetRootSignature(sPresentRS);
 			Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 			Context.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE |
 				D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 			Context.SetDynamicDescriptor(0, 0, gSceneColorBuffer.GetSRV());
@@ -492,26 +513,20 @@ namespace AtomEngine
 				Context.Draw(3);
 			}
 
-			auto& textureHeap = RenderSystem::GetTextureHeap();
 			//ImGui Present
 			{
 				ImGui::Render();
+				auto& textureHeap = RenderSystem::GetTextureHeap();
 				Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, textureHeap.GetHeapPointer());
 				ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), Context.GetCommandList());
 			}
-			
+
 			Context.TransitionResource(gFrameBuffers[gCurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
 			Context.Finish();
 
-			if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
-				ImGui::UpdatePlatformWindows();
-				ImGui::RenderPlatformWindowsDefault();
-			}
-
 			gSwapChain->Present(1, 0);
 
-			gCurrentBuffer = gSwapChain->GetCurrentBackBufferIndex();
+			gCurrentBuffer = (gCurrentBuffer + 1) % kSwapChainBufferCount;
 
 			SetNativeResolution();
 			SetWindowResolution();

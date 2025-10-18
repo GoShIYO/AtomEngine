@@ -25,7 +25,7 @@ struct VSInput
 {
     float3 position : POSITION;
 #ifdef ENABLE_ALPHATEST
-    float2 uv0 : TEXCOORD0;
+    float2 uv : TEXCOORD0;
 #endif
 #ifdef ENABLE_SKINNING
     uint4 jointIndices : BLENDINDICES;
@@ -61,7 +61,7 @@ VSOutput main(VSInput input)
     vsOutput.position = mul(float4(worldPos, 1.0),ViewProjMatrix);
 
 #ifdef ENABLE_ALPHATEST
-    vsOutput.uv0 = input.uv0;
+    vsOutput.uv = input.uv;
 #endif
 
     return vsOutput;

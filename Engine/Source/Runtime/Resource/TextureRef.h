@@ -27,6 +27,8 @@ namespace AtomEngine
 		bool IsValid(void) const { return mIsValid; }
 		void Unload();
 
+		const void CopyGPU(ID3D12DescriptorHeap* heap,DescriptorHandle handle) const;
+
 		friend ManagedTexture* FindOrLoadTexture(const std::wstring& fileName, eDefaultTexture fallback, bool forceSRGB);
 
 		std::wstring mMapKey;		// 後でマップから削除するため
@@ -57,6 +59,7 @@ namespace AtomEngine
 		// 有効な記述子ハンドル（フォールバックで指定）を返す。
 		D3D12_CPU_DESCRIPTOR_HANDLE GetSRV() const;
 
+		const void CopyGPU(ID3D12DescriptorHeap* heap, DescriptorHandle handle) const{ mRef->CopyGPU(heap, handle);}
 		// テクスチャポインタを取得
 		const Texture* Get(void) const;
 

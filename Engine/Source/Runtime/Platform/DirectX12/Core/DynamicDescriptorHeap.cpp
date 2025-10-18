@@ -5,8 +5,6 @@
 
 namespace AtomEngine
 {
-    using namespace DX12Core;
-
     std::mutex DynamicDescriptorHeap::sm_Mutex;
     std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> DynamicDescriptorHeap::sm_DescriptorHeapPool[2];
     std::queue<std::pair<uint64_t, ID3D12DescriptorHeap*>> DynamicDescriptorHeap::sm_RetiredDescriptorHeaps[2];
@@ -18,7 +16,7 @@ namespace AtomEngine
 
         uint32_t idx = HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER ? 1 : 0;
 
-        while (!sm_RetiredDescriptorHeaps[idx].empty() && gCommandManager.IsFenceComplete(sm_RetiredDescriptorHeaps[idx].front().first))
+        while (!sm_RetiredDescriptorHeaps[idx].empty() && DX12Core::gCommandManager.IsFenceComplete(sm_RetiredDescriptorHeaps[idx].front().first))
         {
             sm_AvailableDescriptorHeaps[idx].push(sm_RetiredDescriptorHeaps[idx].front().second);
             sm_RetiredDescriptorHeaps[idx].pop();
@@ -38,7 +36,7 @@ namespace AtomEngine
             HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             HeapDesc.NodeMask = 1;
             Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> HeapPtr;
-            ThrowIfFailed(gDevice->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&HeapPtr)));
+            ThrowIfFailed(DX12Core::gDevice->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&HeapPtr)));
             sm_DescriptorHeapPool[idx].emplace_back(HeapPtr);
             return HeapPtr.Get();
         }
@@ -78,7 +76,7 @@ namespace AtomEngine
     {
         m_CurrentHeapPtr = nullptr;
         m_CurrentOffset = 0;
-        m_DescriptorSize = gDevice->GetDescriptorHandleIncrementSize(HeapType);
+        m_DescriptorSize = DX12Core::gDevice->GetDescriptorHandleIncrementSize(HeapType);
     }
 
     DynamicDescriptorHeap::~DynamicDescriptorHeap()
@@ -137,7 +135,7 @@ namespace AtomEngine
         uint32_t NeededSpace = 0;
         uint32_t RootIndex;
 
-        // 古い記述子テーブルの最大割り当てオフセットを合計して、必要な合計スペースを決定します。
+        // Sum the maximum assigned offsets of stale descriptor tables to determine total needed space.
         uint32_t StaleParams = m_StaleRootParamsBitMap;
         while (_BitScanForward((unsigned long*)&RootIndex, StaleParams))
         {
@@ -192,10 +190,10 @@ namespace AtomEngine
                 _BitScanForward64(&DescriptorCount, ~SetHandles);
                 SetHandles >>= DescriptorCount;
 
-                // 仮に足りなくなったら、今までのものをコピーする
+                // If we run out of temp room, copy what we've got so far
                 if (NumSrcDescriptorRanges + DescriptorCount > kMaxDescriptorsPerCopy)
                 {
-                    gDevice->CopyDescriptors(
+                    DX12Core::gDevice->CopyDescriptors(
                         NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
                         NumSrcDescriptorRanges, pSrcDescriptorRangeStarts, pSrcDescriptorRangeSizes,
                         Type);
@@ -204,12 +202,12 @@ namespace AtomEngine
                     NumDestDescriptorRanges = 0;
                 }
 
-                // 設定先の範囲
+                //宛先範囲の設定
                 pDestDescriptorRangeStarts[NumDestDescriptorRanges] = CurDest;
                 pDestDescriptorRangeSizes[NumDestDescriptorRanges] = DescriptorCount;
                 ++NumDestDescriptorRanges;
 
-                // ソース範囲を設定します（連続しているとは想定していないため、記述子は 1 つずつ）
+                //ソース範囲を設定します（連続しているとは想定していないため、記述子は 1 つずつです）
                 for (uint32_t j = 0; j < DescriptorCount; ++j)
                 {
                     pSrcDescriptorRangeStarts[NumSrcDescriptorRanges] = SrcHandles[j];
@@ -223,7 +221,7 @@ namespace AtomEngine
             }
         }
 
-        gDevice->CopyDescriptors(
+        DX12Core::gDevice->CopyDescriptors(
             NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
             NumSrcDescriptorRanges, pSrcDescriptorRangeStarts, pSrcDescriptorRangeSizes,
             Type);
@@ -240,7 +238,7 @@ namespace AtomEngine
             NeededSize = HandleCache.ComputeStagedSize();
         }
 
-        // これにより、新しいヒープの作成がトリガーされる可能性があります
+        //これにより、新しいヒープの作成がトリガーされる可能性があります
         m_OwningContext.SetDescriptorHeap(m_DescriptorType, GetHeapPointer());
         HandleCache.CopyAndBindStaleTables(m_DescriptorType, m_DescriptorSize, Allocate(NeededSize), CmdList, SetFunc);
     }
@@ -264,7 +262,7 @@ namespace AtomEngine
         DescriptorHandle DestHandle = m_FirstDescriptor + m_CurrentOffset * m_DescriptorSize;
         m_CurrentOffset += 1;
 
-        gDevice->CopyDescriptorsSimple(1, DestHandle, Handle, m_DescriptorType);
+        DX12Core::gDevice->CopyDescriptorsSimple(1, DestHandle, Handle, m_DescriptorType);
 
         return DestHandle;
     }

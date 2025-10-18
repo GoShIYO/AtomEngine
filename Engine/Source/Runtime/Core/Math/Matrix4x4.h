@@ -208,8 +208,37 @@ namespace AtomEngine
 
 		Matrix4x4(const Quaternion& rot, const Vector3& position)
 		{
-			*this = Matrix4x4(Matrix3x3(rot), position);
+			float xx = rot.x * rot.x;
+			float yy = rot.y * rot.y;
+			float zz = rot.z * rot.z;
+			float xy = rot.x * rot.y;
+			float xz = rot.x * rot.z;
+			float yz = rot.y * rot.z;
+			float wx = rot.w * rot.x;
+			float wy = rot.w * rot.y;
+			float wz = rot.w * rot.z;
+
+			mat[0][0] = 1.0f - 2.0f * (yy + zz);
+			mat[0][1] = 2.0f * (xy + wz);
+			mat[0][2] = 2.0f * (xz - wy);
+			mat[0][3] = 0.0f;
+
+			mat[1][0] = 2.0f * (xy - wz);
+			mat[1][1] = 1.0f - 2.0f * (xx + zz);
+			mat[1][2] = 2.0f * (yz + wx);
+			mat[1][3] = 0.0f;
+
+			mat[2][0] = 2.0f * (xz + wy);
+			mat[2][1] = 2.0f * (yz - wx);
+			mat[2][2] = 1.0f - 2.0f * (xx + yy);
+			mat[2][3] = 0.0f;
+
+			mat[3][0] = position.x;
+			mat[3][1] = position.y;
+			mat[3][2] = position.z;
+			mat[3][3] = 1.0f;
 		}
+
 
 		void FromData(const float(&float_array)[16])
 		{
@@ -276,10 +305,7 @@ namespace AtomEngine
 
 		Matrix4x4(const Quaternion& rot)
 		{
-			Matrix3x3 m3x3;
-			rot.ToRotationMatrix(m3x3);
-			operator=(IDENTITY);
-			SetMatrix3x3(m3x3);
+			rot.ToRotationMatrix(*this);
 		}
 
 		float* operator[](size_t row_index)
@@ -296,44 +322,28 @@ namespace AtomEngine
 
 		Matrix4x4 operator*(const Matrix4x4& m2) const
 		{
-			Matrix4x4 r;
-			r.mat[0][0] = mat[0][0] * m2.mat[0][0] + mat[0][1] * m2.mat[1][0] + mat[0][2] * m2.mat[2][0] +
-				mat[0][3] * m2.mat[3][0];
-			r.mat[0][1] = mat[0][0] * m2.mat[0][1] + mat[0][1] * m2.mat[1][1] + mat[0][2] * m2.mat[2][1] +
-				mat[0][3] * m2.mat[3][1];
-			r.mat[0][2] = mat[0][0] * m2.mat[0][2] + mat[0][1] * m2.mat[1][2] + mat[0][2] * m2.mat[2][2] +
-				mat[0][3] * m2.mat[3][2];
-			r.mat[0][3] = mat[0][0] * m2.mat[0][3] + mat[0][1] * m2.mat[1][3] + mat[0][2] * m2.mat[2][3] +
-				mat[0][3] * m2.mat[3][3];
+			Matrix4x4 result;
+			result.mat[0][0] = mat[0][0] * m2.mat[0][0] + mat[0][1] * m2.mat[1][0] + mat[0][2] * m2.mat[2][0] + mat[0][3] * m2.mat[3][0];
+			result.mat[0][1] = mat[0][0] * m2.mat[0][1] + mat[0][1] * m2.mat[1][1] + mat[0][2] * m2.mat[2][1] + mat[0][3] * m2.mat[3][1];
+			result.mat[0][2] = mat[0][0] * m2.mat[0][2] + mat[0][1] * m2.mat[1][2] + mat[0][2] * m2.mat[2][2] + mat[0][3] * m2.mat[3][2];
+			result.mat[0][3] = mat[0][0] * m2.mat[0][3] + mat[0][1] * m2.mat[1][3] + mat[0][2] * m2.mat[2][3] + mat[0][3] * m2.mat[3][3];
 
-			r.mat[1][0] = mat[1][0] * m2.mat[0][0] + mat[1][1] * m2.mat[1][0] + mat[1][2] * m2.mat[2][0] +
-				mat[1][3] * m2.mat[3][0];
-			r.mat[1][1] = mat[1][0] * m2.mat[0][1] + mat[1][1] * m2.mat[1][1] + mat[1][2] * m2.mat[2][1] +
-				mat[1][3] * m2.mat[3][1];
-			r.mat[1][2] = mat[1][0] * m2.mat[0][2] + mat[1][1] * m2.mat[1][2] + mat[1][2] * m2.mat[2][2] +
-				mat[1][3] * m2.mat[3][2];
-			r.mat[1][3] = mat[1][0] * m2.mat[0][3] + mat[1][1] * m2.mat[1][3] + mat[1][2] * m2.mat[2][3] +
-				mat[1][3] * m2.mat[3][3];
+			result.mat[1][0] = mat[1][0] * m2.mat[0][0] + mat[1][1] * m2.mat[1][0] + mat[1][2] * m2.mat[2][0] + mat[1][3] * m2.mat[3][0];
+			result.mat[1][1] = mat[1][0] * m2.mat[0][1] + mat[1][1] * m2.mat[1][1] + mat[1][2] * m2.mat[2][1] + mat[1][3] * m2.mat[3][1];
+			result.mat[1][2] = mat[1][0] * m2.mat[0][2] + mat[1][1] * m2.mat[1][2] + mat[1][2] * m2.mat[2][2] + mat[1][3] * m2.mat[3][2];
+			result.mat[1][3] = mat[1][0] * m2.mat[0][3] + mat[1][1] * m2.mat[1][3] + mat[1][2] * m2.mat[2][3] + mat[1][3] * m2.mat[3][3];
 
-			r.mat[2][0] = mat[2][0] * m2.mat[0][0] + mat[2][1] * m2.mat[1][0] + mat[2][2] * m2.mat[2][0] +
-				mat[2][3] * m2.mat[3][0];
-			r.mat[2][1] = mat[2][0] * m2.mat[0][1] + mat[2][1] * m2.mat[1][1] + mat[2][2] * m2.mat[2][1] +
-				mat[2][3] * m2.mat[3][1];
-			r.mat[2][2] = mat[2][0] * m2.mat[0][2] + mat[2][1] * m2.mat[1][2] + mat[2][2] * m2.mat[2][2] +
-				mat[2][3] * m2.mat[3][2];
-			r.mat[2][3] = mat[2][0] * m2.mat[0][3] + mat[2][1] * m2.mat[1][3] + mat[2][2] * m2.mat[2][3] +
-				mat[2][3] * m2.mat[3][3];
+			result.mat[2][0] = mat[2][0] * m2.mat[0][0] + mat[2][1] * m2.mat[1][0] + mat[2][2] * m2.mat[2][0] + mat[2][3] * m2.mat[3][0];
+			result.mat[2][1] = mat[2][0] * m2.mat[0][1] + mat[2][1] * m2.mat[1][1] + mat[2][2] * m2.mat[2][1] + mat[2][3] * m2.mat[3][1];
+			result.mat[2][2] = mat[2][0] * m2.mat[0][2] + mat[2][1] * m2.mat[1][2] + mat[2][2] * m2.mat[2][2] + mat[2][3] * m2.mat[3][2];
+			result.mat[2][3] = mat[2][0] * m2.mat[0][3] + mat[2][1] * m2.mat[1][3] + mat[2][2] * m2.mat[2][3] + mat[2][3] * m2.mat[3][3];
 
-			r.mat[3][0] = mat[3][0] * m2.mat[0][0] + mat[3][1] * m2.mat[1][0] + mat[3][2] * m2.mat[2][0] +
-				mat[3][3] * m2.mat[3][0];
-			r.mat[3][1] = mat[3][0] * m2.mat[0][1] + mat[3][1] * m2.mat[1][1] + mat[3][2] * m2.mat[2][1] +
-				mat[3][3] * m2.mat[3][1];
-			r.mat[3][2] = mat[3][0] * m2.mat[0][2] + mat[3][1] * m2.mat[1][2] + mat[3][2] * m2.mat[2][2] +
-				mat[3][3] * m2.mat[3][2];
-			r.mat[3][3] = mat[3][0] * m2.mat[0][3] + mat[3][1] * m2.mat[1][3] + mat[3][2] * m2.mat[2][3] +
-				mat[3][3] * m2.mat[3][3];
+			result.mat[3][0] = mat[3][0] * m2.mat[0][0] + mat[3][1] * m2.mat[1][0] + mat[3][2] * m2.mat[2][0] + mat[3][3] * m2.mat[3][0];
+			result.mat[3][1] = mat[3][0] * m2.mat[0][1] + mat[3][1] * m2.mat[1][1] + mat[3][2] * m2.mat[2][1] + mat[3][3] * m2.mat[3][1];
+			result.mat[3][2] = mat[3][0] * m2.mat[0][2] + mat[3][1] * m2.mat[1][2] + mat[3][2] * m2.mat[2][2] + mat[3][3] * m2.mat[3][2];
+			result.mat[3][3] = mat[3][0] * m2.mat[0][3] + mat[3][1] * m2.mat[1][3] + mat[3][2] * m2.mat[2][3] + mat[3][3] * m2.mat[3][3];
 
-			return r;
+			return result;
 		}
 
 		Vector3 operator*(const Vector3& v) const
@@ -492,8 +502,7 @@ namespace AtomEngine
 
 		Quaternion GetRotation() const
 		{
-			Matrix3x3 mat3(*this);
-			return mat3.GetRotation();
+			return Quaternion(*this);
 		}
 
 		Vector3 GetScale() const
@@ -605,21 +614,24 @@ namespace AtomEngine
 
 		void MakeTrans(float tx, float ty, float tz)
 		{
-			mat[0][0] = 1.0;
-			mat[0][1] = 0.0;
-			mat[0][2] = 0.0;
-			mat[0][3] = tx;
-			mat[1][0] = 0.0;
-			mat[1][1] = 1.0;
-			mat[1][2] = 0.0;
-			mat[1][3] = ty;
-			mat[2][0] = 0.0;
-			mat[2][1] = 0.0;
-			mat[2][2] = 1.0;
-			mat[2][3] = tz;
-			mat[3][0] = 0.0;
-			mat[3][1] = 0.0;
-			mat[3][2] = 0.0;
+			mat[0][0] = 1.0f;
+			mat[0][1] = 0.0f;
+			mat[0][2] = 0.0f;
+			mat[0][3] = 0.0f;
+
+			mat[1][0] = 0.0f;
+			mat[1][1] = 1.0f;
+			mat[1][2] = 0.0f;
+			mat[1][3] = 0.0f;
+
+			mat[2][0] = 0.0f;
+			mat[2][1] = 0.0f;
+			mat[2][2] = 1.0f;
+			mat[2][3] = 0.0f;
+
+			mat[3][0] = tx;
+			mat[3][1] = ty;
+			mat[3][2] = tz;
 			mat[3][3] = 1.0;
 		}
 
@@ -627,22 +639,25 @@ namespace AtomEngine
 		{
 			Matrix4x4 r;
 
-			r.mat[0][0] = 1.0;
-			r.mat[0][1] = 0.0;
-			r.mat[0][2] = 0.0;
-			r.mat[0][3] = v.x;
-			r.mat[1][0] = 0.0;
-			r.mat[1][1] = 1.0;
-			r.mat[1][2] = 0.0;
-			r.mat[1][3] = v.y;
-			r.mat[2][0] = 0.0;
-			r.mat[2][1] = 0.0;
-			r.mat[2][2] = 1.0;
-			r.mat[2][3] = v.z;
-			r.mat[3][0] = 0.0;
-			r.mat[3][1] = 0.0;
-			r.mat[3][2] = 0.0;
-			r.mat[3][3] = 1.0;
+			r.mat[0][0] = 1.0f;
+			r.mat[0][1] = 0.0f;
+			r.mat[0][2] = 0.0f;
+			r.mat[0][3] = 0.0f;
+
+			r.mat[1][0] = 0.0f;
+			r.mat[1][1] = 1.0f;
+			r.mat[1][2] = 0.0f;
+			r.mat[1][3] = 0.0f;
+
+			r.mat[2][0] = 0.0f;
+			r.mat[2][1] = 0.0f;
+			r.mat[2][2] = 1.0f;
+			r.mat[2][3] = 0.0f;
+
+			r.mat[3][0] = v.x;
+			r.mat[3][1] = v.y;
+			r.mat[3][2] = v.z;
+			r.mat[3][3] = 1.0f;
 
 			return r;
 		}
@@ -982,17 +997,17 @@ namespace AtomEngine
 		result.mat[0][1] = m1.mat[0][0] * m2.mat[0][1] + m1.mat[0][1] * m2.mat[1][1] + m1.mat[0][2] * m2.mat[2][1] + m1.mat[0][3] * m2.mat[3][1];
 		result.mat[0][2] = m1.mat[0][0] * m2.mat[0][2] + m1.mat[0][1] * m2.mat[1][2] + m1.mat[0][2] * m2.mat[2][2] + m1.mat[0][3] * m2.mat[3][2];
 		result.mat[0][3] = m1.mat[0][0] * m2.mat[0][3] + m1.mat[0][1] * m2.mat[1][3] + m1.mat[0][2] * m2.mat[2][3] + m1.mat[0][3] * m2.mat[3][3];
-						   								   							   				  				 				
+
 		result.mat[1][0] = m1.mat[1][0] * m2.mat[0][0] + m1.mat[1][1] * m2.mat[1][0] + m1.mat[1][2] * m2.mat[2][0] + m1.mat[1][3] * m2.mat[3][0];
 		result.mat[1][1] = m1.mat[1][0] * m2.mat[0][1] + m1.mat[1][1] * m2.mat[1][1] + m1.mat[1][2] * m2.mat[2][1] + m1.mat[1][3] * m2.mat[3][1];
 		result.mat[1][2] = m1.mat[1][0] * m2.mat[0][2] + m1.mat[1][1] * m2.mat[1][2] + m1.mat[1][2] * m2.mat[2][2] + m1.mat[1][3] * m2.mat[3][2];
 		result.mat[1][3] = m1.mat[1][0] * m2.mat[0][3] + m1.mat[1][1] * m2.mat[1][3] + m1.mat[1][2] * m2.mat[2][3] + m1.mat[1][3] * m2.mat[3][3];
-						   								   							   				  				 				
+
 		result.mat[2][0] = m1.mat[2][0] * m2.mat[0][0] + m1.mat[2][1] * m2.mat[1][0] + m1.mat[2][2] * m2.mat[2][0] + m1.mat[2][3] * m2.mat[3][0];
 		result.mat[2][1] = m1.mat[2][0] * m2.mat[0][1] + m1.mat[2][1] * m2.mat[1][1] + m1.mat[2][2] * m2.mat[2][1] + m1.mat[2][3] * m2.mat[3][1];
 		result.mat[2][2] = m1.mat[2][0] * m2.mat[0][2] + m1.mat[2][1] * m2.mat[1][2] + m1.mat[2][2] * m2.mat[2][2] + m1.mat[2][3] * m2.mat[3][2];
 		result.mat[2][3] = m1.mat[2][0] * m2.mat[0][3] + m1.mat[2][1] * m2.mat[1][3] + m1.mat[2][2] * m2.mat[2][3] + m1.mat[2][3] * m2.mat[3][3];
-						   								   							   				  				 				
+
 		result.mat[3][0] = m1.mat[3][0] * m2.mat[0][0] + m1.mat[3][1] * m2.mat[1][0] + m1.mat[3][2] * m2.mat[2][0] + m1.mat[3][3] * m2.mat[3][0];
 		result.mat[3][1] = m1.mat[3][0] * m2.mat[0][1] + m1.mat[3][1] * m2.mat[1][1] + m1.mat[3][2] * m2.mat[2][1] + m1.mat[3][3] * m2.mat[3][1];
 		result.mat[3][2] = m1.mat[3][0] * m2.mat[0][2] + m1.mat[3][1] * m2.mat[1][2] + m1.mat[3][2] * m2.mat[2][2] + m1.mat[3][3] * m2.mat[3][2];

@@ -91,9 +91,6 @@ namespace AtomEngine
     {
         AssociateWithResource(Name, BaseResource, D3D12_RESOURCE_STATE_PRESENT);
 
-        //m_UAVHandle[0] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-        //Graphics::g_Device->CreateUnorderedAccessView(m_pResource.Get(), nullptr, nullptr, m_UAVHandle[0]);
-
         m_RTVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         gDevice->CreateRenderTargetView(mResource.Get(), nullptr, m_RTVHandle);
     }

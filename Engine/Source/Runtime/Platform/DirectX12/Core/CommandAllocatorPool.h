@@ -5,10 +5,9 @@
 
 namespace AtomEngine
 {
-	class CommandAllocatorPool
-	{
-        friend class CommandListManager;
-	public:
+    class CommandAllocatorPool
+    {
+    public:
         CommandAllocatorPool(D3D12_COMMAND_LIST_TYPE Type);
         ~CommandAllocatorPool();
 
@@ -21,13 +20,13 @@ namespace AtomEngine
         inline size_t Size() { return mAllocatorPool.size(); }
 
     private:
-        const D3D12_COMMAND_LIST_TYPE mCommandListType;
+        const D3D12_COMMAND_LIST_TYPE m_cCommandListType;
 
         ID3D12Device* mDevice;
         std::vector<ID3D12CommandAllocator*> mAllocatorPool;
         std::queue<std::pair<uint64_t, ID3D12CommandAllocator*>> mReadyAllocators;
         std::mutex mAllocatorMutex;
-	};
+    };
 }
 
 

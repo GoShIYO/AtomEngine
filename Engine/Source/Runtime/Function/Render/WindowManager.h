@@ -25,19 +25,13 @@ namespace AtomEngine
 		void CloseWindow();
 		bool ShouldClose();
 		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-		const HWND GetWindowHandle() const { return mWindow; }
+		const HWND GetWindowHandle() const { return mHwnd; }
 	private:
 
-		HWND mWindow = nullptr;
+		HWND mHwnd = nullptr;
 
 		uint32_t mWindowWidth = 0;
 		uint32_t mWindowHeight = 0;
-
-		bool mResized = false;
-		bool mResizing = false;
-		bool mMinimized = false;
-		bool mMaximized = false;
-		bool mAppPaused = false;
 
 		void OnResize(uint32_t width,uint32_t height);
 	};

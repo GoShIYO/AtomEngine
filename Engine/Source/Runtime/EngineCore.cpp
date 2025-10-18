@@ -32,6 +32,7 @@ namespace Engine
 			const float deltaTime = CalculateDeltaTime();
 			Tick(app,deltaTime);
 		}
+
 		DX12Core::gCommandManager.IdleGPU();
 		app.Shutdown();
 
@@ -40,11 +41,11 @@ namespace Engine
 
 	bool AtomEngine::Shutdown()
 	{
-		DX12Core::ShutdownDx12();
-		Log("Shutdown Dx12\n");
-
 		gContext.Finalize();
-		Log("Shutdown Engine\n");
+		Log("[INFO]:Shutdown System\n");
+
+		DX12Core::ShutdownDx12();
+		Log("[INFO]:Shutdown Engine\n");
 		return mIsQuit;
 	}
 
@@ -57,9 +58,6 @@ namespace Engine
 
 	void AtomEngine::RenderTick(GameApp& app,float deltaTime)
 	{
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
 
 		app.Render();
 		
@@ -99,6 +97,10 @@ namespace Engine
 	}
 	void AtomEngine::Tick(GameApp& app, float deltaTime)
 	{
+		ImGui_ImplDX12_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
 		LogicalTick(deltaTime);
 		CalculateFPS(deltaTime);
 

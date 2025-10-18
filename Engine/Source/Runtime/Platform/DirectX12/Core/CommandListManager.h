@@ -17,7 +17,7 @@ namespace AtomEngine
 
         inline bool IsReady()
         {
-            return m_CommandQueue != nullptr;
+            return mCommandQueue != nullptr;
         }
 
         uint64_t IncrementFence(void);
@@ -27,9 +27,9 @@ namespace AtomEngine
         void WaitForFence(uint64_t FenceValue);
         void WaitForIdle(void) { WaitForFence(IncrementFence()); }
 
-        ID3D12CommandQueue* GetCommandQueue() { return m_CommandQueue; }
+        ID3D12CommandQueue* GetCommandQueue() { return mCommandQueue; }
 
-        uint64_t GetNextFenceValue() { return m_NextFenceValue; }
+        uint64_t GetNextFenceValue() { return mNextFenceValue; }
 
     private:
 
@@ -37,19 +37,19 @@ namespace AtomEngine
         ID3D12CommandAllocator* RequestAllocator(void);
         void DiscardAllocator(uint64_t FenceValueForReset, ID3D12CommandAllocator* Allocator);
 
-        ID3D12CommandQueue* m_CommandQueue;
+        ID3D12CommandQueue* mCommandQueue;
 
-        const D3D12_COMMAND_LIST_TYPE m_Type;
+        const D3D12_COMMAND_LIST_TYPE mType;
 
-        CommandAllocatorPool m_AllocatorPool;
-        std::mutex m_FenceMutex;
-        std::mutex m_EventMutex;
+        CommandAllocatorPool mAllocatorPool;
+        std::mutex mFenceMutex;
+        std::mutex mEventMutex;
 
-        // Lifetime of these objects is managed by the descriptor cache
-        ID3D12Fence* m_pFence;
-        uint64_t m_NextFenceValue;
-        uint64_t m_LastCompletedFenceValue;
-        HANDLE m_FenceEventHandle;
+        // これらのオブジェクトの存続期間は記述子キャッシュによって管理されます
+        ID3D12Fence* mFence;
+        uint64_t mNextFenceValue;
+        uint64_t mLastCompletedFenceValue;
+        HANDLE mFenceEventHandle;
 
     };
 
@@ -64,23 +64,23 @@ namespace AtomEngine
         void Create(ID3D12Device* pDevice);
         void Shutdown();
 
-        CommandQueue& GetGraphicsQueue(void) { return m_GraphicsQueue; }
-        CommandQueue& GetComputeQueue(void) { return m_ComputeQueue; }
-        CommandQueue& GetCopyQueue(void) { return m_CopyQueue; }
+        CommandQueue& GetGraphicsQueue(void) { return mGraphicsQueue; }
+        CommandQueue& GetComputeQueue(void) { return mComputeQueue; }
+        CommandQueue& GetCopyQueue(void) { return mCopyQueue; }
 
         CommandQueue& GetQueue(D3D12_COMMAND_LIST_TYPE Type = D3D12_COMMAND_LIST_TYPE_DIRECT)
         {
             switch (Type)
             {
-            case D3D12_COMMAND_LIST_TYPE_COMPUTE: return m_ComputeQueue;
-            case D3D12_COMMAND_LIST_TYPE_COPY: return m_CopyQueue;
-            default: return m_GraphicsQueue;
+            case D3D12_COMMAND_LIST_TYPE_COMPUTE: return mComputeQueue;
+            case D3D12_COMMAND_LIST_TYPE_COPY: return mCopyQueue;
+            default: return mGraphicsQueue;
             }
         }
 
         ID3D12CommandQueue* GetCommandQueue()
         {
-            return m_GraphicsQueue.GetCommandQueue();
+            return mGraphicsQueue.GetCommandQueue();
         }
 
         void CreateNewCommandList(
@@ -88,30 +88,30 @@ namespace AtomEngine
             ID3D12GraphicsCommandList** List,
             ID3D12CommandAllocator** Allocator);
 
-        // Test to see if a fence has already been reached
+        //フェンスにすでに実行終わっいるかどうかをテストします
         bool IsFenceComplete(uint64_t FenceValue)
         {
             return GetQueue(D3D12_COMMAND_LIST_TYPE(FenceValue >> 56)).IsFenceComplete(FenceValue);
         }
 
-        // The CPU will wait for a fence to reach a specified value
+        // フェンスが指定された値に達するまで待機
         void WaitForFence(uint64_t FenceValue);
 
-        // The CPU will wait for all command queues to empty (so that the GPU is idle)
+        // すべてのコマンドキューが空になるまで待機
         void IdleGPU(void)
         {
-            m_GraphicsQueue.WaitForIdle();
-            m_ComputeQueue.WaitForIdle();
-            m_CopyQueue.WaitForIdle();
+            mGraphicsQueue.WaitForIdle();
+            mComputeQueue.WaitForIdle();
+            mCopyQueue.WaitForIdle();
         }
 
     private:
 
-        ID3D12Device* m_Device;
+        ID3D12Device* mDevice;
 
-        CommandQueue m_GraphicsQueue;
-        CommandQueue m_ComputeQueue;
-        CommandQueue m_CopyQueue;
+        CommandQueue mGraphicsQueue;
+        CommandQueue mComputeQueue;
+        CommandQueue mCopyQueue;
     };
 }
 

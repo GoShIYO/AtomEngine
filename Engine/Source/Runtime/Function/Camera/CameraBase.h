@@ -10,9 +10,10 @@ namespace AtomEngine
 
 		void Update();
 		
-		void SetEyeAtUp(const Vector3& eye,const Vector3& at,const Vector3& up);
+		void SetLookAt(const Vector3& eye, const Vector3& lookAt, const Vector3& up);
 		void SetLookDirection(const Vector3& forward, const Vector3& up);
 		void SetRotation(const Quaternion& basisRotation);
+		void SetRotation(const Vector3& rotation);
 		void SetPosition(const Vector3& worldPos);
 		void SetTransform(const Transform& transform);
 

@@ -13,30 +13,41 @@ namespace AtomEngine
 			return CommandContext::Begin(ID).GetGraphicsContext();
 		}
 
+		// UAVクリア
 		void ClearUAV(GpuBuffer& Target);
 		void ClearUAV(ColorBuffer& Target);
+		//フレームバッファクリア
 		void ClearColor(ColorBuffer& Target, D3D12_RECT* Rect = nullptr);
 		void ClearColor(ColorBuffer& Target, float Colour[4], D3D12_RECT* Rect = nullptr);
+		//デプスバッファクリア
 		void ClearDepth(DepthBuffer& Target);
+		//ステンシルバッファクリア
 		void ClearStencil(DepthBuffer& Target);
+		//デプスステンシル両方クリア
 		void ClearDepthAndStencil(DepthBuffer& Target);
 
+		//クリエを実行
 		void BeginQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex);
+		//クエリ終了
 		void EndQuery(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT HeapIndex);
+        //クエリ結果を取得
 		void ResolveQueryData(ID3D12QueryHeap* QueryHeap, D3D12_QUERY_TYPE Type, UINT StartIndex, UINT NumQueries, ID3D12Resource* DestinationBuffer, UINT64 DestinationBufferOffset);
-
+		//ルートシグネチャーを設定
 		void SetRootSignature(const RootSignature& RootSig);
-
+		//レンダターゲットを設定
 		void SetRenderTargets(UINT NumRTVs, const D3D12_CPU_DESCRIPTOR_HANDLE RTVs[]);
 		void SetRenderTargets(UINT NumRTVs, const D3D12_CPU_DESCRIPTOR_HANDLE RTVs[], D3D12_CPU_DESCRIPTOR_HANDLE DSV);
 		void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE RTV) { SetRenderTargets(1, &RTV); }
 		void SetRenderTarget(D3D12_CPU_DESCRIPTOR_HANDLE RTV, D3D12_CPU_DESCRIPTOR_HANDLE DSV) { SetRenderTargets(1, &RTV, DSV); }
+		//デプスステンシルターゲットを設定
 		void SetDepthStencilTarget(D3D12_CPU_DESCRIPTOR_HANDLE DSV) { SetRenderTargets(0, nullptr, DSV); }
-
+		//ビューポート
 		void SetViewport(const D3D12_VIEWPORT& vp);
 		void SetViewport(FLOAT x, FLOAT y, FLOAT w, FLOAT h, FLOAT minDepth = 0.0f, FLOAT maxDepth = 1.0f);
+		//シザー矩形を設定
 		void SetScissor(const D3D12_RECT& rect);
 		void SetScissor(UINT left, UINT top, UINT right, UINT bottom);
+        //ビューポートとシザー矩形を設定
 		void SetViewportAndScissor(const D3D12_VIEWPORT& vp, const D3D12_RECT& rect);
 		void SetViewportAndScissor(UINT x, UINT y, UINT w, UINT h);
 		void SetStencilRef(UINT StencilRef);
@@ -162,19 +173,12 @@ namespace AtomEngine
 
 	inline void GraphicsContext::SetDynamicConstantBufferView(UINT RootIndex, size_t BufferSize, const void* BufferData)
 	{
-		if (!BufferData || BufferSize == 0)
-		{
-			ASSERT(false && "Invalid buffer data passed to SetDynamicConstantBufferView");
-			return;
-		}
-
-		ASSERT(IsAligned(BufferData, 16));
-
+		ASSERT(BufferData != nullptr && IsAligned(BufferData, 16));
 		DynAlloc cb = mCpuLinearAllocator.Allocate(BufferSize);
+		//SIMDMemCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
 		memcpy(cb.DataPtr, BufferData, BufferSize);
 		mCommandList->SetGraphicsRootConstantBufferView(RootIndex, cb.GpuAddress);
 	}
-
 
 	inline void GraphicsContext::SetDynamicVB(UINT Slot, size_t NumVertices, size_t VertexStride, const void* VertexData)
 	{
@@ -217,8 +221,7 @@ namespace AtomEngine
 		SIMDMemCopy(cb.DataPtr, BufferData, AlignUp(BufferSize, 16) >> 4);
 		mCommandList->SetGraphicsRootShaderResourceView(RootIndex, cb.GpuAddress);
 	}
-
-
+	
 	inline void GraphicsContext::SetBufferSRV(UINT RootIndex, const GpuBuffer& SRV, UINT64 Offset)
 	{
 		ASSERT((SRV.mUsageState & (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)) != 0);
@@ -280,6 +283,7 @@ namespace AtomEngine
 	{
 		DrawIndexedInstanced(IndexCount, 1, StartIndexLocation, BaseVertexLocation, 0);
 	}
+
 
 	inline void GraphicsContext::DrawInstanced(UINT VertexCountPerInstance, UINT InstanceCount,
 		UINT StartVertexLocation, UINT StartInstanceLocation)

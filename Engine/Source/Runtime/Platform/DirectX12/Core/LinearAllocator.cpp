@@ -148,12 +148,12 @@ namespace AtomEngine
         ASSERT((AlignmentMask & Alignment) == 0);
 
         // 配分を揃える
-        const size_t AlignedSize = (SizeInBytes + AlignmentMask) & ~AlignmentMask;
+        const size_t AlignedSize = AlignUpWithMask(SizeInBytes, AlignmentMask);
 
         if (AlignedSize > mPageSize)
             return AllocateLargePage(AlignedSize);
 
-        mCurOffset = (mCurOffset + Alignment - 1) & ~(Alignment - 1);
+        mCurOffset = AlignUp(mCurOffset, Alignment);
 
         if (mCurOffset + AlignedSize > mPageSize)
         {

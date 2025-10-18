@@ -31,17 +31,17 @@ namespace AtomEngine
 		float wy = q.w * q.y;
 		float wz = q.w * q.z;
 
-		mat[0][0] = 1.0f - 2.0f * (yy + zz);
-		mat[0][1] = 2.0f * (xy - wz);
-		mat[0][2] = 2.0f * (xz + wy);
+        mat[0][0] = 1.0f - 2.0f * (yy + zz);
+        mat[0][1] = 2.0f * (xy + wz);
+        mat[0][2] = 2.0f * (xz - wy);
 
-		mat[1][0] = 2.0f * (xy - wz);
-		mat[1][1] = 1.0f - 2.0f * (xx + zz);
-		mat[1][2] = 2.0f * (yz + wx);
+        mat[1][0] = 2.0f * (xy - wz);
+        mat[1][1] = 1.0f - 2.0f * (xx + zz);
+        mat[1][2] = 2.0f * (yz + wx);
 
-		mat[2][0] = 2.0f * (xz + wy);
-		mat[2][1] = 2.0f * (yz - wx);
-		mat[2][2] = 1.0f - 2.0f * (xx + yy);
+        mat[2][0] = 2.0f * (xz + wy);
+        mat[2][1] = 2.0f * (yz - wx);
+        mat[2][2] = 1.0f - 2.0f * (xx + yy);
 	}
 
 	void AtomEngine::Matrix3x3::SetColumn(int col, const Vector3& v)

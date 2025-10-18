@@ -25,9 +25,7 @@ private:
 	D3D12_VIEWPORT m_MainViewport;
 	D3D12_RECT m_MainScissor;
 
-	ModelInstance m_Model;
-
-	float	g_SunLightIntensity = 4.0f;
+	float g_SunLightIntensity = 4.0f;
 	float g_SunOrientation = -0.5f;
 	float g_SunInclination = 0.75f;
 

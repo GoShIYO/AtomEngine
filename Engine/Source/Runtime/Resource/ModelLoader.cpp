@@ -3,7 +3,39 @@
 
 namespace AtomEngine
 {
-	std::unordered_map<std::string, uint32_t> nodeNameToIndex;
+
+	struct TextureMapping
+	{
+		aiTextureType aiType;
+		TextureSlot slot;
+	};
+
+	static const TextureMapping textureMap[] =
+	{
+		{ aiTextureType_BASE_COLOR,					TextureSlot::kBaseColor			},
+		{ aiTextureType_DIFFUSE,					TextureSlot::kBaseColor			},
+		{ aiTextureType_NORMALS,					TextureSlot::kNormal			},
+		{ aiTextureType_HEIGHT,						TextureSlot::kNormal			},
+		{ aiTextureType_LIGHTMAP,					TextureSlot::kOcclusion			},
+		{ aiTextureType_AMBIENT_OCCLUSION,			TextureSlot::kOcclusion			},
+		{ aiTextureType_EMISSIVE,					TextureSlot::kEmissive			}
+	};
+
+	bool SetTextures(Material& material, aiMaterial* mat, aiTextureType type, TextureSlot slot)
+	{
+		aiString texPath;
+		if (mat->GetTexture(type, 0, &texPath) == AI_SUCCESS && texPath.length > 0)
+		{
+			MaterialTexture texData;
+			texData.name = UTF8ToWString(texPath.C_Str());
+			texData.slot = slot;
+
+			material.textures.push_back(std::move(texData));
+			material.textureMask |= (1 << static_cast<uint8_t>(slot));
+			return true;
+		}
+		return false;
+	}
 
 	Matrix4x4 ConvertTransform(const aiMatrix4x4& matrix)
 	{
@@ -19,114 +51,6 @@ namespace AtomEngine
 		return transform.GetMatrix();
 	}
 
-	uint32_t FindNodeIndex(const std::string& name)
-	{
-		auto it = nodeNameToIndex.find(name);
-		if (it != nodeNameToIndex.end())
-			return it->second;
-		return 0xFFFFFFFF;
-	}
-
-	uint32_t CalculateVertexStride(uint16_t psoFlags)
-	{
-		uint32_t stride = 0;
-		stride += 12;
-		if (psoFlags & PSOFlags::kHasNormal) stride += 12;
-		if (psoFlags & PSOFlags::kHasTangent) stride += 12;
-		if (psoFlags & PSOFlags::kHasUV0) stride += 8;
-		if (psoFlags & PSOFlags::kHasUV1) stride += 8;
-		return stride;
-	}
-
-	void AppendVec2(std::vector<byte>& buffer, const aiVector3D& v)
-	{
-		float data[2] = { v.x, v.y };
-		buffer.insert(buffer.end(),
-			reinterpret_cast<byte*>(data),
-			reinterpret_cast<byte*>(data + 2));
-	}
-
-	void AppendVec2(std::vector<byte>& buffer, const aiVector2D& v)
-	{
-		float data[2] = { v.x, v.y };
-		buffer.insert(buffer.end(),
-			reinterpret_cast<byte*>(data),
-			reinterpret_cast<byte*>(data + 2));
-	}
-	void AppendVec3(std::vector<byte>& buffer, const aiVector3D& v)
-	{
-		float data[3] = { v.x, v.y, v.z };
-		buffer.insert(buffer.end(), reinterpret_cast<byte*>(data), reinterpret_cast<byte*>(data + 3));
-	}
-
-	void AppendQuat(std::vector<byte>& buffer, const aiQuaternion& q)
-	{
-		float data[4] = { q.x, q.y, q.z, q.w };
-		buffer.insert(buffer.end(), reinterpret_cast<byte*>(data), reinterpret_cast<byte*>(data + 4));
-	}
-
-	const uint8_t DEFAULT_SAMPLER_MODE = 0x5;
-
-	void LoadTexture(ModelData& model, MaterialTextureData& textureData, const aiMaterial* mat, aiTextureType type, TextureType slot, bool useAlphaTest = false)
-	{
-		assert(mat);
-		
-		aiString path;
-		if (mat->GetTexture(type, 0, &path) == AI_SUCCESS)
-		{
-			std::string texturePath = path.C_Str();
-
-			uint16_t textureIdx;
-
-			auto it = std::find(model.m_TextureNames.begin(), model.m_TextureNames.end(), texturePath);
-			if (it != model.m_TextureNames.end())
-			{
-				textureIdx = static_cast<uint16_t>(std::distance(model.m_TextureNames.begin(), it));
-			}
-			else
-			{
-				model.m_TextureNames.push_back(texturePath);
-				textureIdx = (uint16_t)(model.m_TextureNames.size() - 1);
-			}
-
-			textureData.stringIdx[slot] = textureIdx;
-
-			uint8_t wrapS = DEFAULT_SAMPLER_MODE;
-			uint8_t wrapT = DEFAULT_SAMPLER_MODE;
-
-			textureData.addressModes |= (wrapS << (slot * 4));
-			textureData.addressModes |= (wrapT << (slot * 4 + 2));
-
-			uint8_t options = DEFAULT_SAMPLER_MODE;
-
-			bool hasAlpha = useAlphaTest;
-			bool invertY = false;
-
-			switch (type)
-			{
-			case aiTextureType_BASE_COLOR:
-			case aiTextureType_EMISSIVE:
-				model.m_TextureOptions.push_back(TextureOptions(true, hasAlpha, invertY));
-				break;
-			case aiTextureType_NORMALS:
-				model.m_TextureOptions.push_back(TextureOptions(false, false, invertY));
-				break;
-			case aiTextureType_GLTF_METALLIC_ROUGHNESS:
-			case aiTextureType_LIGHTMAP:
-			default:
-				model.m_TextureOptions.push_back(TextureOptions(false, false, invertY));
-				break;
-			}
-		}
-		else
-		{
-			textureData.stringIdx[slot] = 0xFFFF;
-
-			// テクスチャがない場合もデフォルトのサンプラーを設定
-			textureData.addressModes |= (DEFAULT_SAMPLER_MODE << (slot * 4));
-			textureData.addressModes |= (DEFAULT_SAMPLER_MODE << (slot * 4 + 2));
-		}
-	}
 
 	bool ModelLoader::LoadModel(ModelData& model, const std::string& filePath)
 	{
@@ -135,517 +59,215 @@ namespace AtomEngine
 			aiProcess_FlipWindingOrder |
 			aiProcess_Triangulate |
 			aiProcess_RemoveRedundantMaterials |
-			aiProcess_OptimizeMeshes |
-			aiProcess_OptimizeGraph |
+			aiProcess_SplitLargeMeshes |
 			aiProcess_CalcTangentSpace |
 			aiProcess_GenSmoothNormals |
 			aiProcess_JoinIdenticalVertices |
-			aiProcess_ImproveCacheLocality |
 			aiProcess_LimitBoneWeights |
-			aiProcess_SplitLargeMeshes |
-			aiProcess_GenUVCoords |
-			aiProcess_TransformUVCoords |
-			aiProcess_FindInvalidData;
+			aiProcess_GenUVCoords;
 
 		Assimp::Importer importer;
+		//いらない情報を削除
+		importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
+			aiComponent_COLORS | aiComponent_LIGHTS | aiComponent_CAMERAS);
+		importer.SetPropertyInteger(AI_CONFIG_PP_SLM_TRIANGLE_LIMIT, INT_MAX);
+		importer.SetPropertyInteger(AI_CONFIG_PP_SLM_VERTEX_LIMIT, 0xfffe);
+		importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, 45.0f);
+
 		const aiScene* scene = importer.ReadFile(filePath, flag);
-		assert(scene && scene->mRootNode);
-
-		for (unsigned int i = 0; i < scene->mNumMaterials; ++i)
-		{
+		ASSERT(scene && scene->mRootNode && scene->HasMeshes(),"Load Model Failed to scene");
+		
+		for (uint32_t i = 0; i < scene->mNumMaterials; i++)
 			ProcessMaterial(model, scene->mMaterials[i]);
-		}
 
-		model.m_Meshes.reserve(scene->mNumMeshes);
-		for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
-		{
-			auto mesh = ProcessMesh(model, scene->mMeshes[i], scene);
-			if (mesh)
-			{
-				model.m_Meshes.push_back(std::move(mesh));
-			}
-		}
+		ProcessNode(model,scene->mRootNode, scene);
 
-		ProcessNode(model, scene->mRootNode, scene, Matrix4x4());
+		if(scene->HasAnimations())
+            ProcessAnimations(model, scene);
 
-		if (scene->HasAnimations())
-		{
-			ProcessAnimations(model, scene);
-		}
-
-		BuildGeometryData(model, scene);
-
-		ComputeBoundingVolumes(model, scene);
+		ComputeBoundingVolumes(model);
 
 		return true;
 	}
 
-	uint32_t GetParentIndex(ModelData& model)
+	void ModelLoader::ProcessNode(ModelData& model, aiNode* node, const aiScene* scene)
 	{
-		return (uint32_t)model.m_SceneGraph.size() - 1;
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		{
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+			
+			model.meshes.push_back(ProcessMesh(model, mesh));
+		}
+
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
+		{
+            ProcessNode(model, node->mChildren[i], scene);
+		}
 	}
 
-	void ModelLoader::ProcessNode(ModelData& model, aiNode* node, const aiScene* scene, const Matrix4x4& parentTransform)
+	Mesh ModelLoader::ProcessMesh(ModelData& model, aiMesh* mesh)
 	{
-		uint32_t nodeIndex = static_cast<uint32_t>(model.m_SceneGraph.size());
+		Mesh outMesh;
+		outMesh.vertexCount = mesh->mNumVertices;
+		outMesh.indexCount = mesh->mNumFaces * 3;
+		outMesh.stride = sizeof(Vertex);
 
-		GraphNode graphNode{};
-		graphNode.xform = ConvertTransform(node->mTransformation);
-		graphNode.matrixIndex = nodeIndex;
-		graphNode.hasChildren = (node->mNumChildren > 0) ? 1u : 0u;
-		graphNode.staleMatrix = true;
-		graphNode.skeletonRoot = false;
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		vertices.reserve(outMesh.vertexCount);
+		indices.reserve(outMesh.indexCount);
 
-		model.m_SceneGraph.push_back(graphNode);
-		nodeNameToIndex[node->mName.C_Str()] = nodeIndex;
+		AxisAlignedBox aabb;
+		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
+		{
+			Vertex v = {};
+			v.position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 
-		// children
-		for (uint32_t i = 0; i < node->mNumChildren; ++i)
-			ProcessNode(model, node->mChildren[i], scene, parentTransform);
+			if (mesh->mTextureCoords[0])
+				v.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+			if (mesh->mNormals)
+				v.normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+			if (mesh->mTangents)
+			{
+				v.tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+				v.bitangent = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+			}
+
+			aabb.AddPoint(v.position);
+			vertices.push_back(v);
+		}
+
+		for (uint32_t i = 0; i < mesh->mNumFaces; i++)
+		{
+			aiFace face = mesh->mFaces[i];
+			assert(face.mNumIndices == 3);
+			for (uint32_t j = 0; j < face.mNumIndices; j++)
+				indices.push_back(face.mIndices[j]);
+		}
+
+		if (mesh->HasBones())
+		{
+			for (uint32_t b = 0; b < mesh->mNumBones; ++b)
+			{
+				aiBone* bone = mesh->mBones[b];
+				std::string jointName = bone->mName.C_Str();
+				JointWeightData& jwd = model.skinClusterData[jointName];
+
+				// inverse bind pose
+				aiMatrix4x4 m = bone->mOffsetMatrix;
+				aiVector3D s, t; aiQuaternion r;
+				m.Decompose(s, r, t);
+				jwd.inverseBindPoseMatrix.MakeAffine(
+					{ s.x,s.y,s.z }, { r.x,r.y,r.z,r.w }, { t.x,t.y,t.z });
+
+				for (uint32_t w = 0; w < bone->mNumWeights; ++w)
+				{
+					uint32_t localId = bone->mWeights[w].mVertexId;
+					float weight = bone->mWeights[w].mWeight;
+					jwd.vertexWeights.push_back({ weight, localId });
+				}
+			}
+		}
+
+		outMesh.boundingBox = aabb;
+		SubMesh sub{};
+		sub.indexOffset = 0;
+		sub.indexCount = outMesh.indexCount;
+		sub.vertexOffset = 0;
+		sub.vertexCount = outMesh.vertexCount;
+		sub.materialIndex = mesh->mMaterialIndex;
+		sub.bounds = aabb;
+		outMesh.subMeshes.push_back(sub);
+
+		return outMesh;
 	}
 
 	void ModelLoader::ProcessMaterial(ModelData& model, aiMaterial* mat)
 	{
-		MaterialConstantData constants{};
+		Material material = {};
+		aiString name;
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_NAME, name))
+			material.name = name.C_Str();
 
-		// --- 1. 定数データ (MaterialConstantData) の抽出 ---
-
-		// 1-1. 基本色 (Base Color / Diffuse)
-		aiColor4D color;
-		if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &color))
+		aiColor4D baseColor;
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor))
 		{
-			constants.baseColorFactor[0] = color.r;
-			constants.baseColorFactor[1] = color.g;
-			constants.baseColorFactor[2] = color.b;
-			constants.baseColorFactor[3] = color.a;
-		}
-		else
-		{
-			// デフォルト値 (提供されたコードの初期化と同じ)
-			constants.baseColorFactor[0] = 1.0f;
-			constants.baseColorFactor[1] = 1.0f;
-			constants.baseColorFactor[2] = 1.0f;
-			constants.baseColorFactor[3] = 1.0f;
+			material.baseColorFactor[0] = baseColor.r;
+			material.baseColorFactor[1] = baseColor.g;
+			material.baseColorFactor[2] = baseColor.b;
+			material.baseColorFactor[3] = baseColor.a;
 		}
 
-		// 1-2. 金属度 (Metallic) と粗さ (Roughness) - PBRプロパティの抽出
-		float metallic = 1.0f;
-		if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_METALLIC_FACTOR, &metallic))
-		{
-			constants.metallicFactor = metallic;
-		}
-		else
-		{
-			constants.metallicFactor = 1.0f;
-		}
+		float metallic = 0.0f, roughness = 0.5f;
+		mat->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+		mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+		material.metallicFactor = metallic;
+		material.roughnessFactor = roughness;
 
-		float roughness = 1.0f;
-		if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_ROUGHNESS_FACTOR, &roughness))
+		for (auto& entry : textureMap)
+			SetTextures(material,mat,entry.aiType, entry.slot);
+
+		if (!SetTextures(material, mat, aiTextureType_GLTF_METALLIC_ROUGHNESS, TextureSlot::kMetallicRoughness))
 		{
-			constants.roughnessFactor = roughness;
-		}
-		else
-		{
-			constants.roughnessFactor = 1.0f;
+			SetTextures(material, mat, aiTextureType_METALNESS, TextureSlot::kMetallic);
+			SetTextures(material, mat, aiTextureType_DIFFUSE_ROUGHNESS, TextureSlot::kRoughness);
 		}
 
-		constants.normalTextureScale = 1.0f;
-		MaterialTextureData textureData{};
-
-		LoadTexture(model, textureData, mat, aiTextureType_BASE_COLOR, TextureType::kBaseColor);
-
-		LoadTexture(model, textureData, mat, aiTextureType_NORMALS, TextureType::kNormal);
-
-		// kRoughness (PBR: aiTextureType_DIFFUSE_ROUGHNESS)
-		LoadTexture(model, textureData, mat, aiTextureType_GLTF_METALLIC_ROUGHNESS, TextureType::kMetallicRoughness);
-
-		// kEmissive
-		LoadTexture(model, textureData, mat, aiTextureType_EMISSIVE, TextureType::kEmissive);
-
-		LoadTexture(model, textureData, mat, aiTextureType_LIGHTMAP, TextureType::kOcclusion);
-
-
-		model.m_MaterialConstants.push_back(constants);
-		model.m_MaterialTextures.push_back(textureData);
+		model.materials.push_back(std::move(material));
 	}
 
 	void ModelLoader::ProcessAnimations(ModelData& model, const aiScene* scene)
 	{
-		model.m_Animations.clear();
-		model.m_AnimationCurves.clear();
-		model.m_AnimationKeyFrameData.clear();
-
 		for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
 		{
-			const aiAnimation* aiAnim = scene->mAnimations[i];
-			AnimationSet animSet{};
-			animSet.duration = static_cast<float>(aiAnim->mDuration);
-			animSet.firstCurve = static_cast<uint32_t>(model.m_AnimationCurves.size());
-			animSet.numCurves = aiAnim->mNumChannels;
+			const aiAnimation* anim = scene->mAnimations[i];
+			AnimationClip clip{};
+			clip.name = anim->mName.C_Str();
+			clip.duration = (float)anim->mDuration / (float)anim->mTicksPerSecond;
 
-			for (uint32_t j = 0; j < aiAnim->mNumChannels; ++j)
+			for (uint32_t c = 0; c < anim->mNumChannels; ++c)
 			{
-				const aiNodeAnim* channel = aiAnim->mChannels[j];
+				const aiNodeAnim* channel = anim->mChannels[c];
 				AnimationCurve curve{};
-				curve.targetNode = FindNodeIndex(channel->mNodeName.C_Str());
+				curve.targetJoint = model.skeleton.jointMap[channel->mNodeName.C_Str()];
 
-				if (channel->mNumPositionKeys > 0)
-					curve.targetPath = AnimationCurve::kTranslation;
-				else if (channel->mNumRotationKeys > 0)
-					curve.targetPath = AnimationCurve::kRotation;
-				else if (channel->mNumScalingKeys > 0)
-					curve.targetPath = AnimationCurve::kScale;
-				else
-					continue;
-
-				curve.interpolation = AnimationCurve::kLinear;
-
-				uint32_t numKeys = 0;
-				float startTime = 0.0f;
-				float endTime = 0.0f;
-
-				if (curve.targetPath == AnimationCurve::kTranslation && channel->mNumPositionKeys > 0)
+				for (uint32_t k = 0; k < channel->mNumPositionKeys; ++k)
 				{
-					numKeys = channel->mNumPositionKeys;
-					startTime = static_cast<float>(channel->mPositionKeys[0].mTime);
-					endTime = static_cast<float>(channel->mPositionKeys[numKeys - 1].mTime);
-				}
-				else if (curve.targetPath == AnimationCurve::kRotation && channel->mNumRotationKeys > 0)
-				{
-					numKeys = channel->mNumRotationKeys;
-					startTime = static_cast<float>(channel->mRotationKeys[0].mTime);
-					endTime = static_cast<float>(channel->mRotationKeys[numKeys - 1].mTime);
-				}
-				else if (curve.targetPath == AnimationCurve::kScale && channel->mNumScalingKeys > 0)
-				{
-					numKeys = channel->mNumScalingKeys;
-					startTime = static_cast<float>(channel->mScalingKeys[0].mTime);
-					endTime = static_cast<float>(channel->mScalingKeys[numKeys - 1].mTime);
+					auto& key = channel->mPositionKeys[k];
+					curve.translation.push_back({ float(key.mTime / anim->mTicksPerSecond),
+						{ key.mValue.x,key.mValue.y,key.mValue.z } });
 				}
 
-				curve.startTime = startTime;
-				curve.numSegments = static_cast<float>(numKeys - 1);
-				curve.rangeScale = (endTime > startTime) ? curve.numSegments / (endTime - startTime) : 0.0f;
-
-				curve.keyFrameFormat = AnimationCurve::kFloat;
-				curve.keyFrameStride = (curve.targetPath == AnimationCurve::kRotation) ? 4 : 3;
-				curve.keyFrameOffset = static_cast<uint32_t>(model.m_AnimationKeyFrameData.size());
-
-				for (uint32_t k = 0; k < numKeys; ++k)
+				for (uint32_t k = 0; k < channel->mNumRotationKeys; ++k)
 				{
-					if (curve.targetPath == AnimationCurve::kTranslation)
-					{
-						const aiVector3D& v = channel->mPositionKeys[k].mValue;
-						AppendVec3(model.m_AnimationKeyFrameData, v);
-					}
-					else if (curve.targetPath == AnimationCurve::kRotation)
-					{
-						const aiQuaternion& q = channel->mRotationKeys[k].mValue;
-						AppendQuat(model.m_AnimationKeyFrameData, q);
-					}
-					else if (curve.targetPath == AnimationCurve::kScale)
-					{
-						const aiVector3D& s = channel->mScalingKeys[k].mValue;
-						AppendVec3(model.m_AnimationKeyFrameData, s);
-					}
+					auto& key = channel->mRotationKeys[k];
+					curve.rotation.push_back({ float(key.mTime / anim->mTicksPerSecond),
+						{ key.mValue.x,key.mValue.y,key.mValue.z,key.mValue.w } });
 				}
 
-				model.m_AnimationCurves.push_back(curve);
+				for (uint32_t k = 0; k < channel->mNumScalingKeys; ++k)
+				{
+					auto& key = channel->mRotationKeys[k];
+					curve.scale.push_back({ float(key.mTime / anim->mTicksPerSecond),
+						{ key.mValue.x,key.mValue.y,key.mValue.z } });
+				}
+
+				clip.curves.push_back(std::move(curve));
 			}
 
-			model.m_Animations.push_back(animSet);
+			model.animations.push_back(std::move(clip));
 		}
 	}
 
-	void ModelLoader::ComputeBoundingVolumes(ModelData& model, const aiScene* scene)
+	void ModelLoader::ComputeBoundingVolumes(ModelData& model)
 	{
-		AxisAlignedBox totalAABB;
-
-		for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
+		AxisAlignedBox modelBounds;
+		for (auto& mesh : model.meshes)
 		{
-			const aiMesh* srcMesh = scene->mMeshes[i];
-
-			for (unsigned int v = 0; v < srcMesh->mNumVertices; ++v)
-			{
-				const aiVector3D& pos = srcMesh->mVertices[v];
-				totalAABB.AddPoint(Vector3(pos.x, pos.y, pos.z));
-			}
+			modelBounds.AddBoundingBox(mesh.boundingBox);
 		}
 
-		model.m_BoundingBox = totalAABB;
-
-
-		Vector3 center = totalAABB.GetCenter();
-
-		Vector3 dimensions = totalAABB.GetDimensions();
-
-		float radius = dimensions.Length() * 0.5f;
-
-		model.m_BoundingSphere = BoundingSphere(center, radius);
+		model.boundingBox = modelBounds;
 	}
-	std::unique_ptr<Mesh> ModelLoader::ProcessMesh(ModelData& model, aiMesh* srcMesh, const aiScene* scene)
-	{
-		auto mesh = std::make_unique<Mesh>();
-		mesh->materialCBV = srcMesh->mMaterialIndex;
-
-		mesh->psoFlags = PSOFlags::kHasPosition | PSOFlags::kHasNormal;
-
-		// TANGENT
-		if (srcMesh->HasTangentsAndBitangents())
-		{
-			mesh->psoFlags |= PSOFlags::kHasTangent;
-		}
-
-		// UV0
-		if (srcMesh->HasTextureCoords(0))
-		{
-			mesh->psoFlags |= PSOFlags::kHasUV0;
-		}
-
-		// UV1
-		if (srcMesh->HasTextureCoords(1))
-		{
-			mesh->psoFlags |= PSOFlags::kHasUV1;
-		}
-
-		// Skinning (BLENDINDICES/BLENDWEIGHT)
-		if (srcMesh->HasBones())
-		{
-			mesh->numJoints = srcMesh->mNumBones;
-			mesh->startJoint = static_cast<uint16_t>(model.m_JointIndices.size());
-			mesh->startJoint = static_cast<uint16_t>(model.m_JointIndices.size());
-
-			for (uint32_t i = 0; i < srcMesh->mNumBones; ++i)
-			{
-				const aiBone* bone = srcMesh->mBones[i];
-				std::string boneName = bone->mName.C_Str();
-
-				Matrix4x4 inverseBindMatrix = Matrix4x4((float*)&bone->mOffsetMatrix);
-				model.m_JointIBMs.push_back(inverseBindMatrix);
-
-				model.m_JointIndices.push_back(static_cast<uint16_t>(i));
-			}
-			mesh->psoFlags |= PSOFlags::kHasSkin;
-		}
-
-		mesh->vbStride = sizeof(float) * (4 + 2 + 3 + 3 + 3);
-		mesh->ibFormat = DXGI_FORMAT_R16_UINT;
-		mesh->draw[0].primCount = srcMesh->mNumFaces * 3;
-		mesh->draw[0].startIndex = 0;
-		mesh->draw[0].baseVertex = 0;
-		mesh->numDraws = 1;
-
-		return mesh;
-	}
-	void ModelLoader::BuildGeometryData(ModelData& model, const aiScene* scene)
-	{
-		// CPUデータバッファを構築
-		std::vector<uint8_t> totalVertexData;
-		std::vector<uint16_t> totalIndexData;
-
-		uint32_t currentVertexByteOffset = 0;
-		uint32_t totalIndexCount = 0;
-		uint32_t maxVertexStride = 0;
-
-		// 各メッシュのデータを収集し、オフセットを計算
-		for (size_t i = 0; i < model.m_Meshes.size(); ++i)
-		{
-			aiMesh* srcMesh = scene->mMeshes[i];
-			auto& mesh = model.m_Meshes[i];
-
-			std::vector<uint8_t> meshVertexData;
-			std::vector<uint16_t> meshIndexData;
-			uint32_t currentStride = 0;
-
-			// 頂点データとストライドを生成
-			CreateVertexData(srcMesh, meshVertexData, currentStride);
-
-			// インデックスデータを生成
-			CreateIndexData(srcMesh, meshIndexData);
-
-			totalVertexData.insert(totalVertexData.end(), meshVertexData.begin(), meshVertexData.end());
-			totalIndexData.insert(totalIndexData.end(), meshIndexData.begin(), meshIndexData.end());
-
-			if (mesh->vbStride != currentStride)
-			{
-				mesh->vbStride = (uint8_t)currentStride;
-			}
-			maxVertexStride = std::max(maxVertexStride, currentStride);
-
-			// サイズを正確に設定
-			mesh->vbSize = (uint32_t)meshVertexData.size();
-			mesh->ibSize = (uint32_t)meshIndexData.size() * sizeof(uint16_t);
-
-			// オフセットを設定
-			mesh->vbOffset = currentVertexByteOffset;
-			// 深度用もフルサイズと仮定
-			mesh->vbDepthOffset = mesh->vbOffset;
-			mesh->vbDepthSize = mesh->vbSize;
-
-			// インデックスバッファのオフセットは、全頂点データの総バイトサイズからの相対位置
-			mesh->ibOffset = (uint32_t)totalVertexData.size() - mesh->ibSize;
-
-			// 全体サイズを更新
-			currentVertexByteOffset += mesh->vbSize;
-			totalIndexCount += (uint32_t)meshIndexData.size();
-
-			// DrawCallのプリミティブ数も再確認
-			mesh->draw[0].primCount = (uint32_t)meshIndexData.size();
-		}
-
-		uint32_t totalVertexByteSize = (uint32_t)totalVertexData.size();
-		uint32_t totalIndexByteSize = (uint32_t)totalIndexData.size() * sizeof(uint16_t);
-
-		model.m_GeometryData.resize(totalVertexByteSize + totalIndexByteSize);
-
-		// データコピー
-		if (totalVertexByteSize > 0)
-		{
-			std::memcpy(model.m_GeometryData.data(), totalVertexData.data(), totalVertexByteSize);
-		}
-		if (totalIndexByteSize > 0)
-		{
-			std::memcpy(model.m_GeometryData.data() + totalVertexByteSize, totalIndexData.data(), totalIndexByteSize);
-		}
-
-		// ビューの構築
-		model.m_VertexBuffer.BufferLocation = 0;
-		model.m_VertexBuffer.SizeInBytes = totalVertexByteSize;
-		model.m_VertexBuffer.StrideInBytes = maxVertexStride;
-
-		model.m_IndexBuffer.BufferLocation = totalVertexByteSize;
-		model.m_IndexBuffer.SizeInBytes = totalIndexByteSize;
-		model.m_IndexBuffer.Format = DXGI_FORMAT_R16_UINT;
-
-		// 深度バッファビュー
-		model.m_VertexBufferDepth = model.m_VertexBuffer;
-		model.m_IndexBufferDepth = model.m_IndexBuffer;
-	}
-
-	void ModelLoader::CreateVertexData(aiMesh* srcMesh, std::vector<uint8_t>& vertexData, uint32_t& vertexStride)
-	{
-		const bool hasTangents = srcMesh->HasTangentsAndBitangents();
-		const bool hasUV0 = srcMesh->HasTextureCoords(0);
-		const bool hasBones = srcMesh->HasBones();
-
-		// stride (floats + uint16)
-		uint32_t floatCount = 4 + 2 + 3; // pos(4) + uv(2) + normal(3)
-		if (hasTangents) floatCount += 3 + 3; // tangent + bitangent
-		uint32_t floatBytes = floatCount * sizeof(float);
-		uint32_t extraBytes = hasBones ? (sizeof(uint16_t) * 8) : 0; // 4 indices + 4 weights
-		vertexStride = floatBytes + extraBytes;
-
-		vertexData.reserve(srcMesh->mNumVertices * vertexStride);
-
-		std::unordered_map<uint32_t, std::vector<std::pair<uint16_t, float>>> vertexBoneMap;
-		if (hasBones)
-		{
-			for (uint32_t bi = 0; bi < srcMesh->mNumBones; ++bi)
-			{
-				const aiBone* bone = srcMesh->mBones[bi];
-				uint16_t localIndex = static_cast<uint16_t>(bi);
-				for (uint32_t w = 0; w < bone->mNumWeights; ++w)
-				{
-					const aiVertexWeight& vw = bone->mWeights[w];
-					vertexBoneMap[vw.mVertexId].push_back({ localIndex, vw.mWeight });
-				}
-			}
-		}
-
-		for (unsigned int i = 0; i < srcMesh->mNumVertices; ++i)
-		{
-			float px = srcMesh->mVertices[i].x;
-			float py = srcMesh->mVertices[i].y;
-			float pz = srcMesh->mVertices[i].z;
-			float pw = 1.0f;
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&px), reinterpret_cast<uint8_t*>(&px) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&py), reinterpret_cast<uint8_t*>(&py) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&pz), reinterpret_cast<uint8_t*>(&pz) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&pw), reinterpret_cast<uint8_t*>(&pw) + sizeof(float));
-
-			float uvx = 0.0f, uvy = 0.0f;
-			if (hasUV0)
-			{
-				uvx = srcMesh->mTextureCoords[0][i].x;
-				uvy = srcMesh->mTextureCoords[0][i].y;
-			}
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&uvx), reinterpret_cast<uint8_t*>(&uvx) + sizeof(float));
-			vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&uvy), reinterpret_cast<uint8_t*>(&uvy) + sizeof(float));
-
-			if (srcMesh->HasNormals())
-			{
-				float nx = srcMesh->mNormals[i].x;
-				float ny = srcMesh->mNormals[i].y;
-				float nz = srcMesh->mNormals[i].z;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&nx), reinterpret_cast<uint8_t*>(&nx) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&ny), reinterpret_cast<uint8_t*>(&ny) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&nz), reinterpret_cast<uint8_t*>(&nz) + sizeof(float));
-			}
-			else
-			{
-				float z0 = 0.0f;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&z0), reinterpret_cast<uint8_t*>(&z0) + sizeof(float) * 3);
-			}
-
-			if (hasTangents)
-			{
-				float tx = srcMesh->mTangents[i].x;
-				float ty = srcMesh->mTangents[i].y;
-				float tz = srcMesh->mTangents[i].z;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&tx), reinterpret_cast<uint8_t*>(&tx) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&ty), reinterpret_cast<uint8_t*>(&ty) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&tz), reinterpret_cast<uint8_t*>(&tz) + sizeof(float));
-
-				float bx = srcMesh->mBitangents[i].x;
-				float by = srcMesh->mBitangents[i].y;
-				float bz = srcMesh->mBitangents[i].z;
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&bx), reinterpret_cast<uint8_t*>(&bx) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&by), reinterpret_cast<uint8_t*>(&by) + sizeof(float));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(&bz), reinterpret_cast<uint8_t*>(&bz) + sizeof(float));
-			}
-
-			if (hasBones)
-			{
-				uint16_t indices[4] = { 0,0,0,0 };
-				uint16_t weights[4] = { 0,0,0,0 };
-
-				auto it = vertexBoneMap.find(i);
-				if (it != vertexBoneMap.end())
-				{
-					auto& vec = it->second;
-					std::sort(vec.begin(), vec.end(), [](auto& a, auto& b) { return a.second > b.second; });
-					float total = 0.0f;
-					size_t k = 0;
-					for (; k < vec.size() && k < 4; ++k)
-					{
-						indices[k] = vec[k].first;
-						total += vec[k].second;
-					}
-
-					for (size_t j = 0; j < k; ++j)
-					{
-						float norm = (total > 0.0f) ? (vec[j].second / total) : 0.0f;
-						weights[j] = static_cast<uint16_t>(std::round(norm * 65535.0f));
-					}
-				}
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(indices), reinterpret_cast<uint8_t*>(indices) + sizeof(indices));
-				vertexData.insert(vertexData.end(), reinterpret_cast<uint8_t*>(weights), reinterpret_cast<uint8_t*>(weights) + sizeof(weights));
-			}
-		}
-	}
-
-
-	void ModelLoader::CreateIndexData(aiMesh* srcMesh, std::vector<uint16_t>& indexData)
-	{
-		indexData.reserve(srcMesh->mNumFaces * 3);
-
-		for (unsigned int i = 0; i < srcMesh->mNumFaces; ++i)
-		{
-			const aiFace& face = srcMesh->mFaces[i];
-			assert(face.mNumIndices == 3);
-			indexData.push_back(static_cast<uint16_t>(face.mIndices[0]));
-			indexData.push_back(static_cast<uint16_t>(face.mIndices[1]));
-			indexData.push_back(static_cast<uint16_t>(face.mIndices[2]));
-		}
-	}
+	
 }

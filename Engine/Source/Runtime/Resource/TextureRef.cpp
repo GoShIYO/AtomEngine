@@ -133,6 +133,11 @@ namespace AtomEngine
 		AssetManager::DestroyTexture(mMapKey);
 	}
 
+	const void ManagedTexture::CopyGPU(ID3D12DescriptorHeap* heap, DescriptorHandle handle) const
+	{
+		DX12Core::gDevice->CopyDescriptorsSimple(1, handle, GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	}
+
 	TextureRef::TextureRef(const TextureRef& ref) : mRef(ref.mRef)
 	{
 		if (mRef != nullptr)

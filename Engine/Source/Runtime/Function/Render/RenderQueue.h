@@ -16,6 +16,15 @@ namespace AtomEngine
 	struct Mesh;
 	struct Joint;
 
+	struct MeshBatchData
+	{
+		D3D12_VERTEX_BUFFER_VIEW vbv;
+		D3D12_INDEX_BUFFER_VIEW ibv;
+		uint32_t indexCount;
+		uint64_t psoHash;
+		AxisAlignedBox bounds;
+	};
+
 	class RenderQueue
 	{
 	public:
@@ -64,20 +73,6 @@ namespace AtomEngine
 
 		void RenderMeshes(DrawType type, GraphicsContext& context, GlobalConstants& globals);
 	private:
-		struct SortKey
-		{
-			union
-			{
-				uint64_t value;
-				struct
-				{
-					uint64_t objectIdx : 16;
-					uint64_t psoIdx : 12;
-					uint64_t key : 32;
-					uint64_t typeID : 4;
-				};
-			};
-		};
 
 		struct SortObject
 		{

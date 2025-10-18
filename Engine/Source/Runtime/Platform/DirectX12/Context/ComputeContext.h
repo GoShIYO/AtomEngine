@@ -115,8 +115,6 @@ namespace AtomEngine
         mCommandList->SetComputeRootShaderResourceView(RootIndex, SRV.GetGpuVirtualAddress() + Offset);
     }
 
-
-
     inline void ComputeContext::SetBufferUAV(UINT RootIndex, const GpuBuffer& UAV, UINT64 Offset)
     {
         ASSERT((UAV.mUsageState & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) != 0);
