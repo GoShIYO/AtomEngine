@@ -68,12 +68,12 @@ namespace AtomEngine
     void World::OnComponentAdded(const ComponentAddedEvent& e) 
     {
         std::string typeName = e.type.name();
-        Log(L"[Component Added]:%s -> Entity(%d)", typeName.c_str(), (int)e.entity);
+        Log("[Component Added]:%s -> Entity(%d)\n", typeName.c_str(), (int)e.entity);
     }
 
     void World::OnComponentRemoved(const ComponentRemovedEvent& e)
     {
         std::string typeName = e.type.name();
-        Log(L"[Component Removed]:%s -> Entity(%d)", typeName.c_str(), (int)e.entity);
+        Log("[Component Removed]:%s -> Entity(%d)\n", typeName.c_str(), (int)e.entity);
     }
 }

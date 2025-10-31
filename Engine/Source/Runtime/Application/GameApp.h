@@ -1,5 +1,6 @@
 #pragma once
 #include "Runtime/Function/Framework/ECS/World.h"
+#include "Runtime/Function/Framework/ECS/GameObject.h"
 #include "Runtime/Function/Camera/CameraBase.h"
 #include "Runtime/Function/Render/RenderSystem.h"
 #include "Runtime/Function/Input/Input.h"

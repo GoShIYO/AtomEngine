@@ -18,6 +18,10 @@ namespace AtomEngine
 		{
 			this->FromAxes(xaxis, yaxis, zaxis);
 		}
+		Quaternion(const Vector3& axis, float angle)
+		{
+            this->FromAngleAxis(Radian(angle), axis);
+		}
 		float* ptr() { return &x; }
 
 		const float* ptr() const { return &x; }

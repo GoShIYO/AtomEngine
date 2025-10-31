@@ -41,8 +41,6 @@ namespace AtomEngine
 		ThrowIfFailed(MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET));
 
 		SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-		ImGui_ImplWin32_EnableDpiAwareness();
-		float mainScale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY));
 
 		WNDCLASSEXW wndClass = {};
 		wndClass.cbSize = sizeof(wndClass);
@@ -86,52 +84,6 @@ namespace AtomEngine
 		DX12Core::InitializeDx12();
 
 		ShowWindow(mHwnd, SW_SHOWDEFAULT);
-		// ImGuiの初期化
-		{
-			IMGUI_CHECKVERSION();
-			ImGui::CreateContext();
-			ImGuiIO& io = ImGui::GetIO(); (void)io;
-			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-
-			// セットImGuiスタイル
-			ImGui::StyleColorsDark();
-
-			//スケーリングの設定
-			ImGuiStyle& style = ImGui::GetStyle();
-			style.ScaleAllSizes(mainScale);
-			style.FontScaleDpi = mainScale;
-			io.ConfigDpiScaleFonts = true;
-			io.ConfigDpiScaleViewports = true;
-
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
-				style.WindowRounding = 0.0f;
-				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-			}
-
-			ImGui_ImplWin32_Init(mHwnd);
-
-			ImGui_ImplDX12_InitInfo init_info = {};
-			init_info.Device = DX12Core::gDevice.Get();
-			init_info.CommandQueue = DX12Core::gCommandManager.GetGraphicsQueue().GetCommandQueue();
-			init_info.NumFramesInFlight = 3;
-			init_info.RTVFormat = DX12Core::gBackBufferFormat;
-			init_info.DSVFormat = DXGI_FORMAT_UNKNOWN;
-
-			init_info.SrvDescriptorHeap = RenderSystem::GetTextureHeap().GetHeapPointer();
-			init_info.SrvDescriptorAllocFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE* out_cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE* out_gpu_handle)
-				{
-					auto& textureHeap = RenderSystem::GetTextureHeap();
-					DescriptorHandle handle = textureHeap.Alloc();
-
-					*out_cpu_handle = D3D12_CPU_DESCRIPTOR_HANDLE(handle);
-					*out_gpu_handle = D3D12_GPU_DESCRIPTOR_HANDLE(handle);
-				};
-			init_info.SrvDescriptorFreeFn = [](ImGui_ImplDX12_InitInfo*, D3D12_CPU_DESCRIPTOR_HANDLE cpu_handle, D3D12_GPU_DESCRIPTOR_HANDLE gpu_handle) {};
-			ImGui_ImplDX12_Init(&init_info);
-
-		}
 
 	}
 

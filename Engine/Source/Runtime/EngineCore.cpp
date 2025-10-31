@@ -41,7 +41,7 @@ namespace Engine
 
 	bool AtomEngine::Shutdown()
 	{
-		gContext.Finalize();
+		gContext.Shutdown();
 		Log("[INFO]:Shutdown System\n");
 
 		DX12Core::ShutdownDx12();
@@ -53,7 +53,7 @@ namespace Engine
 	{
 		gContext.input->Update();
 
-		RenderSystem::Update(deltaTime);
+		Renderer::Update(deltaTime);
 	}
 
 	void AtomEngine::RenderTick(GameApp& app,float deltaTime)
@@ -61,7 +61,7 @@ namespace Engine
 
 		app.Render();
 		
-		RenderSystem::Render(deltaTime);
+		Renderer::Render(deltaTime);
 
 		DX12Core::Present();
 	}
@@ -97,9 +97,7 @@ namespace Engine
 	}
 	void AtomEngine::Tick(GameApp& app, float deltaTime)
 	{
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
+		gContext.imgui->Bengin();
 
 		LogicalTick(deltaTime);
 		CalculateFPS(deltaTime);

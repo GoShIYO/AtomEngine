@@ -1,6 +1,7 @@
 #include "Input.h"
 #include "Runtime/Core/LogSystem/LogSystem.h"
 #include "Runtime/Core/Utility/Utility.h"
+#include "Runtime/Function/Render/WindowManager.h"
 
 #pragma comment(lib, "gameinput.lib")
 
@@ -69,7 +70,7 @@ namespace AtomEngine
 		);
 	}
 
-	void Input::Finalize()
+	void Input::Shutdown()
 	{
 #if GAMEINPUT_API_VERSION >= 1
 		mInput->UnregisterCallback(mDeviceCallbackToken);
@@ -287,6 +288,25 @@ namespace AtomEngine
 		}
 		// 現在のフレームで押されていて、前のフレームで押されていないか
 		return ((mGamepadState.buttons & flag) != 0) && ((mPrevGamepadState.buttons & flag) == 0);
+	}
+
+	bool Input::GetMousePosition(int* mouseX, int* mouseY)
+	{
+		if (mouseX && mouseY)
+		{
+			// スクリーンを座標系からウィンドウ座標に変換
+			POINT cursorPos;
+			GetCursorPos(&cursorPos); // スクリーンを得る
+
+			auto window = WindowManager::GetInstance();
+			ScreenToClient(window->GetWindowHandle(), &cursorPos); // ウィンドウ座標に変換
+
+			*mouseX = static_cast<int>(cursorPos.x);
+			*mouseY = static_cast<int>(cursorPos.y);
+			return true;
+		}
+
+		return false;
 	}
 
 	bool Input::IsUseGamePad() const

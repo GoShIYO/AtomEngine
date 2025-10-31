@@ -6,13 +6,6 @@
 
 namespace AtomEngine
 {
-
-	struct JointVertex
-	{
-		uint16_t jointIndices[4];
-		float weights[4];
-	};
-
     template<typename T>
     struct Keyframe
     {

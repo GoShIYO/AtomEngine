@@ -5,6 +5,8 @@
 
 namespace AtomEngine
 {
+    using namespace DX12Core;
+
     std::mutex DynamicDescriptorHeap::sm_Mutex;
     std::vector<Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>> DynamicDescriptorHeap::sm_DescriptorHeapPool[2];
     std::queue<std::pair<uint64_t, ID3D12DescriptorHeap*>> DynamicDescriptorHeap::sm_RetiredDescriptorHeaps[2];
@@ -16,7 +18,7 @@ namespace AtomEngine
 
         uint32_t idx = HeapType == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER ? 1 : 0;
 
-        while (!sm_RetiredDescriptorHeaps[idx].empty() && DX12Core::gCommandManager.IsFenceComplete(sm_RetiredDescriptorHeaps[idx].front().first))
+        while (!sm_RetiredDescriptorHeaps[idx].empty() && gCommandManager.IsFenceComplete(sm_RetiredDescriptorHeaps[idx].front().first))
         {
             sm_AvailableDescriptorHeaps[idx].push(sm_RetiredDescriptorHeaps[idx].front().second);
             sm_RetiredDescriptorHeaps[idx].pop();
@@ -36,7 +38,7 @@ namespace AtomEngine
             HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             HeapDesc.NodeMask = 1;
             Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> HeapPtr;
-            ThrowIfFailed(DX12Core::gDevice->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&HeapPtr)));
+            ThrowIfFailed(gDevice->CreateDescriptorHeap(&HeapDesc, IID_PPV_ARGS(&HeapPtr)));
             sm_DescriptorHeapPool[idx].emplace_back(HeapPtr);
             return HeapPtr.Get();
         }
@@ -76,7 +78,7 @@ namespace AtomEngine
     {
         m_CurrentHeapPtr = nullptr;
         m_CurrentOffset = 0;
-        m_DescriptorSize = DX12Core::gDevice->GetDescriptorHandleIncrementSize(HeapType);
+        m_DescriptorSize = gDevice->GetDescriptorHandleIncrementSize(HeapType);
     }
 
     DynamicDescriptorHeap::~DynamicDescriptorHeap()
@@ -190,10 +192,10 @@ namespace AtomEngine
                 _BitScanForward64(&DescriptorCount, ~SetHandles);
                 SetHandles >>= DescriptorCount;
 
-                // If we run out of temp room, copy what we've got so far
+                // 仮に空間が足りなくなったら、今までのものをコピーする
                 if (NumSrcDescriptorRanges + DescriptorCount > kMaxDescriptorsPerCopy)
                 {
-                    DX12Core::gDevice->CopyDescriptors(
+                    gDevice->CopyDescriptors(
                         NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
                         NumSrcDescriptorRanges, pSrcDescriptorRangeStarts, pSrcDescriptorRangeSizes,
                         Type);
@@ -215,13 +217,13 @@ namespace AtomEngine
                     ++NumSrcDescriptorRanges;
                 }
 
-                //コピー先のポインタをコピーする記述子の数だけ前方に移動する
+                // コピー先のポインタをコピーする記述子の数だけ前方に移動する
                 SrcHandles += DescriptorCount;
                 CurDest.ptr += DescriptorCount * DescriptorSize;
             }
         }
 
-        DX12Core::gDevice->CopyDescriptors(
+        gDevice->CopyDescriptors(
             NumDestDescriptorRanges, pDestDescriptorRangeStarts, pDestDescriptorRangeSizes,
             NumSrcDescriptorRanges, pSrcDescriptorRangeStarts, pSrcDescriptorRangeSizes,
             Type);
@@ -238,7 +240,7 @@ namespace AtomEngine
             NeededSize = HandleCache.ComputeStagedSize();
         }
 
-        //これにより、新しいヒープの作成がトリガーされる可能性があります
+        // これにより、新しいヒープの作成がトリガーされる可能性があります
         m_OwningContext.SetDescriptorHeap(m_DescriptorType, GetHeapPointer());
         HandleCache.CopyAndBindStaleTables(m_DescriptorType, m_DescriptorSize, Allocate(NeededSize), CmdList, SetFunc);
     }
@@ -262,7 +264,7 @@ namespace AtomEngine
         DescriptorHandle DestHandle = m_FirstDescriptor + m_CurrentOffset * m_DescriptorSize;
         m_CurrentOffset += 1;
 
-        DX12Core::gDevice->CopyDescriptorsSimple(1, DestHandle, Handle, m_DescriptorType);
+        gDevice->CopyDescriptorsSimple(1, DestHandle, Handle, m_DescriptorType);
 
         return DestHandle;
     }

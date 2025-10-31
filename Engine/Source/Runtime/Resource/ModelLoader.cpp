@@ -13,7 +13,6 @@ namespace AtomEngine
 	static const TextureMapping textureMap[] =
 	{
 		{ aiTextureType_BASE_COLOR,					TextureSlot::kBaseColor			},
-		{ aiTextureType_DIFFUSE,					TextureSlot::kBaseColor			},
 		{ aiTextureType_NORMALS,					TextureSlot::kNormal			},
 		{ aiTextureType_HEIGHT,						TextureSlot::kNormal			},
 		{ aiTextureType_LIGHTMAP,					TextureSlot::kOcclusion			},
@@ -31,7 +30,7 @@ namespace AtomEngine
 			texData.slot = slot;
 
 			material.textures.push_back(std::move(texData));
-			material.textureMask |= (1 << static_cast<uint8_t>(slot));
+			material.textureMask |= slot;
 			return true;
 		}
 		return false;
@@ -56,10 +55,10 @@ namespace AtomEngine
 	{
 		uint32_t flag =
 			aiProcess_MakeLeftHanded |
+			aiProcess_FlipUVs |
 			aiProcess_FlipWindingOrder |
 			aiProcess_Triangulate |
 			aiProcess_RemoveRedundantMaterials |
-			aiProcess_SplitLargeMeshes |
 			aiProcess_CalcTangentSpace |
 			aiProcess_GenSmoothNormals |
 			aiProcess_JoinIdenticalVertices |
@@ -76,33 +75,62 @@ namespace AtomEngine
 
 		const aiScene* scene = importer.ReadFile(filePath, flag);
 		ASSERT(scene && scene->mRootNode && scene->HasMeshes(),"Load Model Failed to scene");
-		
+		//マテリアルをプロセス
 		for (uint32_t i = 0; i < scene->mNumMaterials; i++)
 			ProcessMaterial(model, scene->mMaterials[i]);
-
-		ProcessNode(model,scene->mRootNode, scene);
-
+		//ノードをプロセス
+		model.vertices.clear();
+		model.indices.clear();
+		model.rootNode = ProcessNode(model,scene->mRootNode, scene,nullptr);
+		model.skeleton = ProcessSkeleton(model,*model.rootNode);
+		//アニメーションをプロセス
 		if(scene->HasAnimations())
             ProcessAnimations(model, scene);
-
+		//バウンディングボックスを計算
 		ComputeBoundingVolumes(model);
 
 		return true;
 	}
 
-	void ModelLoader::ProcessNode(ModelData& model, aiNode* node, const aiScene* scene)
+	std::unique_ptr<Node> ModelLoader::ProcessNode(ModelData& model, aiNode* node, const aiScene* scene, Node* parent)
 	{
+		auto outNode = std::make_unique<Node>();
+		outNode->name = node->mName.C_Str();
+		outNode->parent = parent;
+		outNode->localTransform = ConvertTransform(node->mTransformation);
+
+		if (parent)
+			outNode->globalTransform = outNode->localTransform * parent->globalTransform;
+		else
+			outNode->globalTransform = outNode->localTransform;
+
+		GraphNode gnode{};
+		gnode.xform = outNode->localTransform;
+		gnode.rotation = Quaternion(outNode->localTransform);
+		gnode.scale = outNode->localTransform.GetScale();
+		gnode.matrixIdx = static_cast<uint32_t>(model.graphNodes.size());
+		gnode.hasChildren = (node->mNumChildren > 0);
+		gnode.hasSibling = (parent && parent->children.size() > 0);
+		gnode.staleMatrix = true;
+		gnode.skeletonRoot = node->mParent ? false : true;
+		model.graphNodes.push_back(gnode);
+
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
+			uint32_t meshIndex = static_cast<uint32_t>(model.meshes.size());
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			
+
 			model.meshes.push_back(ProcessMesh(model, mesh));
+			outNode->meshIndices.push_back(meshIndex);
 		}
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
-            ProcessNode(model, node->mChildren[i], scene);
+			auto childNode = ProcessNode(model, node->mChildren[i], scene, outNode.get());
+			outNode->children.push_back(std::move(childNode));
 		}
+
+		return outNode;
 	}
 
 	Mesh ModelLoader::ProcessMesh(ModelData& model, aiMesh* mesh)
@@ -110,12 +138,12 @@ namespace AtomEngine
 		Mesh outMesh;
 		outMesh.vertexCount = mesh->mNumVertices;
 		outMesh.indexCount = mesh->mNumFaces * 3;
-		outMesh.stride = sizeof(Vertex);
 
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
-		vertices.reserve(outMesh.vertexCount);
-		indices.reserve(outMesh.indexCount);
+		uint32_t vertexBase = static_cast<uint32_t>(model.vertices.size());
+		uint32_t indexBase = static_cast<uint32_t>(model.indices.size());
+
+		model.vertices.reserve(model.vertices.size() + outMesh.vertexCount);
+		model.indices.reserve(model.indices.size() + outMesh.indexCount);
 
 		AxisAlignedBox aabb;
 		for (uint32_t i = 0; i < mesh->mNumVertices; i++)
@@ -125,16 +153,27 @@ namespace AtomEngine
 
 			if (mesh->mTextureCoords[0])
 				v.texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+			else
+				v.texcoord = { 0.0f, 0.0f };
+
 			if (mesh->mNormals)
 				v.normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-			if (mesh->mTangents)
+			else
+				v.normal = { 0.0f, 0.0f, 0.0f };
+
+			if (mesh->mTangents && mesh->mBitangents)
 			{
-				v.tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+				v.tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
 				v.bitangent = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+			}
+			else
+			{
+				v.tangent = { 0.0f, 0.0f, 0.0f };
+				v.bitangent = { 0.0f, 0.0f, 0.0f };
 			}
 
 			aabb.AddPoint(v.position);
-			vertices.push_back(v);
+			model.vertices.push_back(v);
 		}
 
 		for (uint32_t i = 0; i < mesh->mNumFaces; i++)
@@ -142,7 +181,7 @@ namespace AtomEngine
 			aiFace face = mesh->mFaces[i];
 			assert(face.mNumIndices == 3);
 			for (uint32_t j = 0; j < face.mNumIndices; j++)
-				indices.push_back(face.mIndices[j]);
+				model.indices.push_back(static_cast<uint32_t>(face.mIndices[j]) + vertexBase);
 		}
 
 		if (mesh->HasBones())
@@ -158,22 +197,24 @@ namespace AtomEngine
 				aiVector3D s, t; aiQuaternion r;
 				m.Decompose(s, r, t);
 				jwd.inverseBindPoseMatrix.MakeAffine(
-					{ s.x,s.y,s.z }, { r.x,r.y,r.z,r.w }, { t.x,t.y,t.z });
+					{ s.x, s.y, s.z }, { r.x, r.y, r.z, r.w }, { t.x, t.y, t.z });
 
 				for (uint32_t w = 0; w < bone->mNumWeights; ++w)
 				{
-					uint32_t localId = bone->mWeights[w].mVertexId;
+					uint32_t localVertexId = bone->mWeights[w].mVertexId;
 					float weight = bone->mWeights[w].mWeight;
-					jwd.vertexWeights.push_back({ weight, localId });
+					uint32_t globalVertexId = vertexBase + localVertexId;
+					jwd.vertexWeights.push_back({ weight, globalVertexId });
 				}
 			}
 		}
 
 		outMesh.boundingBox = aabb;
+
 		SubMesh sub{};
-		sub.indexOffset = 0;
+		sub.indexOffset = indexBase;
 		sub.indexCount = outMesh.indexCount;
-		sub.vertexOffset = 0;
+		sub.vertexOffset = vertexBase;
 		sub.vertexCount = outMesh.vertexCount;
 		sub.materialIndex = mesh->mMaterialIndex;
 		sub.bounds = aabb;
@@ -223,33 +264,44 @@ namespace AtomEngine
 			const aiAnimation* anim = scene->mAnimations[i];
 			AnimationClip clip{};
 			clip.name = anim->mName.C_Str();
-			clip.duration = (float)anim->mDuration / (float)anim->mTicksPerSecond;
+
+			double ticksPerSecond = anim->mTicksPerSecond;
+			if (ticksPerSecond <= 0.0)
+			{
+				ticksPerSecond = 25.0;
+			}
+			clip.duration = (float)(anim->mDuration / ticksPerSecond);
 
 			for (uint32_t c = 0; c < anim->mNumChannels; ++c)
 			{
 				const aiNodeAnim* channel = anim->mChannels[c];
 				AnimationCurve curve{};
-				curve.targetJoint = model.skeleton.jointMap[channel->mNodeName.C_Str()];
+				auto it = model.skeleton.jointMap.find(channel->mNodeName.C_Str());
+				if (it == model.skeleton.jointMap.end())
+				{
+					continue;
+				}
+				curve.targetJoint = it->second;
 
 				for (uint32_t k = 0; k < channel->mNumPositionKeys; ++k)
 				{
 					auto& key = channel->mPositionKeys[k];
-					curve.translation.push_back({ float(key.mTime / anim->mTicksPerSecond),
-						{ key.mValue.x,key.mValue.y,key.mValue.z } });
+					curve.translation.push_back({ float(key.mTime / ticksPerSecond),
+						{ key.mValue.x, key.mValue.y, key.mValue.z } });
 				}
 
 				for (uint32_t k = 0; k < channel->mNumRotationKeys; ++k)
 				{
 					auto& key = channel->mRotationKeys[k];
-					curve.rotation.push_back({ float(key.mTime / anim->mTicksPerSecond),
-						{ key.mValue.x,key.mValue.y,key.mValue.z,key.mValue.w } });
+					curve.rotation.push_back({ float(key.mTime / ticksPerSecond),
+						{ key.mValue.x, key.mValue.y, key.mValue.z, key.mValue.w } });
 				}
 
 				for (uint32_t k = 0; k < channel->mNumScalingKeys; ++k)
 				{
-					auto& key = channel->mRotationKeys[k];
-					curve.scale.push_back({ float(key.mTime / anim->mTicksPerSecond),
-						{ key.mValue.x,key.mValue.y,key.mValue.z } });
+					auto& key = channel->mScalingKeys[k];
+					curve.scale.push_back({ float(key.mTime / ticksPerSecond),
+						{ key.mValue.x, key.mValue.y, key.mValue.z } });
 				}
 
 				clip.curves.push_back(std::move(curve));
@@ -259,15 +311,81 @@ namespace AtomEngine
 		}
 	}
 
-	void ModelLoader::ComputeBoundingVolumes(ModelData& model)
+	Skeleton ModelLoader::ProcessSkeleton(ModelData& model,const Node& rootNode)
 	{
-		AxisAlignedBox modelBounds;
-		for (auto& mesh : model.meshes)
+		Skeleton skeleton;
+
+		CreateJoint(model,rootNode, std::nullopt, skeleton.joints);
+
+		for (int32_t i = 0; i < (int32_t)skeleton.joints.size(); ++i)
 		{
-			modelBounds.AddBoundingBox(mesh.boundingBox);
+			skeleton.jointMap[skeleton.joints[i].name] = i;
 		}
 
-		model.boundingBox = modelBounds;
+		skeleton.rootJoint = skeleton.joints.empty() ? -1 : 0;
+
+		return skeleton;
+	}
+
+	int32_t ModelLoader::CreateJoint(
+		ModelData& model,
+		const Node& node,
+		const std::optional<int32_t>& parent,
+		std::vector<Joint>& joints)
+	{
+		int32_t thisIndex = -1;
+
+		auto it = model.skinClusterData.find(node.name);
+		if (it != model.skinClusterData.end())
+		{
+			thisIndex = static_cast<int32_t>(joints.size());
+			joints.emplace_back();
+			Joint& joint = joints.back();
+
+			joint.name = node.name;
+			joint.index = thisIndex;
+			joint.parentIndex = parent.has_value() ? parent.value() : -1;
+			joint.localBindPose = node.localTransform;
+			joint.inverseBindPose = it->second.inverseBindPoseMatrix;
+
+			if (joint.parentIndex >= 0)
+				joints[joint.parentIndex].children.push_back(joint.index);
+		}
+
+		for (auto& child : node.children)
+		{
+			int32_t childIndex = CreateJoint(model,*child, thisIndex >= 0 ? std::optional<int32_t>(thisIndex) : parent, joints);
+			if (thisIndex >= 0 && childIndex >= 0)
+			{
+				joints[thisIndex].children.push_back(childIndex);
+			}
+		}
+
+		return thisIndex;
+	}
+
+
+	void ModelLoader::ComputeBoundingVolumes(ModelData& model)
+	{
+		std::function<AxisAlignedBox(const Node*)> computeBounds = [&](const Node* node) -> AxisAlignedBox
+			{
+				AxisAlignedBox bounds;
+				for (auto meshIdx : node->meshIndices)
+				{
+					auto& mesh = model.meshes[meshIdx];
+					bounds.AddBoundingBox(mesh.boundingBox);
+				}
+				for (auto& child : node->children)
+					bounds.AddBoundingBox(computeBounds(child.get()));
+
+				return bounds;
+			};
+
+		if (model.rootNode)
+		{
+			model.boundingBox = computeBounds(model.rootNode.get());
+			model.boundingSphere = BoundingSphere(model.boundingBox.GetCenter(), model.boundingBox.GetRadius());
+		}
 	}
 	
 }

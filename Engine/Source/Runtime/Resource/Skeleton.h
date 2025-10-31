@@ -4,6 +4,13 @@
 
 namespace AtomEngine
 {
+
+    struct JointVertex
+    {
+        uint16_t jointIndices[4];
+        float weights[4];
+    };
+
     struct Joint
     {
         std::string name;

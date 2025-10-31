@@ -8,7 +8,7 @@ namespace AtomEngine
 {
 	std::ofstream logStream;
 
-	void AtomEngine::InitLog()
+	void AtomEngine::StartLog()
 	{
 #ifdef _DEBUG
 		std::filesystem::create_directory("logs");
@@ -29,7 +29,7 @@ namespace AtomEngine
 #endif // _DEBUG
 	}
 
-	void FinalizeLog()
+	void CloseLog()
 	{
 		if (logStream.is_open())
 		{

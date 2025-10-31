@@ -80,6 +80,12 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Source;$(SolutionDir)External\GameInput\include;$(SolutionDir)External\DirectXTex\include;$(SolutionDir)External\assimp\include;$(SolutionDir)External\entt;$(SolutionDir)External\nlohmannjson;$(SolutionDir)External\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,7 +159,11 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\SeletonComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\SkyboxRenderer.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\GUID.h" />
+    <ClInclude Include="Source\Runtime\Function\Camera\DebugCamera.h" />
+    <ClInclude Include="Source\Editor\ImGuiCommon.h" />
     <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h" />
     <ClInclude Include="Source\Runtime\Resource\Skeleton.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h" />
@@ -248,7 +258,11 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\SeletonComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\SkyboxRenderer.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\GUID.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Camera\DebugCamera.cpp" />
+    <ClCompile Include="Source\Editor\ImGuiCommon.cpp" />
     <ClCompile Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.cpp" />
     <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp" />
     <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp" />

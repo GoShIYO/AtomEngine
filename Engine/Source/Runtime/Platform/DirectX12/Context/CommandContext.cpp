@@ -8,7 +8,7 @@
 
 namespace AtomEngine
 {
-    //using namespace DX12Core;
+    using namespace DX12Core;
     void ContextManager::DestroyAllContexts(void)
     {
         for (uint32_t i = 0; i < 4; ++i)
@@ -68,15 +68,12 @@ namespace AtomEngine
 
         ASSERT(mCurrentAllocator != nullptr);
 
-        uint64_t FenceValue = DX12Core::gCommandManager.GetQueue(mType).ExecuteCommandList(mCommandList);
+        uint64_t FenceValue = gCommandManager.GetQueue(mType).ExecuteCommandList(mCommandList);
 
         if (WaitForCompletion)
-            DX12Core::gCommandManager.WaitForFence(FenceValue);
+            gCommandManager.WaitForFence(FenceValue);
 
-        //
-        // コマンドリストをリセットして以前の状態を復元する
-        //
-
+   
         mCommandList->Reset(mCurrentAllocator, nullptr);
 
         if (mCurGraphicsRootSignature)
@@ -105,7 +102,7 @@ namespace AtomEngine
 
         ASSERT(mCurrentAllocator != nullptr);
 
-        CommandQueue& Queue = DX12Core::gCommandManager.GetQueue(mType);
+        CommandQueue& Queue = gCommandManager.GetQueue(mType);
 
         uint64_t FenceValue = Queue.ExecuteCommandList(mCommandList);
         Queue.DiscardAllocator(FenceValue, mCurrentAllocator);
@@ -117,9 +114,9 @@ namespace AtomEngine
         mDynamicSamplerDescriptorHeap.CleanupUsedHeaps(FenceValue);
 
         if (WaitForCompletion)
-            DX12Core::gCommandManager.WaitForFence(FenceValue);
+            gCommandManager.WaitForFence(FenceValue);
 
-        DX12Core::gContextManager.FreeContext(this);
+        gContextManager.FreeContext(this);
 
         return FenceValue;
     }
@@ -150,7 +147,7 @@ namespace AtomEngine
 
     void CommandContext::Initialize(void)
     {
-        DX12Core::gCommandManager.CreateNewCommandList(mType, &mCommandList, &mCurrentAllocator);
+        gCommandManager.CreateNewCommandList(mType, &mCommandList, &mCurrentAllocator);
     }
 
     void CommandContext::Reset(void)
@@ -158,7 +155,7 @@ namespace AtomEngine
         //Reset() は、以前に解放されたコンテキストに対してのみ呼び出します。コマンドリストは保持されますが、
         // 新しいアロケータを要求する必要があります。
         ASSERT(mCommandList != nullptr && mCurrentAllocator == nullptr);
-        mCurrentAllocator = DX12Core::gCommandManager.GetQueue(mType).RequestAllocator();
+        mCurrentAllocator = gCommandManager.GetQueue(mType).RequestAllocator();
         mCommandList->Reset(mCurrentAllocator, nullptr);
 
         mCurGraphicsRootSignature = nullptr;
@@ -205,7 +202,6 @@ namespace AtomEngine
             BarrierDesc.Transition.StateBefore = OldState;
             BarrierDesc.Transition.StateAfter = NewState;
 
-            // Check to see if we already started the transition
             if (NewState == Resource.mTransitioningState)
             {
                 BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;

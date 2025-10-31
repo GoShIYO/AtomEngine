@@ -54,7 +54,7 @@ namespace AtomEngine
 		static Input* GetInstance();
 
 		void Initialize();
-		void Finalize();
+		void Shutdown();
 		void Update();
 		/// <summary>
 		/// キーの押下をチェック
@@ -92,6 +92,13 @@ namespace AtomEngine
 		/// <param name="button">ボタンの種類</param>
 		/// <returns>トリガーか</returns>
 		bool IsTriggerGamePad(GamePadButton button)const;
+		/// <summary>
+		///	マウススクリーン上の位置を取得
+		/// </summary>
+		/// <param name="mouseX">X座標</param>
+		/// <param name="mouseY">Y座標</param>
+		/// <returns></returns>
+		bool GetMousePosition(int* mouseX, int* mouseY);
 		/// <summary>
 		/// マウスの状態を取得
 		/// </summary>

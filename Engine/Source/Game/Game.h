@@ -1,6 +1,8 @@
 #pragma once
 #include "Runtime/Application/GameApp.h"
 #include "Runtime/Resource/AssetManager.h"
+#include "Runtime/Function/Camera/DebugCamera.h"
+#include "Runtime/Function/Render/SkyboxRenderer.h"
 
 using namespace AtomEngine;
 class Game :
@@ -14,17 +16,23 @@ public:
 	bool Exit() override;
 private:
 	World world;
+	std::unique_ptr<GameObject> m_GameObject;
 
 	RootSignature m_RootSignature;
 	ByteAddressBuffer m_VertexBuffer;
 	ByteAddressBuffer m_IndexBuffer;
 	GraphicsPSO m_PSO;
 
+	TextureRef test;
+	DescriptorHandle gpuHandle;
+
 	Camera m_Camera;
+	std::unique_ptr<DebugCamera> m_DebugCamera;
+
 	Matrix4x4 m_ViewProjMatrix;
 	D3D12_VIEWPORT m_MainViewport;
 	D3D12_RECT m_MainScissor;
-
+	SkyboxRenderer skybox;
 	float g_SunLightIntensity = 4.0f;
 	float g_SunOrientation = -0.5f;
 	float g_SunInclination = 0.75f;

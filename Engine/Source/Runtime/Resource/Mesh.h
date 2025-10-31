@@ -13,6 +13,13 @@ namespace AtomEngine
 		Vector3 bitangent;
 	};
 
+	enum PSOFlags : uint16_t
+	{
+		kHasSkin = 1 << 0,
+		kAlphaTest = 1 << 1,
+		kAlphaBlend = 1 << 2,
+	};
+
 	struct SubMesh
 	{
 		uint32_t indexOffset = 0;
@@ -31,15 +38,6 @@ namespace AtomEngine
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
 
-		uint32_t stride = 0;
-
-		uint32_t positionOffset = 0;
-		uint32_t uvOffset = 0;
-		uint32_t normalOffset = 0;
-		uint32_t tangentOffset = 0;
-
 		std::vector<SubMesh> subMeshes;
-
-		int32_t skinIndex = -1;
 	};
 }

@@ -4,23 +4,15 @@
 
 namespace AtomEngine
 {
-    enum class TextureSlot : uint8_t
+    enum TextureSlot : uint8_t
     {
-        kBaseColor,
-        kMetallic,
-        kRoughness,
-        kNormal,
-        kOcclusion,
-        kEmissive,
-        kMetallicRoughness,
-
-        kNumTextures
-    };
-
-    enum PSOFlags : uint16_t
-    {
-        kHasSkin = 1 << 0,
-        //TODO:alpha test / alpha blend
+        kBaseColor          = 1 << 0,
+        kMetallic           = 1 << 1,
+        kRoughness          = 1 << 2,
+        kNormal             = 1 << 3,
+        kOcclusion          = 1 << 4,
+        kEmissive           = 1 << 5,
+        kMetallicRoughness  = 1 << 6,
     };
 
     struct MaterialTexture
@@ -38,7 +30,7 @@ namespace AtomEngine
 		float metallicFactor = 0.0f;
 		float roughnessFactor = 0.0f;
 	
-        uint32_t textureMask = 0;
+        uint8_t textureMask = 0;
         std::vector<MaterialTexture> textures;
     };
 }

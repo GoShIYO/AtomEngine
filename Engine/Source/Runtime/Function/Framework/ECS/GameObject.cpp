@@ -4,7 +4,7 @@
 namespace AtomEngine
 {
     GameObject::GameObject(Entity handle, World* world)
-        : mHandle(handle), mWorld(world)
+        : mHandle(handle), mWorld(world), mGUID(GUID())
     {
     }
 

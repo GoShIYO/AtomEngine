@@ -3,9 +3,13 @@
 #include <cassert>
 #include <cmath>
 #include <limits>
+#include <DirectXMath.h>
+#undef max
+#undef min
 
 namespace AtomEngine
 {
+	using namespace DirectX;
 
 	class Radian;
 	class Angle;
@@ -165,7 +169,6 @@ namespace AtomEngine
 
 		static float DegreesToRadians(float degrees);
 		static float RadiansToDegrees(float radians);
-
 		static float  sin(const Radian& rad) { return std::sin(rad.GetRadians()); }
 		static float  sin(float value) { return std::sin(value); }
 		static float  cos(const Radian& rad) { return std::cos(rad.GetRadians()); }

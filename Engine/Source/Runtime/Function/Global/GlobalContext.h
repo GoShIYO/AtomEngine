@@ -1,4 +1,5 @@
 #pragma once
+#include "Editor/ImGuiCommon.h"
 
 namespace AtomEngine
 {
@@ -11,11 +12,12 @@ namespace AtomEngine
 		// 初期化
 		void Initialize();
 		// 終了
-		void Finalize();
+		void Shutdown();
 	public:
 		/// グローバルコンテキストのコンポーネント
 		WindowManager* windowManager = nullptr;
 		Input* input = nullptr;
+		std::unique_ptr<ImGuiCommon> imgui;
 	};
 
 	extern GlobalContext gContext;

@@ -2,7 +2,7 @@
 #include "Runtime/Platform/DirectX12/Core/DescriptorHeap.h"
 #include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
 #include "Runtime/Resource/TextureRef.h"
-
+#include "Runtime/Function/Camera/CameraBase.h"
 namespace AtomEngine
 {
 	enum RootBindings
@@ -17,7 +17,17 @@ namespace AtomEngine
 		kNumRootBindings
 	};
 
-	class RenderSystem
+	enum class PSOIndex
+	{
+		kPSO_Default,
+		kPSO_Skin,
+		kPSO_MRWorkFlow,
+		kPSO_MRWorkFlow_Skin,
+
+		kNumPSOs
+	};
+
+	class Renderer
 	{
 	public:
 
@@ -32,16 +42,11 @@ namespace AtomEngine
 		static DescriptorHeap& GetTextureHeap() { return gTextureHeap; }
         static DescriptorHandle& GetCommonTextures() { return gCommonTextures; }
 
-		static const RootSignature& GetRootSignature() { return gRootSig; }
-
-		static void SetIBLTextures(TextureRef diffuseIBL, TextureRef specularIBL);
-		static void SetIBLBias(float LODBias);
-		static float GetIBLRange();
-		static float GetIBLBias();
+		static const RootSignature& GetRootSignature() { return mRootSig; }
 
 	private:
 		static std::vector<GraphicsPSO> gPSOs;
-		static RootSignature gRootSig;
+		static RootSignature mRootSig;
 		static DescriptorHeap gTextureHeap;
 		static DescriptorHandle gCommonTextures;
 	};

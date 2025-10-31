@@ -9,22 +9,25 @@ namespace AtomEngine
 
 	void GlobalContext::Initialize()
 	{
-		InitLog();
+		StartLog();
 
 		windowManager = WindowManager::GetInstance();
 		WindowCreateInfo windowCreateInfo;
 		windowManager->Initialize(windowCreateInfo);
 
+		imgui = std::make_unique<ImGuiCommon>();
+		imgui->Initialize(windowManager->GetWindowHandle());
+
 		input = Input::GetInstance();
 		input->Initialize();
-
 	}
 
-	void GlobalContext::Finalize()
+	void GlobalContext::Shutdown()
 	{
-		input->Finalize();
+		imgui->Shutdown();
+		input->Shutdown();
 
-		FinalizeLog();
+		CloseLog();
 	}
 }
 

@@ -3,6 +3,7 @@
 #include "Animation.h"
 #include "TextureRef.h"
 #include "Material.h"
+#include "Skeleton.h"
 
 #include "../Platform/DirectX12/Buffer/GpuBuffer.h"
 #include "../Platform/DirectX12/Buffer/UploadBuffer.h"
@@ -15,65 +16,59 @@
 
 namespace AtomEngine
 {
-	struct SkinConstants
-	{
-		Matrix4x4 skeletonMatrix;
-		Matrix4x4 skeletonInverseTranspose;
-	};
-
-	struct SkinCluster
-	{
-		std::vector<Matrix4x4> inverseBindPoseMatrices;
-
-		StructuredBuffer paletteResource;
-		std::span<SkinConstants> mappedPalette;
-		DescriptorHandle paletteSrv;
-	};
-
 	class RenderQueue;
+
+	struct JointXform
+	{
+		Matrix4x4 posXform;
+		Matrix4x4 nrmXform;
+	};
+
+	struct GraphNode
+	{
+		Matrix4x4 xform;
+		Quaternion rotation;
+        Vector3 scale;
+
+		uint32_t matrixIdx : 28;
+		uint32_t hasSibling : 1;
+		uint32_t hasChildren : 1;
+		uint32_t staleMatrix : 1;
+		uint32_t skeletonRoot : 1;
+	};
 
 	class Model
 	{
 	public:
 		~Model(){Destroy();}
+		
+		void Render(RenderQueue& sorter,
+			const GpuBuffer& meshConstants,
+			const std::vector<Transform> sphereTransforms,
+			const JointXform* skelton ) const;
 
-		ByteAddressBuffer vertexBuffer;
-		ByteAddressBuffer indexBuffer;
-		std::vector<TextureRef> textures;
+		BoundingSphere mBoundingSphere;
+		AxisAlignedBox mBoundingBox;
 
+		ByteAddressBuffer mVertexBuffer;
+		ByteAddressBuffer mIndexBuffer;
+		ByteAddressBuffer mMaterialConstants;
 
+		std::vector<TextureRef> mTextures;
+		std::vector<uint8_t> mMeshData;
+		std::vector<uint8_t> mKeyFrameData;
+		std::vector<AnimationClip> mAnimationData;
+		std::vector<uint16_t>mJointIndices;
+		std::vector<Matrix4x4>mJointIBMs;
+		std::vector<GraphNode> mSceneGraph;
+
+		Skeleton mSkeleton;
+
+		uint32_t mNumMeshs = 0;
+		uint32_t mNumIndices = 0;
 	protected:
 
 		void Destroy();
-	};
-
-	class ModelInstance
-	{
-	public:
-		ModelInstance() {}
-		~ModelInstance()
-		{
-			m_MeshConstantsCPU.Destroy();
-			m_MeshConstantsGPU.Destroy();
-		}
-		ModelInstance(std::shared_ptr<const Model> sourceModel);
-		ModelInstance(const ModelInstance& modelInstance);
-
-		ModelInstance& operator=(std::shared_ptr<const Model> sourceModel);
-
-		bool IsNull(void) const { return m_Model == nullptr; }
-
-		void Update(GraphicsContext& gfxContext, float deltaTime);
-
-		BoundingSphere GetBoundingSphere() const;
-		OrientedBox GetBoundingBox() const;
-		void Render(RenderQueue& sorter) const;
-
-	private:
-		std::shared_ptr<const Model> m_Model;
-		UploadBuffer m_MeshConstantsCPU;
-		ByteAddressBuffer m_MeshConstantsGPU;
-		Transform m_Locator;
 	};
 }
 

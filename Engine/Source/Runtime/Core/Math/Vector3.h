@@ -1,9 +1,6 @@
 #pragma once
 #include "Math.h"
 #include "Quaternion.h"
-#include <DirectXMath.h>
-using namespace DirectX;
-
 
 namespace AtomEngine
 {

@@ -253,15 +253,35 @@
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.h">
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ConstantBufferStructures.h" />
-    <ClInclude Include="Source\Runtime\Resource\AssetManager.h" />
-    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h" />
-    <ClInclude Include="Source\Runtime\Function\Light\LightManager.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h" />
-    <ClInclude Include="Source\Runtime\Resource\Material.h" />
-    <ClInclude Include="Source\Runtime\Resource\Skeleton.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\SeletonComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h">
+      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\AssetManager.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Light\LightManager.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ConstantBufferStructures.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Material.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Skeleton.h">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ImGuiCommon.h" />
+    <ClInclude Include="Source\Runtime\Function\Camera\DebugCamera.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\GUID.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\SkyboxRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -483,12 +503,26 @@
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp">
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp" />
-    <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\SeletonComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.cpp">
+      <Filter>Engine\Runtime\Function\Framework\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp">
+      <Filter>Engine\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ImGuiCommon.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Camera\DebugCamera.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\GUID.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\SkyboxRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -598,10 +632,18 @@
     <FxCompile Include="Asset\Shaders\SkyboxVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shaders\testShader.hlsl" />
-    <FxCompile Include="Asset\Shaders\DepthOnlyVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DefaultNoUV1SkinVS.hlsl" />
-    <FxCompile Include="Asset\Shaders\DepthOnlySkinVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DepthOnlyVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\DefaultNoUV1SkinVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\DepthOnlySkinVS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\testShader.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Unility.hlsli">
@@ -610,7 +652,11 @@
     <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl">
       <Filter>Engine\Runtime\Function\Framework\ECS</Filter>
     </None>
-    <None Include="Asset\Shaders\Object3D.hlsli" />
-    <None Include="Asset\Shaders\Common.hlsli" />
+    <None Include="Asset\Shaders\Common.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Asset\Shaders\Object3D.hlsli">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

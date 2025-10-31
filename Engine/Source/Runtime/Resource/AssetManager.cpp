@@ -3,6 +3,7 @@
 #include "DirectXTex.h"
 #include "Runtime/Function/Render/RenderSystem.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+#include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 
 #include <map>
 #include <mutex>
@@ -14,7 +15,8 @@ namespace
 	std::map<std::wstring, std::shared_ptr<AtomEngine::Model>> sModelDataCache;
 	std::unordered_map<uint32_t, uint32_t> gSamplerPermutations;
 
-	std::mutex sMutex;
+	std::mutex sTextureMutex;
+	std::mutex sModelMutex;
 }
 
 namespace AtomEngine
@@ -27,11 +29,12 @@ namespace AtomEngine
 	void AssetManager::Shutdown()
 	{
 		sTextureCache.clear();
+		sModelDataCache.clear();
 	}
 
 	void AssetManager::DestroyTexture(const std::wstring& key)
 	{
-		std::lock_guard<std::mutex> Guard(sMutex);
+		std::lock_guard<std::mutex> Guard(sTextureMutex);
 
 		auto iter = sTextureCache.find(key);
 		if (iter != sTextureCache.end())
@@ -40,7 +43,7 @@ namespace AtomEngine
 
 	void AssetManager::DestroyModel(const std::wstring& key)
 	{
-		std::lock_guard<std::mutex> Guard(sMutex);
+		std::lock_guard<std::mutex> Guard(sTextureMutex);
 		auto iter = sModelDataCache.find(key);
 		if (iter != sModelDataCache.end())
 			sModelDataCache.erase(iter);
@@ -51,7 +54,7 @@ namespace AtomEngine
 		ManagedTexture* tex = nullptr;
 
 		{
-			std::lock_guard<std::mutex> Guard(sMutex);
+			std::lock_guard<std::mutex> Guard(sTextureMutex);
 
 			std::wstring key = fileName;
 			if (forceSRGB)
@@ -105,6 +108,141 @@ namespace AtomEngine
 		return LoadCovertTexture(UTF8ToWString(filePath), fallback, forceSRGB);
 	}
 
+	static D3D12_CPU_DESCRIPTOR_HANDLE ResolveTextureSRV(
+		const Material& material,
+		const Model& model,
+		TextureSlot slot,
+		const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& DefaultTextures)
+	{
+		const uint32_t mask = material.textureMask;
+		const uint32_t slotBit = (1u << static_cast<uint8_t>(slot));
+
+		if ((mask & slotBit) == 0)
+		{
+			switch (slot)
+			{
+			case TextureSlot::kBaseColor:         return DefaultTextures[0];
+			case TextureSlot::kMetallicRoughness: return DefaultTextures[1];
+			case TextureSlot::kMetallic:          return DefaultTextures[1];
+			case TextureSlot::kRoughness:         return DefaultTextures[2];
+			case TextureSlot::kNormal:            return DefaultTextures[(mask & kMetallicRoughness) ? 2 : 3];
+			case TextureSlot::kOcclusion:         return DefaultTextures[(mask & kMetallicRoughness) ? 3 : 4];
+			case TextureSlot::kEmissive:          return DefaultTextures[(mask & kMetallicRoughness) ? 4 : 5];
+			default:                              return GetDefaultTexture(kWhiteOpaque2D);
+			}
+		}
+
+		for (size_t i = 0; i < material.textures.size(); ++i)
+		{
+			if (material.textures[i].slot == slot)
+			{
+				if (i < model.mTextures.size())
+					return model.mTextures[i]->GetSRV();
+			}
+		}
+
+		switch (slot)
+		{
+		case TextureSlot::kBaseColor:         return DefaultTextures[0];
+		case TextureSlot::kMetallicRoughness: return DefaultTextures[1];
+		case TextureSlot::kMetallic:          return DefaultTextures[1];
+		case TextureSlot::kRoughness:         return DefaultTextures[2];
+		case TextureSlot::kNormal:            return DefaultTextures[(mask & kMetallicRoughness) ? 2 : 3];
+		case TextureSlot::kOcclusion:         return DefaultTextures[(mask & kMetallicRoughness) ? 3 : 4];
+		case TextureSlot::kEmissive:          return DefaultTextures[(mask & kMetallicRoughness) ? 4 : 5];
+		default:                              return GetDefaultTexture(kWhiteOpaque2D);
+		}
+	}
+
+	void LoadMaterialTexture(
+		Model& model, 
+		const ModelData& modelData,
+		const std::vector<MaterialTexture>& textures,
+		const std::wstring& basePath)
+	{
+		static_assert((_alignof(MaterialConstants) & 255) == 0, "CBVs need 256 byte alignment");
+
+		const uint32_t numTextures = (uint32_t)textures.size();
+		model.mTextures.resize(numTextures);
+		for (size_t ti = 0; ti < numTextures; ++ti)
+		{
+			std::wstring originalFile = basePath + textures[ti].name;
+			bool optionalSRGB = 
+				(textures[ti].slot & (TextureSlot::kBaseColor | TextureSlot::kEmissive)) ? true : false;
+			CompileTextureOnDemand(originalFile, TextureOptions(optionalSRGB));
+
+			std::wstring ddsFile = RemoveExtension(originalFile) + L".dds";
+			model.mTextures[ti] = AssetManager::LoadTextureFile(ddsFile);
+		}
+
+		const uint32_t numMaterials = (uint32_t)modelData.materials.size();
+		std::vector<uint32_t> tableOffsets(numMaterials);
+		for (size_t matIdx = 0; matIdx < numMaterials; ++matIdx){
+			const auto& material = modelData.materials[matIdx];
+			uint32_t mask = material.textureMask;
+
+			uint32_t numBindTextures = (mask & kMetallicRoughness) ? 5 : 6;
+
+			auto& textureHeap = Renderer::GetTextureHeap();
+
+			DescriptorHandle TextureHandles = textureHeap.Alloc(numBindTextures);
+			uint32_t SRVDescriptorTable = textureHeap.GetOffsetOfHandle(TextureHandles);
+
+			uint32_t DestCount = numBindTextures;
+			std::vector<uint32_t>SourceCounts(DestCount,1);
+
+			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> DefaultTextures;
+			DefaultTextures.resize(numBindTextures);
+			if (mask & kMetallicRoughness)
+			{
+				DefaultTextures = 
+				{
+					GetDefaultTexture(kWhiteOpaque2D),		// BaseColor
+					GetDefaultTexture(kWhiteOpaque2D),		// MetallicRoughness
+					GetDefaultTexture(kDefaultNormalMap),	// Normal
+					GetDefaultTexture(kWhiteOpaque2D),		// AO
+					GetDefaultTexture(kBlackTransparent2D),	// Emissive
+				};
+			}
+			else
+			{
+				DefaultTextures =
+				{
+					GetDefaultTexture(kWhiteOpaque2D),		// BaseColor
+					GetDefaultTexture(kWhiteOpaque2D),		// Metallic
+					GetDefaultTexture(kWhiteOpaque2D),		// Roughness
+					GetDefaultTexture(kDefaultNormalMap),	// Normal
+					GetDefaultTexture(kWhiteOpaque2D),		// AO
+					GetDefaultTexture(kBlackTransparent2D),	// Emissive
+				};
+			}
+			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> sourceTextures(numBindTextures);
+
+			uint32_t texIndex = 0;
+			if (mask & kMetallicRoughness)
+			{
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kMetallicRoughness, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kNormal, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kOcclusion, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kEmissive, DefaultTextures);
+			}
+			else
+			{
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kMetallic, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kRoughness, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kNormal, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kOcclusion, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kEmissive, DefaultTextures);
+			}
+			DX12Core::gDevice->CopyDescriptors(1, &TextureHandles, &DestCount,
+				DestCount, sourceTextures.data(), SourceCounts.data(),D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			
+			tableOffsets[matIdx] = SRVDescriptorTable;
+		}
+	}
+
 	std::shared_ptr<Model> AtomEngine::AssetManager::LoadModel(const std::wstring& filePath)
 	{
 		return  LoadModel(WStringToUTF8(filePath));
@@ -112,20 +250,120 @@ namespace AtomEngine
 
 	std::shared_ptr<Model> AssetManager::LoadModel(const std::string& filePath)
 	{
-		//std::lock_guard<std::mutex> guard(sMutex);
+		std::lock_guard<std::mutex> guard(sModelMutex);
 
-		auto it = sModelDataCache.find(UTF8ToWString(filePath));
+		std::wstring filePathW = UTF8ToWString(filePath);
+		auto it = sModelDataCache.find(filePathW);
 		if (it != sModelDataCache.end())
 			return it->second;
 
-		std::string basePath = GetBasePath(filePath);
+		std::wstring basePath = GetBasePath(filePathW);
+		std::wstring modelName = RemoveBasePath(filePathW);
 
 		auto model = std::make_shared<Model>();
 
 		ModelData modelData;
 
+		if (!ModelLoader::LoadModel(modelData, filePath))
+		{
+			Log("Failed to load model: %s", filePath.c_str());
+			return nullptr;
+		}
 
-		sModelDataCache[UTF8ToWString(filePath)] = model;
+		model->mBoundingBox = modelData.boundingBox;
+		model->mBoundingSphere = modelData.boundingSphere;
+
+		model->mNumMeshs = (uint32_t)modelData.meshes.size();
+		model->mNumIndices = (uint32_t)modelData.indices.size();
+		model->mSceneGraph = std::move(modelData.graphNodes);
+		//頂点データをアップロード
+		if (!modelData.vertices.empty())
+		{
+			size_t vertexBufferSize = modelData.vertices.size() * sizeof(Vertex);
+
+			UploadBuffer vertexUpload;
+			vertexUpload.Create(L"VertexUpload", vertexBufferSize);
+			memcpy(vertexUpload.Map(), modelData.vertices.data(), vertexBufferSize);
+			vertexUpload.Unmap();
+
+			model->mVertexBuffer.Create(
+				L"ModelVertexBuffer_" + UTF8ToWString(filePath),
+				uint32_t(vertexBufferSize / sizeof(Vertex)),
+				sizeof(Vertex),
+				vertexUpload
+			);
+		}
+		//インデックスデータをアップロード
+		if (!modelData.indices.empty())
+		{
+			size_t indexBufferSize = modelData.indices.size() * sizeof(uint32_t);
+
+			UploadBuffer indexUpload;
+			indexUpload.Create(L"IndexUpload", indexBufferSize);
+			memcpy(indexUpload.Map(), modelData.indices.data(), indexBufferSize);
+			indexUpload.Unmap();
+
+			model->mIndexBuffer.Create(
+				L"ModelIndexBuffer_" + UTF8ToWString(filePath),
+				static_cast<uint32_t>(modelData.indices.size()),
+				sizeof(uint32_t),
+				indexUpload
+			);
+		}
+
+		//マテリアル定数バッファアップロード
+		if (modelData.materials.size() > 0)
+		{
+			size_t materialSize = modelData.materials.size() * sizeof(MaterialConstants);
+
+			UploadBuffer materialConstants;
+			materialConstants.Create(L"Material Constant Upload", materialSize);
+			MaterialConstants* materialCBV = (MaterialConstants*)materialConstants.Map();
+			for (uint32_t i = 0; i < modelData.materials.size(); ++i)
+			{
+				memcpy(materialCBV, &modelData.materials[i], sizeof(MaterialConstants));
+				materialCBV++;
+			}
+			materialConstants.Unmap();
+			model->mMaterialConstants.Create(L"Material Constants",
+				(uint32_t)modelData.materials.size(), sizeof(MaterialConstants), materialConstants);
+		}
+
+		std::vector<MaterialTexture> textures;
+		for (uint32_t m = 0; m < modelData.materials.size(); ++m)
+		{
+			for (uint32_t t = 0; t < modelData.materials[m].textures.size(); ++t)
+			{
+				textures.push_back(modelData.materials[m].textures[t]);
+			}
+		}
+
+		LoadMaterialTexture(*model, modelData, textures,basePath);
+
+		if (!modelData.animations.empty())
+		{
+            model->mAnimationData = std::move(modelData.animations);
+		}
+
+		if (!modelData.skeleton.joints.empty())
+		{
+	
+			model->mJointIBMs.resize(modelData.skeleton.joints.size());
+			for (size_t i = 0; i < modelData.skeleton.joints.size(); ++i)
+			{
+				model->mJointIBMs[i] = modelData.skeleton.joints[i].inverseBindPose;
+			}
+
+			for (auto& [name, cluster] : modelData.skinClusterData)
+			{
+				for (auto& [vtxIdx, weightData] : cluster.vertexWeights)
+				{
+					model->mJointIndices.push_back(static_cast<uint16_t>(vtxIdx));
+				}
+			}
+		}
+
+		sModelDataCache[modelName] = model;
 		return model;
 	}
 }

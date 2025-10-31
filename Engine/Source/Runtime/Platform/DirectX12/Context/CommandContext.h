@@ -60,20 +60,18 @@ namespace AtomEngine
 
 	class CommandContext
 	{
-		friend ContextManager;
+		friend class ContextManager;
 	private:
-		CommandContext() = default;
 		CommandContext(D3D12_COMMAND_LIST_TYPE Type);
+		
+		void Reset(void);
 
 		CommandContext(CommandContext&) = delete;
 		CommandContext& operator=(CommandContext&) = delete;
 		CommandContext(CommandContext&&) = delete;
 		CommandContext&& operator=(CommandContext&&) = delete;
 	public:
-		~CommandContext();
-
-		void Reset(void);
-
+		virtual ~CommandContext(void);
 
 		static void DestroyAllContexts(void);
 
@@ -175,11 +173,11 @@ namespace AtomEngine
 
     inline void CommandContext::FlushResourceBarriers(void)
     {
-        if (mNumBarriersToFlush > 0)
-        {
-            mCommandList->ResourceBarrier(mNumBarriersToFlush, mResourceBarrierBuffer);
-            mNumBarriersToFlush = 0;
-        }
+		if (mNumBarriersToFlush > 0)
+		{
+			mCommandList->ResourceBarrier(mNumBarriersToFlush, mResourceBarrierBuffer);
+			mNumBarriersToFlush = 0;
+		}
     }
 
     inline void CommandContext::SetPipelineState(const PSO& PSO)

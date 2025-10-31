@@ -1,5 +1,6 @@
 #pragma once
 #include "ECSCommon.h"
+#include "GUID.h"
 
 namespace AtomEngine
 {
@@ -10,6 +11,9 @@ namespace AtomEngine
 	public:
 		GameObject() = default;
 		GameObject(Entity handle, World* world);
+		~GameObject()= default;
+		operator Entity() const { return mHandle; }
+		operator bool() const { return IsValid(); }
 
 		bool IsValid() const;
 		Entity GetHandle() const { return mHandle; }
@@ -40,6 +44,12 @@ namespace AtomEngine
 		template<typename T>
 		T& GetComponent();
 
+		template<typename T, typename... Args>
+		GameObject& Add(Args&&... args) { AddComponent<T>(std::forward<Args>(args)...); return *this; }
+
+		template<typename T>
+		GameObject& Remove() { RemoveComponent<T>(); return *this; }
+
 		/// <summary>
 		/// 指定したコンポーネントを削除する
 		/// </summary>
@@ -54,9 +64,15 @@ namespace AtomEngine
 		std::string GetTag();
 		void SetTag(const std::string& tag);
 
+		uint64_t GetGUID() const { return mGUID.Value(); }
+
+		bool operator==(const GameObject& other) const { return mHandle == other.mHandle; }
+		bool operator!=(const GameObject& other) const { return !(*this == other); }
+
 	private:
 		Entity mHandle{ entt::null };
-		World* mWorld{ nullptr };
+		World* mWorld = nullptr;
+		GUID mGUID;
 	};
 }
 
