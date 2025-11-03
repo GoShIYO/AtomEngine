@@ -9,18 +9,14 @@
 namespace AtomEngine
 {
     void Model::Render(RenderQueue& sorter, const GpuBuffer& meshConstants,
-        const std::vector<Transform> sphereTransforms, const JointXform* skeleton) const
+        const std::vector<Matrix4x4> sphereTransforms, const JointXform* skeleton) const
     {
-        const uint8_t* pMesh = mMeshData.data();
         const Frustum& frustum = sorter.GetViewFrustum();
         const Matrix4x4& viewMat = sorter.GetViewMatrix();
 
-        for (uint32_t meshIdx = 0; meshIdx < mNumMeshs; ++meshIdx)
+        for (size_t meshIdx = 0; meshIdx < mMeshData.size(); ++meshIdx)
         {
-            const Mesh& mesh = *(const Mesh*)pMesh;
-            pMesh += sizeof(Mesh);
-
-            const Matrix4x4& sphereXform = sphereTransforms[meshIdx].GetMatrix();
+            const Matrix4x4& sphereXform = sphereTransforms[meshIdx];
             float scaleXSqr = sphereXform.GetX().LengthSqr();
             float scaleYSqr = sphereXform.GetY().LengthSqr();
             float scaleZSqr = sphereXform.GetZ().LengthSqr();
@@ -30,18 +26,17 @@ namespace AtomEngine
             BoundingSphere sphereWS = BoundingSphere(sphereXform * sphereLS.GetCenter(), sphereScale * sphereLS.GetRadius());
             BoundingSphere sphereVS = BoundingSphere(viewMat * sphereWS.GetCenter(), sphereWS.GetRadius());
 
-            if (!frustum.IntersectSphere(sphereVS))
-            {
-                pMesh += mesh.subMeshes.size() * sizeof(SubMesh);
-                continue;
-            }
+            //if (!frustum.IntersectSphere(sphereVS))
+            //    continue;
 
             float distance = -sphereVS.GetCenter().z - sphereVS.GetRadius();
 
-            for (const SubMesh& sub : mesh.subMeshes)
+            const Mesh& mesh = mMeshData[meshIdx];
+            for (uint32_t subIdx = 0; subIdx < mesh.subMeshes.size(); ++subIdx)
             {
-                if (!frustum.IntersectBoundingBox(sub.bounds))
-                    continue;
+                const SubMesh& sub = mesh.subMeshes[subIdx];
+                //if (!frustum.IntersectBoundingBox(sub.bounds))
+                //    continue;
 
                 D3D12_GPU_VIRTUAL_ADDRESS meshCBV =
                     meshConstants.GetGpuVirtualAddress() + meshIdx * sizeof(MeshConstants);
@@ -52,10 +47,8 @@ namespace AtomEngine
                 sorter.AddMesh(mesh, skeleton,
                     mVertexBuffer.VertexBufferView(),
                     mIndexBuffer.IndexBufferView(),
-                    meshCBV, materialCBV, distance);
+                    meshCBV, materialCBV, distance, subIdx);
             }
-
-            pMesh += mesh.subMeshes.size() * sizeof(SubMesh);
         }
     }
 

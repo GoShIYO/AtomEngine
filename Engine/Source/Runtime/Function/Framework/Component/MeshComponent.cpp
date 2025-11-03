@@ -48,7 +48,7 @@ namespace AtomEngine
 
 		size_t stackIdx = 0;
 		Matrix4x4 matrixStack[kMaxStackDepth];
-		Matrix4x4 ParentMatrix = transform.GetWorldMatrix();
+		Matrix4x4 ParentMatrix = transform.GetMatrix();
 
         MeshConstants* cb = (MeshConstants*)mMeshConstantsCPU.Map();
 
@@ -147,5 +147,15 @@ namespace AtomEngine
 		gfxContext.SetDynamicDescriptor(1, 0, mModel->mTextures[0].GetSRV());
 		
 		gfxContext.DrawIndexedInstanced((UINT)mModel->mNumIndices, 1, 0, 0, 0);
+	}
+
+	void MeshComponent::Render(RenderQueue& sorter)
+	{
+		if (mModel != nullptr)
+		{
+			mModel->Render(sorter, mMeshConstantsGPU, 
+				mBoundingSphereTransforms,
+				mSkeletonTransforms.data());
+		}
 	}
 }

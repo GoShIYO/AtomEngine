@@ -27,19 +27,16 @@ namespace AtomEngine
 		D3D12_GPU_VIRTUAL_ADDRESS meshCBV;
 		D3D12_GPU_VIRTUAL_ADDRESS materialCBV;
 
+		uint32_t subMeshIndex = 0;
+		uint32_t srvTable = 0;
 	};
 
 	class RenderQueue
 	{
 	public:
 		enum BatchType { kDefault, kShadows };
-		enum DrawType { kZPass, kOpaque, kTransparent, kNumTypes };
-		struct DrawInfo
-		{
-			const CameraBase* camera = nullptr;
-			D3D12_VIEWPORT viewport{};
-			D3D12_RECT scissor{};
-		};
+		enum DrawType { kZPass, kOpaque, kTransparent,kNumTypes };
+
 		RenderQueue(BatchType type)
 		{
 			//TODO:typeによって初期化
@@ -51,9 +48,15 @@ namespace AtomEngine
 			mCurrentDraw = 0;
 		}
 
-		void SetDrawInfo(const DrawInfo& info)
+		void SetCamera(const CameraBase& camera)
 		{
-			drawInfo = info;
+			mCamera = &camera;
+		}
+
+		void SetViewportAndScissor(const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor)
+		{ 
+			mViewport = viewport;
+            mScissor = scissor;
 		}
 
 		void AddRenderTarget(ColorBuffer& RTV)
@@ -62,9 +65,9 @@ namespace AtomEngine
 		}
 		void SetDepthStencilTarget(DepthBuffer& DSV) { mDSV = &DSV; }
 
-		const Frustum& GetWorldFrustum() const { return  drawInfo.camera->GetWorldSpaceFrustum(); }
-		const Frustum& GetViewFrustum() const { return  drawInfo.camera->GetViewSpaceFrustum(); }
-		const Matrix4x4& GetViewMatrix() const { return  drawInfo.camera->GetViewMatrix(); }
+		const Frustum& GetWorldFrustum() const { return  mCamera->GetWorldSpaceFrustum(); }
+		const Frustum& GetViewFrustum() const { return  mCamera->GetViewSpaceFrustum(); }
+		const Matrix4x4& GetViewMatrix() const { return  mCamera->GetViewMatrix(); }
 
 		void AddMesh(
 			const Mesh& mesh,
@@ -73,13 +76,29 @@ namespace AtomEngine
 			D3D12_INDEX_BUFFER_VIEW ibv,
 			D3D12_GPU_VIRTUAL_ADDRESS meshCBV,
 			D3D12_GPU_VIRTUAL_ADDRESS materialCBV,
-			float distance
+			float distance,
+			int subMeshIndex
 		);
 
 		void Sort();
 
 		void RenderMeshes(DrawType type, GraphicsContext& context, GlobalConstants& globals);
 	private:
+
+		struct SortKey
+		{
+			union
+			{
+				uint64_t value;
+				struct
+				{
+					uint64_t objectIdx : 16;
+					uint64_t psoIdx : 12;
+					uint64_t key : 32;
+					uint64_t passID : 4;
+				};
+			};
+		};
 
 		std::vector<RenderObject> mRenderObjects;
 		std::vector<uint64_t> mSortKeys;
@@ -88,7 +107,9 @@ namespace AtomEngine
 		DrawType mCurrentType;
 		uint32_t mCurrentDraw;
 
-		DrawInfo drawInfo;
+		const CameraBase* mCamera = nullptr;
+		D3D12_VIEWPORT mViewport{};
+		D3D12_RECT mScissor{};
 
 		ColorBuffer* mRTV = nullptr;
 		DepthBuffer* mDSV = nullptr;

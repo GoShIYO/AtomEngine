@@ -79,16 +79,17 @@ VSOutput main(VSInput input)
     
     tangent.xyz = skinnedTangent;
 
-    float3 skinnedBittangent = mul(bitangent.xyz, (float3x3) Joints[input.jointIndices.x].NrmMatrix) * weights.x;
-    skinnedBittangent += mul(bitangent.xyz, (float3x3) Joints[input.jointIndices.y].NrmMatrix) * weights.y;
-    skinnedBittangent += mul(bitangent.xyz, (float3x3) Joints[input.jointIndices.z].NrmMatrix) * weights.z;
+    float3 skinnedBittangent = mul(bittangent.xyz, (float3x3) Joints[input.jointIndices.x].NrmMatrix) * weights.x;
+    skinnedBittangent += mul(bittangent.xyz, (float3x3) Joints[input.jointIndices.y].NrmMatrix) * weights.y;
+    skinnedBittangent += mul(bittangent.xyz, (float3x3) Joints[input.jointIndices.z].NrmMatrix) * weights.z;
     
-    bitangent.xyz = skinnedBittangent;
+    bittangent.xyz = skinnedBittangent;
     
 #endif
 
     vsOutput.worldPos = mul(position, WorldMatrix).xyz;
     vsOutput.position = mul(float4(vsOutput.worldPos, 1.0), ViewProjMatrix);
+    vsOutput.texcoord = input.texcoord;
     vsOutput.sunShadowCoord = mul(float4(vsOutput.worldPos, 1.0), SunShadowMatrix).xyz;
     vsOutput.normal = mul(normal, (float3x3) WorldIT);
     vsOutput.tangent = mul(tangent.xyz, (float3x3) WorldIT);

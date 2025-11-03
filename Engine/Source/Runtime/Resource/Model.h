@@ -44,7 +44,7 @@ namespace AtomEngine
 		
 		void Render(RenderQueue& sorter,
 			const GpuBuffer& meshConstants,
-			const std::vector<Transform> sphereTransforms,
+			const std::vector<Matrix4x4> sphereTransforms,
 			const JointXform* skelton ) const;
 
 		BoundingSphere mBoundingSphere;
@@ -55,7 +55,7 @@ namespace AtomEngine
 		ByteAddressBuffer mMaterialConstants;
 
 		std::vector<TextureRef> mTextures;
-		std::vector<uint8_t> mMeshData;
+		std::vector<Mesh> mMeshData;
 		std::vector<uint8_t> mKeyFrameData;
 		std::vector<AnimationClip> mAnimationData;
 		std::vector<uint16_t>mJointIndices;
@@ -64,7 +64,6 @@ namespace AtomEngine
 
 		Skeleton mSkeleton;
 
-		uint32_t mNumMeshs = 0;
 		uint32_t mNumIndices = 0;
 	protected:
 

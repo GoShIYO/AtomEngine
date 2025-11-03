@@ -20,6 +20,22 @@ namespace AtomEngine
 		{ aiTextureType_EMISSIVE,					TextureSlot::kEmissive			}
 	};
 
+	bool IsTransparentMaterial(const Material& mat)
+	{
+		if (mat.baseColorFactor[3] < 1.0f)
+			return true;
+
+		if (mat.transmissionFactor > 0.0f)
+			return true;
+
+		if (mat.hasTransmissionTexture)
+			return true;
+		if(mat.hasAlphaBlend)
+			return true;
+
+		return false;
+	}
+
 	bool SetTextures(Material& material, aiMaterial* mat, aiTextureType type, TextureSlot slot)
 	{
 		aiString texPath;
@@ -49,7 +65,6 @@ namespace AtomEngine
 
 		return transform.GetMatrix();
 	}
-
 
 	bool ModelLoader::LoadModel(ModelData& model, const std::string& filePath)
 	{
@@ -83,6 +98,7 @@ namespace AtomEngine
 		model.indices.clear();
 		model.rootNode = ProcessNode(model,scene->mRootNode, scene,nullptr);
 		model.skeleton = ProcessSkeleton(model,*model.rootNode);
+
 		//アニメーションをプロセス
 		if(scene->HasAnimations())
             ProcessAnimations(model, scene);
@@ -186,6 +202,7 @@ namespace AtomEngine
 
 		if (mesh->HasBones())
 		{
+			outMesh.psoFlags |= kHasSkin;
 			for (uint32_t b = 0; b < mesh->mNumBones; ++b)
 			{
 				aiBone* bone = mesh->mBones[b];
@@ -210,6 +227,13 @@ namespace AtomEngine
 		}
 
 		outMesh.boundingBox = aabb;
+
+		if (mesh->mMaterialIndex >= 0 && mesh->mMaterialIndex < model.materials.size())
+		{
+			const Material& mat = model.materials[mesh->mMaterialIndex];
+			if (IsTransparentMaterial(mat))
+				outMesh.psoFlags |= kAlphaBlend;
+		}
 
 		SubMesh sub{};
 		sub.indexOffset = indexBase;
@@ -244,6 +268,22 @@ namespace AtomEngine
 		mat->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
 		material.metallicFactor = metallic;
 		material.roughnessFactor = roughness;
+
+		float transmission = 0.0f;
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_TRANSMISSION_FACTOR, transmission))
+			material.transmissionFactor = transmission;
+
+		aiString transmissionTex;
+		if (AI_SUCCESS == mat->GetTexture(aiTextureType_TRANSMISSION, 0, &transmissionTex))
+			material.hasTransmissionTexture = true;
+
+		float opacity = 1.0f;
+		if (AI_SUCCESS == mat->Get(AI_MATKEY_OPACITY, opacity))
+		{
+			if (opacity < 1.0f)
+				material.hasAlphaBlend = true;
+			material.baseColorFactor[3] *= opacity;
+		}
 
 		for (auto& entry : textureMap)
 			SetTextures(material,mat,entry.aiType, entry.slot);
@@ -323,6 +363,12 @@ namespace AtomEngine
 		}
 
 		skeleton.rootJoint = skeleton.joints.empty() ? -1 : 0;
+
+		for (auto& mesh : model.meshes)
+		{
+			mesh.numJoints = (uint16_t)model.skeleton.joints.size();
+			mesh.startJoint = 0;
+		}
 
 		return skeleton;
 	}

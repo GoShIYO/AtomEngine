@@ -19,6 +19,7 @@ namespace AtomEngine
 		void Update(GraphicsContext& gfxContext,const TransformComponent& transform ,float deltaTime);
 		void Render(GraphicsContext& gfxContext,const RootSignature& rootSig,const GraphicsPSO& pso, const Matrix4x4& viewProjMat);
 
+		void Render(RenderQueue& sorter);
 	private:
 		std::shared_ptr<const Model> mModel = nullptr;
 		UploadBuffer mMeshConstantsCPU;

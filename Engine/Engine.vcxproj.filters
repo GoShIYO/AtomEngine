@@ -635,15 +635,14 @@
     <FxCompile Include="Asset\Shaders\DepthOnlyVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shaders\DefaultNoUV1SkinVS.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Asset\Shaders\DepthOnlySkinVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Asset\Shaders\testShader.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\Object3DSkinned.VS.hlsl" />
+    <FxCompile Include="Asset\Shaders\Object3DMR.PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Unility.hlsli">

@@ -31,6 +31,11 @@ namespace AtomEngine
 		float roughnessFactor = 0.0f;
 	
         uint8_t textureMask = 0;
+
+        float transmissionFactor = 0.0f;
+        bool hasTransmissionTexture = false;
+        bool hasAlphaBlend = false;
+
         std::vector<MaterialTexture> textures;
     };
 }

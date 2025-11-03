@@ -38,7 +38,7 @@ namespace AtomEngine
         std::vector<AnimationClip> animations;
         std::map<std::string, JointWeightData> skinClusterData;
         std::unique_ptr<Node> rootNode = nullptr;
-  
+        
         Skeleton skeleton;
         
         std::vector<GraphNode> graphNodes;

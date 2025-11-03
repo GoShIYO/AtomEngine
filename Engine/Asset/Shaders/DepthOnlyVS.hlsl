@@ -3,7 +3,7 @@
 cbuffer MeshConstants : register(b0)
 {
     float4x4 WorldMatrix;   // Object to world
-    float3x3 WorldIT;       // Object normal to world normal
+    float4x4 WorldIT;       // Object normal to world normal
 };
 
 cbuffer GlobalConstants : register(b1)
@@ -24,21 +24,16 @@ StructuredBuffer<Joint> Joints : register(t20);
 struct VSInput
 {
     float3 position : POSITION;
-#ifdef ENABLE_ALPHATEST
-    float2 uv : TEXCOORD0;
-#endif
+    
 #ifdef ENABLE_SKINNING
-    uint4 jointIndices : BLENDINDICES;
-    float4 jointWeights : BLENDWEIGHT;
+    float4 jointWeights : WEIGHT;
+    uint4 jointIndices : INDEX;
 #endif
 };
 
 struct VSOutput
 {
     float4 position : SV_POSITION;
-#ifdef ENABLE_ALPHATEST
-    float2 uv0 : TEXCOORD0;
-#endif
 };
 
 VSOutput main(VSInput input)
@@ -59,10 +54,6 @@ VSOutput main(VSInput input)
 
     float3 worldPos = mul(position,WorldMatrix).xyz;
     vsOutput.position = mul(float4(worldPos, 1.0),ViewProjMatrix);
-
-#ifdef ENABLE_ALPHATEST
-    vsOutput.uv = input.uv;
-#endif
 
     return vsOutput;
 }

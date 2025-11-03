@@ -109,6 +109,7 @@ void Game::Initialize()
 	auto model = AssetManager::LoadModel(L"Asset/Models/DamagedHelmet.gltf");
 	m_GameObject = std::make_unique<GameObject>(world.CreateGameObject("testObj"));
 	m_GameObject->AddComponent<MeshComponent>(model);
+	m_GameObject->AddComponent<TransformComponent>();
 
 	skybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kEnvHDR.dds");
 	skybox.SetIBLTextures(
@@ -123,6 +124,11 @@ void Game::Update(float deltaTime)
 	m_DebugCamera->Update(deltaTime);
 	m_ViewProjMatrix = m_Camera.GetViewProjMatrix();
 
+
+	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Update");
+	m_GameObject->GetComponent<MeshComponent>().Update(gfxContext, m_GameObject->GetComponent<TransformComponent>(), deltaTime);
+	gfxContext.Finish();
+
 	m_MainViewport.Width = (float)gSceneColorBuffer.GetWidth();
 	m_MainViewport.Height = (float)gSceneColorBuffer.GetHeight();
 	m_MainViewport.MinDepth = 0.0f;
@@ -135,27 +141,85 @@ void Game::Update(float deltaTime)
 
 }
 
+//void Game::Render()
+//{
+//	ImGui::Image((ImTextureID)gpuHandle.GetGpuPtr(), ImVec2((float)test.Get()->GetWidth(), (float)test.Get()->GetHeight()));
+//
+//	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
+//
+//	gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+//	gfxContext.ClearDepth(gSceneDepthBuffer);
+//
+//	gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+//	gfxContext.ClearColor(gSceneColorBuffer);
+//
+//	skybox.Render(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
+//
+//	gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+//	gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+//	gfxContext.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV());
+//
+//	m_GameObject->GetComponent<MeshComponent>().Render(gfxContext, m_RootSignature, m_PSO, m_ViewProjMatrix);
+//
+//	gfxContext.Finish();
+//}
+
 void Game::Render()
 {
-	ImGui::Image((ImTextureID)gpuHandle.GetGpuPtr(), ImVec2((float)test.Get()->GetWidth(), (float)test.Get()->GetHeight()));
-
 	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
+	const D3D12_VIEWPORT& viewport = m_MainViewport;
+	const D3D12_RECT& scissor = m_MainScissor;
+
+	GlobalConstants globals;
+	globals.ViewProjMatrix = m_Camera.GetViewProjMatrix();
+	globals.SunShadowMatrix = Matrix4x4::IDENTITY;
+	globals.CameraPos = m_Camera.GetPosition();
+	globals.SunDirection = -Vector3::UP;
+	globals.SunIntensity = 1.0f;
 
 	gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 	gfxContext.ClearDepth(gSceneDepthBuffer);
 
+	RenderQueue queue(RenderQueue::kDefault);
+	queue.SetCamera(m_Camera);
+    queue.SetViewportAndScissor(viewport, scissor);
+    queue.SetDepthStencilTarget(gSceneDepthBuffer);
+	queue.AddRenderTarget(gSceneColorBuffer);
+
+	m_GameObject->GetComponent<MeshComponent>().Render(queue);
+
+	queue.Sort();
+
+	queue.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
+	
+	{
+		RenderQueue shadowSorter(RenderQueue::kShadows);
+		shadowSorter.SetCamera(m_Camera);
+		shadowSorter.SetDepthStencilTarget(gShadowBuffer);
+	
+		m_GameObject->GetComponent<MeshComponent>().Render(shadowSorter);
+	
+		shadowSorter.Sort();
+		shadowSorter.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
+	}
+
 	gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 	gfxContext.ClearColor(gSceneColorBuffer);
+	{
+		gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+		gfxContext.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV_DepthReadOnly());
+		gfxContext.SetViewportAndScissor(viewport, scissor);
 
-	skybox.Render(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
+		skybox.Render(gfxContext, m_Camera, viewport, scissor);
 
-	gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-	gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	gfxContext.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV());
+		queue.RenderMeshes(RenderQueue::kOpaque, gfxContext, globals);
+	}
 
-	m_GameObject->GetComponent<MeshComponent>().Render(gfxContext, m_RootSignature, m_PSO, m_ViewProjMatrix);
+
+	queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
 
 	gfxContext.Finish();
+
 }
 
 //gfxContext.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV_DepthReadOnly());

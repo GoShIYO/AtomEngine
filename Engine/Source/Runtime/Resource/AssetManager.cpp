@@ -115,9 +115,9 @@ namespace AtomEngine
 		const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& DefaultTextures)
 	{
 		const uint32_t mask = material.textureMask;
-		const uint32_t slotBit = (1u << static_cast<uint8_t>(slot));
+		//const uint32_t slotBit = (1u << static_cast<uint8_t>(slot));
 
-		if ((mask & slotBit) == 0)
+		if ((mask & slot) != slot)
 		{
 			switch (slot)
 			{
@@ -155,7 +155,7 @@ namespace AtomEngine
 	}
 
 	void LoadMaterialTexture(
-		Model& model, 
+		Model& model,
 		const ModelData& modelData,
 		const std::vector<MaterialTexture>& textures,
 		const std::wstring& basePath)
@@ -167,7 +167,7 @@ namespace AtomEngine
 		for (size_t ti = 0; ti < numTextures; ++ti)
 		{
 			std::wstring originalFile = basePath + textures[ti].name;
-			bool optionalSRGB = 
+			bool optionalSRGB =
 				(textures[ti].slot & (TextureSlot::kBaseColor | TextureSlot::kEmissive)) ? true : false;
 			CompileTextureOnDemand(originalFile, TextureOptions(optionalSRGB));
 
@@ -177,11 +177,15 @@ namespace AtomEngine
 
 		const uint32_t numMaterials = (uint32_t)modelData.materials.size();
 		std::vector<uint32_t> tableOffsets(numMaterials);
-		for (size_t matIdx = 0; matIdx < numMaterials; ++matIdx){
+		std::vector<bool> hasMRTextures(numMaterials);
+
+		for (size_t matIdx = 0; matIdx < numMaterials; ++matIdx)
+		{
 			const auto& material = modelData.materials[matIdx];
 			uint32_t mask = material.textureMask;
+			hasMRTextures[matIdx] = (mask & kMetallicRoughness) == kMetallicRoughness;
 
-			uint32_t numBindTextures = (mask & kMetallicRoughness) ? 5 : 6;
+			uint32_t numBindTextures = hasMRTextures[matIdx] ? 5 : 6;
 
 			auto& textureHeap = Renderer::GetTextureHeap();
 
@@ -189,13 +193,13 @@ namespace AtomEngine
 			uint32_t SRVDescriptorTable = textureHeap.GetOffsetOfHandle(TextureHandles);
 
 			uint32_t DestCount = numBindTextures;
-			std::vector<uint32_t>SourceCounts(DestCount,1);
+			std::vector<uint32_t>SourceCounts(DestCount, 1);
 
 			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> DefaultTextures;
 			DefaultTextures.resize(numBindTextures);
-			if (mask & kMetallicRoughness)
+			if (hasMRTextures[matIdx])
 			{
-				DefaultTextures = 
+				DefaultTextures =
 				{
 					GetDefaultTexture(kWhiteOpaque2D),		// BaseColor
 					GetDefaultTexture(kWhiteOpaque2D),		// MetallicRoughness
@@ -237,9 +241,52 @@ namespace AtomEngine
 				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kEmissive, DefaultTextures);
 			}
 			DX12Core::gDevice->CopyDescriptors(1, &TextureHandles, &DestCount,
-				DestCount, sourceTextures.data(), SourceCounts.data(),D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			
+				DestCount, sourceTextures.data(), SourceCounts.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
 			tableOffsets[matIdx] = SRVDescriptorTable;
+		}
+		for (size_t i = 0; i < model.mMeshData.size(); ++i)
+		{
+			auto& mesh = model.mMeshData[i];
+
+			if (!mesh.subMeshes.empty())
+				mesh.srvTable = tableOffsets[mesh.subMeshes[0].materialIndex];
+			for (size_t j = 0; j < mesh.subMeshes.size(); ++j)
+			{
+				auto& subMesh = mesh.subMeshes[j];
+				subMesh.srvTableIndex = tableOffsets[subMesh.materialIndex];
+
+				if (mesh.psoFlags & kHasSkin)
+				{
+					if (mesh.psoFlags & kAlphaBlend)
+					{
+						if (hasMRTextures[subMesh.materialIndex])
+							mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_MRWorkFlow;
+						else mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent;
+					}
+					else
+					{
+						if (hasMRTextures[subMesh.materialIndex])
+							mesh.pso = (uint16_t)PSOIndex::kPSO_MRWorkFlow_Skin;
+						else mesh.pso = (uint16_t)PSOIndex::kPSO_Skin;
+					}
+				}
+				else
+				{
+					if (mesh.psoFlags & kAlphaBlend)
+					{
+						if (hasMRTextures[subMesh.materialIndex])
+							mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_MRWorkFlow_Skin;
+						else mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_Skin;
+					}
+					else
+					{
+						if (hasMRTextures[subMesh.materialIndex])
+							mesh.pso = (uint16_t)PSOIndex::kPSO_MRWorkFlow;
+						else mesh.pso = (uint16_t)PSOIndex::kPSO_Default;
+					}
+				}
+			}
 		}
 	}
 
@@ -273,9 +320,10 @@ namespace AtomEngine
 		model->mBoundingBox = modelData.boundingBox;
 		model->mBoundingSphere = modelData.boundingSphere;
 
-		model->mNumMeshs = (uint32_t)modelData.meshes.size();
 		model->mNumIndices = (uint32_t)modelData.indices.size();
+		model->mMeshData = std::move(modelData.meshes);
 		model->mSceneGraph = std::move(modelData.graphNodes);
+
 		//頂点データをアップロード
 		if (!modelData.vertices.empty())
 		{
@@ -338,16 +386,16 @@ namespace AtomEngine
 			}
 		}
 
-		LoadMaterialTexture(*model, modelData, textures,basePath);
+		LoadMaterialTexture(*model, modelData, textures, basePath);
 
 		if (!modelData.animations.empty())
 		{
-            model->mAnimationData = std::move(modelData.animations);
+			model->mAnimationData = std::move(modelData.animations);
 		}
 
 		if (!modelData.skeleton.joints.empty())
 		{
-	
+
 			model->mJointIBMs.resize(modelData.skeleton.joints.size());
 			for (size_t i = 0; i < modelData.skeleton.joints.size(); ++i)
 			{

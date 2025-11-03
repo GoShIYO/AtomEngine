@@ -1,16 +1,18 @@
 #include "Common.hlsli"
 
 Texture2D<float4> baseColorTexture : register(t0);
+#ifdef USE_METALLICROUGHNESS
 Texture2D<float3> metallicRoughnessTexture : register(t1);
 Texture2D<float3> normalTexture : register(t2);
 Texture2D<float1> occlusionTexture : register(t3);
 Texture2D<float3> emissiveTexture : register(t4);
-
-SamplerState baseColorSampler : register(s0);
-SamplerState metallicRoughnessSampler : register(s1);
-SamplerState occlusionSampler : register(s2);
-SamplerState emissiveSampler : register(s3);
-SamplerState normalSampler : register(s4);
+#else
+Texture2D<float> metallicTexture : register(t1);
+Texture2D<float> roughnessTexture : register(t2);
+Texture2D<float3> normalTexture : register(t3);
+Texture2D<float1> occlusionTexture : register(t4);
+Texture2D<float3> emissiveTexture : register(t5);
+#endif
 
 TextureCube<float3> radianceIBLTexture : register(t10);
 TextureCube<float3> irradianceIBLTexture : register(t11);
@@ -23,7 +25,7 @@ cbuffer MaterialConstants : register(b0)
     float3 emissiveFactor;
     float normalTextureScale;
     float2 metallicRoughnessFactor;
-    uint flags;
+    float4x4 uvTransform;
 }
 
 cbuffer GlobalConstants : register(b1)
@@ -52,7 +54,7 @@ struct VSOutput
 
 float3 ComputeTangentNormal(VSOutput input, float2 uv)
 {
-    float3 tangentNormal = normalTexture.Sample(normalSampler, uv).xyz * 2.0 - 1.0;
+    float3 tangentNormal = normalTexture.Sample(linearClamp, uv).xyz * 2.0 - 1.0;
 
     float3 Q1 = ddx(input.worldPos);
     float3 Q2 = ddy(input.worldPos);
@@ -74,7 +76,7 @@ float3 ComputeNormal(VSOutput intput, float2 uv)
     float3 bitangent = normalize(intput.bittangent);
     float3x3 tangentFrame = float3x3(tangent, bitangent, normal);
 
-    normal = normalTexture.Sample(normalSampler, uv) * 2.0 - 1.0;
+    normal = normalTexture.Sample(linearClamp, uv) * 2.0 - 1.0;
     
     normal = normalize(normal * float3(normalTextureScale, normalTextureScale, 1));
 
@@ -109,12 +111,23 @@ float CalcShadowFactor(float4 ShadowCoord)
 
 float4 main(VSOutput input) : SV_Target0
 {
-    //float4 baseColor = baseColorFactor * baseColorTexture.Sample(baseColorSampler, GetUV(input, BASECOLOR));
-    //float2 metallicRoughness = metallicRoughnessFactor *
-    //    metallicRoughnessTexture.Sample(metallicRoughnessSampler, GetUV(input, METALLICROUGHNESS)).bg;
-    //float occlusion = occlusionTexture.Sample(occlusionSampler, GetUV(input, OCCLUSION));
-    //float3 emissive = emissiveFactor * emissiveTexture.Sample(emissiveSampler, GetUV(input, EMISSIVE));
-    //float3 normal = ComputeNormal(input, GetUV(input, NORMAL));
     
-    return float4(1,1,1,1);
+    #ifdef USE_METALLICROUGHNESS
+    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
+    float2 metallicRoughness = metallicRoughnessFactor *
+        metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).bg;
+    float occlusion = occlusionTexture.Sample(pointBorder, input.texcoord);
+    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
+    float3 normal = ComputeTangentNormal(input, input.texcoord);
+    #else
+    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
+    float metallic = metallicTexture.Sample(defaultSampler, input.texcoord);
+    float roughness = roughnessTexture.Sample(defaultSampler, input.texcoord);
+    float occlusion = occlusionTexture.Sample(pointBorder, input.texcoord);
+    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
+    float3 normal = ComputeTangentNormal(input, input.texcoord);
+    #endif
+    
+    
+    return baseColor;
 }

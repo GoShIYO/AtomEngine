@@ -17,12 +17,18 @@ namespace AtomEngine
 		kNumRootBindings
 	};
 
-	enum class PSOIndex
+	enum class PSOIndex : uint16_t
 	{
 		kPSO_Default,
 		kPSO_Skin,
 		kPSO_MRWorkFlow,
 		kPSO_MRWorkFlow_Skin,
+		kPSO_Transparent,
+		kPSO_Transparent_Skin,
+		kPSO_Transparent_MRWorkFlow,
+        kPSO_Transparent_MRWorkFlow_Skin,
+		kPSO_DepthOnly,
+		kPSO_DepthOnly_Skin,
 
 		kNumPSOs
 	};
@@ -43,7 +49,7 @@ namespace AtomEngine
         static DescriptorHandle& GetCommonTextures() { return gCommonTextures; }
 
 		static const RootSignature& GetRootSignature() { return mRootSig; }
-
+		static const GraphicsPSO& GetPSO(uint16_t psoFlags);
 	private:
 		static std::vector<GraphicsPSO> gPSOs;
 		static RootSignature mRootSig;

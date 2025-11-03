@@ -27,21 +27,21 @@ namespace AtomEngine
 	//uint32_t SSAOFullScreenID;
 	uint32_t ShadowBufferID;
 
-	GraphicsPSO m_DefaultPSO(L"Renderer: Default PSO"); // Not finalized.  Used as a template.
+	GraphicsPSO mDefaultPSO(L"Renderer: Default PSO"); // Not finalized.  Used as a template.
 
 	void Renderer::Initialize()
 	{
 		SamplerDesc DefaultSamplerDesc;
+		DefaultSamplerDesc = SamplerLinearWrapDesc;
 		DefaultSamplerDesc.MaxAnisotropy = 8;
 
-		SamplerDesc CubeMapSamplerDesc = DefaultSamplerDesc;
-		//CubeMapSamplerDesc.MaxLOD = 6.0f;
-
-		mRootSig.Reset(kNumRootBindings, 3);
+		mRootSig.Reset(kNumRootBindings, 5);
 
 		mRootSig.InitStaticSampler(10, DefaultSamplerDesc, D3D12_SHADER_VISIBILITY_PIXEL);
 		mRootSig.InitStaticSampler(11, SamplerShadowDesc, D3D12_SHADER_VISIBILITY_PIXEL);
-		mRootSig.InitStaticSampler(12, CubeMapSamplerDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+		mRootSig.InitStaticSampler(12, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+		mRootSig.InitStaticSampler(13, SamplerPointBorderDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+		mRootSig.InitStaticSampler(14, SamplerLinearBorderDesc, D3D12_SHADER_VISIBILITY_PIXEL);
 
 		mRootSig[kMeshConstants].InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 		mRootSig[kMaterialConstants].InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -53,6 +53,18 @@ namespace AtomEngine
 
 		DXGI_FORMAT ColorFormat = gSceneColorBuffer.GetFormat();
 		DXGI_FORMAT DepthFormat = gSceneDepthBuffer.GetFormat();
+
+		D3D12_INPUT_ELEMENT_DESC posOnlyInput[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		};
+
+		D3D12_INPUT_ELEMENT_DESC posOnlySkinInput[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "WEIGHT",   0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+			{ "INDEX",   0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+		};
 
 		D3D12_INPUT_ELEMENT_DESC defaultInput[] =
 		{
@@ -71,13 +83,12 @@ namespace AtomEngine
 			{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,	 0},
 			{ "BITTANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,	 0},
 			{ "WEIGHT",   0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
-			{ "INDEX ",   0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+			{ "INDEX",   0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 		};
 
 		//default PSO
 		auto defaultVS = ShaderCompiler::CompileBlob(L"Object3D.VS.hlsl", L"vs_6_2");
 		auto defaultPS = ShaderCompiler::CompileBlob(L"Object3D.PS.hlsl", L"ps_6_2");
-
 		GraphicsPSO defaultPSO(L"default PSO");
 		defaultPSO.SetRootSignature(mRootSig);
 		defaultPSO.SetRasterizerState(RasterizerDefaultCw);
@@ -91,31 +102,85 @@ namespace AtomEngine
 		defaultPSO.Finalize();
 		gPSOs.push_back(defaultPSO);
 
-		////skin PSO
-		//auto skinVS = ShaderCompiler::CompileBlob(L"Object3DSkin.VS.hlsl", L"vs_6_2");
-		//GraphicsPSO skinPSO(L"skin PSO");
-		//skinPSO = defaultPSO;
-		//skinPSO.SetInputLayout(_countof(skinInput), skinInput);
-		//skinPSO.SetVertexShader(skinVS.Get());
-		//skinPSO.Finalize();
-		//gPSOs.push_back(skinPSO);
+		//skin PSO
+		auto skinVS = ShaderCompiler::CompileBlob(L"Object3DSkinned.VS.hlsl", L"vs_6_2");
+		GraphicsPSO skinPSO(L"skin PSO");
+		skinPSO = defaultPSO;
+		skinPSO.SetInputLayout(_countof(skinInput), skinInput);
+		skinPSO.SetVertexShader(skinVS.Get());
+		skinPSO.Finalize();
+		gPSOs.push_back(skinPSO);
 
-		////MetallicRoughness Workflow PSO
-		//auto mrWorkflowPS = ShaderCompiler::CompileBlob(L"Object3DMRWorkflow.PS.hlsl", L"ps_6_2");
-		//GraphicsPSO mrWorkflowPSO(L"MR workflow PSO");
-		//mrWorkflowPSO = defaultPSO;
-  //      mrWorkflowPSO.SetPixelShader(mrWorkflowPS.Get());
-		//mrWorkflowPSO.Finalize();
-		//gPSOs.push_back(mrWorkflowPSO);
+		//MetallicRoughness Workflow PSO
+		auto mrWorkflowPS = ShaderCompiler::CompileBlob(L"Object3DMR.PS.hlsl", L"ps_6_2");
+		GraphicsPSO mrWorkflowPSO(L"MR workflow PSO");
+		mrWorkflowPSO = defaultPSO;
+        mrWorkflowPSO.SetPixelShader(mrWorkflowPS.Get());
+		mrWorkflowPSO.Finalize();
+		gPSOs.push_back(mrWorkflowPSO);
 
-		////MetallicRoughness Workflow Skin PSO
-		//GraphicsPSO mrWorkflowSkinPSO(L"MR workflow skin PSO");
-		//mrWorkflowSkinPSO = mrWorkflowPSO;
-		//mrWorkflowSkinPSO.SetVertexShader(skinVS.Get());
-		//mrWorkflowSkinPSO.Finalize();
-		//gPSOs.push_back(mrWorkflowSkinPSO);
+		//MetallicRoughness Workflow Skin PSO
+		GraphicsPSO mrWorkflowSkinPSO(L"MR workflow skin PSO");
+		mrWorkflowSkinPSO = mrWorkflowPSO;
+		mrWorkflowSkinPSO.SetInputLayout(_countof(skinInput), skinInput);
+		mrWorkflowSkinPSO.SetVertexShader(skinVS.Get());
+		mrWorkflowSkinPSO.Finalize();
+		gPSOs.push_back(mrWorkflowSkinPSO);
 
+		//Transparent PSO
+		GraphicsPSO transparentPSO(L"transparent PSO");
+		transparentPSO = defaultPSO;
+		transparentPSO.SetBlendState(BlendPreMultiplied);
+		transparentPSO.SetDepthStencilState(DepthStateReadOnly);
+		transparentPSO.Finalize();
+		gPSOs.push_back(transparentPSO);
 
+		//Transparent Skin PSO
+		GraphicsPSO transparentSkinPSO(L"transparent skin PSO");
+		transparentSkinPSO = skinPSO;
+		transparentSkinPSO.SetBlendState(BlendPreMultiplied);
+		transparentSkinPSO.SetDepthStencilState(DepthStateReadOnly);
+		transparentSkinPSO.Finalize();
+		gPSOs.push_back(transparentSkinPSO);
+
+		//Transparent MR Workflow PSO
+		GraphicsPSO transparentMRWorkflowPSO(L"transparent MR workflow PSO");
+		transparentMRWorkflowPSO = mrWorkflowPSO;
+		transparentMRWorkflowPSO.SetBlendState(BlendPreMultiplied);
+		transparentMRWorkflowPSO.SetDepthStencilState(DepthStateReadOnly);
+		transparentMRWorkflowPSO.Finalize();
+		gPSOs.push_back(transparentMRWorkflowPSO);
+
+		//Transparent MR Workflow Skin PSO
+		GraphicsPSO transparentMRWorkflowSkinPSO(L"transparent MR workflow skin PSO");
+		transparentMRWorkflowSkinPSO = mrWorkflowSkinPSO;
+		transparentMRWorkflowSkinPSO.SetBlendState(BlendPreMultiplied);
+		transparentMRWorkflowSkinPSO.SetDepthStencilState(DepthStateReadOnly);
+		transparentMRWorkflowSkinPSO.Finalize();
+		gPSOs.push_back(transparentMRWorkflowSkinPSO);
+
+		//shadow PSO
+		auto shadowVS = ShaderCompiler::CompileBlob(L"DepthOnlyVS.hlsl", L"vs_6_2");
+		GraphicsPSO shadowPSO(L"shadow PSO");
+		shadowPSO.SetRootSignature(mRootSig);
+        shadowPSO.SetRasterizerState(RasterizerDefaultCw);
+		shadowPSO.SetBlendState(BlendDisable);
+		shadowPSO.SetDepthStencilState(DepthStateReadWrite);
+		shadowPSO.SetInputLayout(_countof(posOnlyInput), posOnlyInput);
+		shadowPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+		shadowPSO.SetRenderTargetFormats(0,nullptr, gShadowBuffer.GetFormat());
+		shadowPSO.SetVertexShader(shadowVS.Get());
+		shadowPSO.Finalize();
+		gPSOs.push_back(shadowPSO);
+
+		//Skin Shadow PSO
+		auto shadowSkinVS = ShaderCompiler::CompileBlob(L"DepthOnlySkinVS.hlsl", L"vs_6_2");
+		GraphicsPSO shadowSkinPSO(L"shadow skin PSO");
+        shadowSkinPSO = shadowPSO;
+		shadowSkinPSO.SetInputLayout(_countof(posOnlySkinInput), posOnlySkinInput);
+		shadowSkinPSO.SetVertexShader(shadowSkinVS.Get());
+		shadowSkinPSO.Finalize();
+		gPSOs.push_back(shadowSkinPSO);
 
 		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);
 
@@ -145,29 +210,28 @@ namespace AtomEngine
 
 	void Renderer::Update(float deltaTime)
 	{
-		//if (/*SSAOFullScreenID == g_SSAOFullScreen.GetVersionID() &&*/
-		//	ShadowBufferID == gShadowBuffer.GetVersionID())
-		//{
-		//	return;
-		//}
+		if (/*SSAOFullScreenID == g_SSAOFullScreen.GetVersionID() &&*/
+			ShadowBufferID == gShadowBuffer.GetVersionID())
+		{
+			return;
+		}
 
-		//uint32_t DestCount = 1;
-		//uint32_t SourceCounts[] = { 1 };
+		uint32_t DestCount = 1;
+		uint32_t SourceCounts[] = { 1 };
 
-		//D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
-		//{
-		//	/*SSAOFullScreenID.GetSRV(),*/
-		//	gShadowBuffer.GetSRV(),
-		//};
+		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
+		{
+			/*SSAOFullScreenID.GetSRV(),*/
+			gShadowBuffer.GetSRV(),
+		};
 
-		//DescriptorHandle dest = gCommonTextures + gTextureHeap.GetDescriptorSize();
+		DescriptorHandle dest = gCommonTextures + gTextureHeap.GetDescriptorSize();
 
-		//DX12Core::gDevice->CopyDescriptors(1, &dest, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		DX12Core::gDevice->CopyDescriptors(1, &dest, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 
-		////SSAOFullScreenID = g_SSAOFullScreen.GetVersionID();
-		//ShadowBufferID = gShadowBuffer.GetVersionID();
-
+		//SSAOFullScreenID = g_SSAOFullScreen.GetVersionID();
+		ShadowBufferID = gShadowBuffer.GetVersionID();
 	}
 
 	void Renderer::Render(float deltaTime)
@@ -179,5 +243,10 @@ namespace AtomEngine
 	void Renderer::Shutdown()
 	{
 		gTextureHeap.Destroy();
+	}
+
+	const GraphicsPSO& Renderer::GetPSO(uint16_t psoFlags)
+	{
+		return gPSOs[psoFlags];
 	}
 }

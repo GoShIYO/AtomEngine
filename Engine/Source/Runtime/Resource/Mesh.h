@@ -15,9 +15,9 @@ namespace AtomEngine
 
 	enum PSOFlags : uint16_t
 	{
-		kHasSkin = 1 << 0,
-		kAlphaTest = 1 << 1,
-		kAlphaBlend = 1 << 2,
+		kHasSkin		= 1 << 0,
+		kHasMRTexture	= 1 << 1,
+		kAlphaBlend	= 1 << 2,
 	};
 
 	struct SubMesh
@@ -28,6 +28,7 @@ namespace AtomEngine
 		uint32_t vertexCount = 0;
 
 		uint32_t materialIndex = 0;
+		uint32_t srvTableIndex = 0;
 		AxisAlignedBox bounds;
 	};
 
@@ -37,6 +38,11 @@ namespace AtomEngine
 
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
+		uint16_t srvTable = 0;
+		uint16_t pso = 0;
+		uint16_t psoFlags = 0;
+		uint16_t numJoints = 0;
+		uint16_t startJoint = 0;
 
 		std::vector<SubMesh> subMeshes;
 	};

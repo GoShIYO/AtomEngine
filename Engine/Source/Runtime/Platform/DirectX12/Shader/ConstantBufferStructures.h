@@ -26,8 +26,8 @@ __declspec(align(256)) struct MaterialConstants
 	float normalTextureScale = 1.0f;           // default=1
 	float metallicFactor = 0.0f;               // default=0
 	float roughnessFactor = 0.5f;              // default=0.5
-	
-	uint flags;								   //どんなテクスチャを利用するかを示すフラグ
+	float pad[2];
+	Matrix4x4 uvTransform;
 };
 
 __declspec(align(256)) struct GlobalConstants

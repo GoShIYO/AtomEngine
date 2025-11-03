@@ -8,7 +8,7 @@ namespace AtomEngine
 	public:
 		~TransformComponent() = default;
 
-		const Matrix4x4& GetWorldMatrix() const{return mTransform.GetMatrix();}
+		const Matrix4x4 GetMatrix() const{return mTransform.GetMatrix();}
 
 		void Translate(const Vector3& v) { mTransform.transition = v; }
 		void Translate(float x, float y, float z) { mTransform.transition = Vector3(x, y, z); }
