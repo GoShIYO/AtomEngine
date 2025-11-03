@@ -114,15 +114,15 @@ float4 main(VSOutput input) : SV_Target0
     
     #ifdef USE_METALLICROUGHNESS
     float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
-    float2 metallicRoughness = metallicRoughnessFactor *
-        metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).bg;
+    float metallic = metallicRoughnessFactor.x * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).b;
+    float roughness = metallicRoughnessFactor.y * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).g;
     float occlusion = occlusionTexture.Sample(pointBorder, input.texcoord);
     float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
     float3 normal = ComputeTangentNormal(input, input.texcoord);
     #else
     float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
-    float metallic = metallicTexture.Sample(defaultSampler, input.texcoord);
-    float roughness = roughnessTexture.Sample(defaultSampler, input.texcoord);
+    float metallic = metallicRoughnessFactor.x * metallicTexture.Sample(defaultSampler, input.texcoord);
+    float roughness = metallicRoughnessFactor.y * roughnessTexture.Sample(defaultSampler, input.texcoord);
     float occlusion = occlusionTexture.Sample(pointBorder, input.texcoord);
     float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
     float3 normal = ComputeTangentNormal(input, input.texcoord);

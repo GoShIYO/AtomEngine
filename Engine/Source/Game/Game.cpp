@@ -215,7 +215,6 @@ void Game::Render()
 		queue.RenderMeshes(RenderQueue::kOpaque, gfxContext, globals);
 	}
 
-
 	queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
 
 	gfxContext.Finish();

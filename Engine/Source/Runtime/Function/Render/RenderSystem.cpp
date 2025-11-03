@@ -159,26 +159,40 @@ namespace AtomEngine
 		transparentMRWorkflowSkinPSO.Finalize();
 		gPSOs.push_back(transparentMRWorkflowSkinPSO);
 
+		//Depth Only PSO
+		auto depthOnlyVS = ShaderCompiler::CompileBlob(L"DepthOnlyVS.hlsl", L"vs_6_2");
+		GraphicsPSO depthOnlyPSO(L"depth only PSO");
+		depthOnlyPSO.SetRootSignature(mRootSig);
+		depthOnlyPSO.SetRasterizerState(RasterizerDefaultCw);
+		depthOnlyPSO.SetBlendState(BlendDisable);
+		depthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
+		depthOnlyPSO.SetInputLayout(_countof(posOnlyInput), posOnlyInput);
+		depthOnlyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+		depthOnlyPSO.SetRenderTargetFormats(0, nullptr, DepthFormat);
+		depthOnlyPSO.SetVertexShader(depthOnlyVS.Get());
+		depthOnlyPSO.Finalize();
+		gPSOs.push_back(depthOnlyPSO);
+
+		//Depth Only Skin PSO
+		auto shadowSkinVS = ShaderCompiler::CompileBlob(L"DepthOnlySkinVS.hlsl", L"vs_6_2");
+		GraphicsPSO SkinDepthOnlyPSO(L"depthOnly Skin PSO");
+		SkinDepthOnlyPSO = depthOnlyPSO;
+		SkinDepthOnlyPSO.SetInputLayout(_countof(posOnlySkinInput), posOnlySkinInput);
+		SkinDepthOnlyPSO.SetVertexShader(shadowSkinVS.Get());
+		SkinDepthOnlyPSO.Finalize();
+		gPSOs.push_back(SkinDepthOnlyPSO);
+
 		//shadow PSO
-		auto shadowVS = ShaderCompiler::CompileBlob(L"DepthOnlyVS.hlsl", L"vs_6_2");
-		GraphicsPSO shadowPSO(L"shadow PSO");
-		shadowPSO.SetRootSignature(mRootSig);
-        shadowPSO.SetRasterizerState(RasterizerDefaultCw);
-		shadowPSO.SetBlendState(BlendDisable);
-		shadowPSO.SetDepthStencilState(DepthStateReadWrite);
-		shadowPSO.SetInputLayout(_countof(posOnlyInput), posOnlyInput);
-		shadowPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+		GraphicsPSO shadowPSO = depthOnlyPSO;
+		shadowPSO.SetRasterizerState(RasterizerShadow);
 		shadowPSO.SetRenderTargetFormats(0,nullptr, gShadowBuffer.GetFormat());
-		shadowPSO.SetVertexShader(shadowVS.Get());
 		shadowPSO.Finalize();
 		gPSOs.push_back(shadowPSO);
 
-		//Skin Shadow PSO
-		auto shadowSkinVS = ShaderCompiler::CompileBlob(L"DepthOnlySkinVS.hlsl", L"vs_6_2");
-		GraphicsPSO shadowSkinPSO(L"shadow skin PSO");
-        shadowSkinPSO = shadowPSO;
-		shadowSkinPSO.SetInputLayout(_countof(posOnlySkinInput), posOnlySkinInput);
-		shadowSkinPSO.SetVertexShader(shadowSkinVS.Get());
+		//Shadow Skin PSO
+		GraphicsPSO shadowSkinPSO = SkinDepthOnlyPSO;
+		shadowSkinPSO.SetRasterizerState(RasterizerShadow);
+		shadowSkinPSO.SetRenderTargetFormats(0, nullptr, gShadowBuffer.GetFormat());
 		shadowSkinPSO.Finalize();
 		gPSOs.push_back(shadowSkinPSO);
 

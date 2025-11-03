@@ -22,7 +22,7 @@ namespace AtomEngine
 
 	bool IsTransparentMaterial(const Material& mat)
 	{
-		if (mat.baseColorFactor[3] < 1.0f)
+		if (mat.baseColorFactor.w < 1.0f)
 			return true;
 
 		if (mat.transmissionFactor > 0.0f)
@@ -261,6 +261,7 @@ namespace AtomEngine
 			material.baseColorFactor[1] = baseColor.g;
 			material.baseColorFactor[2] = baseColor.b;
 			material.baseColorFactor[3] = baseColor.a;
+			
 		}
 
 		float metallic = 0.0f, roughness = 0.5f;

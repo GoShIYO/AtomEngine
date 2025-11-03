@@ -29,6 +29,8 @@ namespace AtomEngine
         kPSO_Transparent_MRWorkFlow_Skin,
 		kPSO_DepthOnly,
 		kPSO_DepthOnly_Skin,
+		kPSO_Shadow,
+        kPSO_Shadow_Skin,
 
 		kNumPSOs
 	};

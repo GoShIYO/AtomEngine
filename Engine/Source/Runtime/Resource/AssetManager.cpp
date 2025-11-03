@@ -261,8 +261,9 @@ namespace AtomEngine
 					if (mesh.psoFlags & kAlphaBlend)
 					{
 						if (hasMRTextures[subMesh.materialIndex])
-							mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_MRWorkFlow;
-						else mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent;
+							mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_MRWorkFlow_Skin;
+						else mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_Skin;
+						
 					}
 					else
 					{
@@ -276,8 +277,8 @@ namespace AtomEngine
 					if (mesh.psoFlags & kAlphaBlend)
 					{
 						if (hasMRTextures[subMesh.materialIndex])
-							mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_MRWorkFlow_Skin;
-						else mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_Skin;
+							mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_MRWorkFlow;
+						else mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent;
 					}
 					else
 					{
@@ -335,7 +336,7 @@ namespace AtomEngine
 			vertexUpload.Unmap();
 
 			model->mVertexBuffer.Create(
-				L"ModelVertexBuffer_" + UTF8ToWString(filePath),
+				L"ModelVertexBuffer_" + modelName,
 				uint32_t(vertexBufferSize / sizeof(Vertex)),
 				sizeof(Vertex),
 				vertexUpload
@@ -369,7 +370,13 @@ namespace AtomEngine
 			MaterialConstants* materialCBV = (MaterialConstants*)materialConstants.Map();
 			for (uint32_t i = 0; i < modelData.materials.size(); ++i)
 			{
-				memcpy(materialCBV, &modelData.materials[i], sizeof(MaterialConstants));
+				MaterialConstants materialCB;
+				materialCB.baseColorFactor = modelData.materials[i].baseColorFactor;
+                materialCB.emissiveFactor = modelData.materials[i].emissiveFactor;
+                materialCB.metallicFactor = modelData.materials[i].metallicFactor;
+				materialCB.roughnessFactor = modelData.materials[i].roughnessFactor;
+
+				memcpy(materialCBV, &materialCB, sizeof(MaterialConstants));
 				materialCBV++;
 			}
 			materialConstants.Unmap();

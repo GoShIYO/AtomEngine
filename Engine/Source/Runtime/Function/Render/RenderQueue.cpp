@@ -27,7 +27,8 @@ namespace AtomEngine
 			bool skinned = (mesh.psoFlags & kHasSkin) == kHasSkin;
 			bool MRWorkFlow = (mesh.psoFlags & kHasMRTexture) == kHasMRTexture;
 			bool alphaBlend = (mesh.psoFlags & kAlphaBlend) == kAlphaBlend;
-
+			uint64_t depthIndex = skinned ? (uint64_t)PSOIndex::kPSO_DepthOnly_Skin : (uint64_t)PSOIndex::kPSO_DepthOnly;
+			
 			union float_or_int { float f; uint32_t u; } dist;
 			dist.f = std::max(distance, 0.0f);
 
@@ -37,7 +38,7 @@ namespace AtomEngine
 					return;
 
 				key.passID = kZPass;
-				key.psoIdx = skinned ? (uint64_t)PSOIndex::kPSO_DepthOnly_Skin : (uint64_t)PSOIndex::kPSO_DepthOnly;
+				key.psoIdx = skinned ? (uint64_t)PSOIndex::kPSO_Shadow_Skin : (uint64_t)PSOIndex::kPSO_Shadow;
 				key.key = dist.u;
 				mSortKeys.push_back(key.value);
 				mTypeCounts[kZPass]++;
@@ -52,6 +53,13 @@ namespace AtomEngine
 			}
 			else
 			{
+				key.passID = kZPass;
+				key.psoIdx = depthIndex;
+				key.key = dist.u;
+				mSortKeys.push_back(key.value);
+				mTypeCounts[kZPass]++;
+
+
 				key.passID = kOpaque;
 				key.psoIdx = mesh.pso;
 				key.key = dist.u;

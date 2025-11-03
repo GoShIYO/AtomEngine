@@ -27,7 +27,7 @@ __declspec(align(256)) struct MaterialConstants
 	float metallicFactor = 0.0f;               // default=0
 	float roughnessFactor = 0.5f;              // default=0.5
 	float pad[2];
-	Matrix4x4 uvTransform;
+	Matrix4x4 uvTransform = Matrix4x4::IDENTITY;
 };
 
 __declspec(align(256)) struct GlobalConstants
