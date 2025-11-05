@@ -26,8 +26,8 @@ namespace AtomEngine
             BoundingSphere sphereWS = BoundingSphere(sphereXform * sphereLS.GetCenter(), sphereScale * sphereLS.GetRadius());
             BoundingSphere sphereVS = BoundingSphere(viewMat * sphereWS.GetCenter(), sphereWS.GetRadius());
 
-            //if (!frustum.IntersectSphere(sphereVS))
-            //    continue;
+            if (!frustum.IntersectSphere(sphereVS))
+                continue;
 
             float distance = -sphereVS.GetCenter().z - sphereVS.GetRadius();
 
@@ -35,8 +35,6 @@ namespace AtomEngine
             for (uint32_t subIdx = 0; subIdx < mesh.subMeshes.size(); ++subIdx)
             {
                 const SubMesh& sub = mesh.subMeshes[subIdx];
-                //if (!frustum.IntersectBoundingBox(sub.bounds))
-                //    continue;
 
                 D3D12_GPU_VIRTUAL_ADDRESS meshCBV =
                     meshConstants.GetGpuVirtualAddress() + meshIdx * sizeof(MeshConstants);

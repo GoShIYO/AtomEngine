@@ -1,4 +1,5 @@
 #include "ShaderCompiler.h"
+#include <filesystem>
 
 #pragma comment(lib,"dxcompiler.lib")
 
@@ -28,6 +29,7 @@ namespace AtomEngine
 		const std::wstring& filePath, 
 		const wchar_t* profile, 
 		const wchar_t* entryPoint, 
+		const wchar_t* includePath,
 		DxcCompilerResources& dxcResources)
 	{
 
@@ -50,10 +52,12 @@ namespace AtomEngine
 		//2.Compilerする
 		LPCWSTR arguments[] = {
 			filePath.c_str(),
-			L"-E", entryPoint,
-			L"-T", profile,
+			L"-E",  entryPoint,
+			L"-T",  profile,
 			L"-Zi", L"-Qembed_debug",
 			L"-Od", L"-Zpr",
+			L"-I",  root,
+			L"-I",  includePath,
 		};
 
 		// 実際にShaderをコンパイルする
@@ -71,7 +75,7 @@ namespace AtomEngine
 		ThrowIfFailed(shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr));
 		if (shaderError != nullptr && shaderError->GetStringLength() != 0)
 		{
-			Log(shaderError->GetStringPointer());
+			Print(shaderError->GetStringPointer());
 
 			HRESULT hrStatus;
 			ThrowIfFailed(shaderResult->GetStatus(&hrStatus));
@@ -96,12 +100,16 @@ namespace AtomEngine
 		// 実行用のバイナリを返却
 		return shaderBlob;
 	}
-	Microsoft::WRL::ComPtr<IDxcBlob> ShaderCompiler::CompileBlob(const std::wstring& filePath, const wchar_t* profile, const wchar_t* entryPoint)
+	Microsoft::WRL::ComPtr<IDxcBlob> ShaderCompiler::CompileBlob(
+		const std::wstring& filePath, 
+		const wchar_t* profile, 
+		const wchar_t* entryPoint)
 	{
 		std::wstring fullPath = root + filePath;
+		std::filesystem::path includeDir = std::filesystem::absolute(L"./Source/Runtime/Platform/DirectX12/Shader/");
 
 		DxcCompilerResources dxcResources;
-		Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob = CompileShader(fullPath, profile, entryPoint, dxcResources);
+		Microsoft::WRL::ComPtr<IDxcBlob> shaderBlob = CompileShader(fullPath, profile, entryPoint, includeDir.c_str(), dxcResources);
 		
 		return shaderBlob;
 	}

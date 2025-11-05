@@ -152,8 +152,14 @@ namespace AtomEngine
 
 	TextureRef::~TextureRef()
 	{
-		if (mRef != nullptr && --mRef->mReferenceCount == 0)
-			mRef->Unload();
+		if (mRef != nullptr)
+		{
+			if (--mRef->mReferenceCount == 0)
+			{
+				mRef->Unload();
+			}
+			mRef = nullptr;
+		}
 	}
 
 	void TextureRef::operator= (std::nullptr_t)

@@ -31,7 +31,7 @@ struct VSInput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    float3 bittangent : BITTANGENT;
+    float3 bitangent : BITTANGENT;
 #ifdef ENABLE_SKINNING
     float4 jointWeights : WEIGHT;
     uint4 jointIndices : INDEX;
@@ -44,10 +44,10 @@ struct VSOutput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    float3 bittangent : BITTANGENT;
+    float3 bitangent : BITANGENT;
     
     float3 worldPos : TEXCOORD1;
-    float3 sunShadowCoord : TEXCOORD2;
+    float4 sunShadowCoord : TEXCOORD2;
 };
 
 VSOutput main(VSInput input)
@@ -55,9 +55,9 @@ VSOutput main(VSInput input)
     VSOutput vsOutput;
 
     float4 position = float4(input.position, 1.0f);
-    float3 normal = input.normal * 2 - 1;
+    float3 normal = input.normal;
     float3 tangent = input.tangent;
-    float3 bittangent = input.bittangent;
+    float3 bitangent = input.bitangent;
     
 #ifdef ENABLE_SKINNING
     float4 weights = input.jointWeights / dot(input.jointWeights, 1.0f);
@@ -79,21 +79,21 @@ VSOutput main(VSInput input)
     
     tangent.xyz = skinnedTangent;
 
-    float3 skinnedBittangent = mul(bittangent.xyz, (float3x3) Joints[input.jointIndices.x].NrmMatrix) * weights.x;
-    skinnedBittangent += mul(bittangent.xyz, (float3x3) Joints[input.jointIndices.y].NrmMatrix) * weights.y;
-    skinnedBittangent += mul(bittangent.xyz, (float3x3) Joints[input.jointIndices.z].NrmMatrix) * weights.z;
+    float3 skinnedBitangent = mul(bitangent.xyz, (float3x3) Joints[input.jointIndices.x].NrmMatrix) * weights.x;
+    skinnedBitangent += mul(bitangent.xyz, (float3x3) Joints[input.jointIndices.y].NrmMatrix) * weights.y;
+    skinnedBitangent += mul(bitangent.xyz, (float3x3) Joints[input.jointIndices.z].NrmMatrix) * weights.z;
     
-    bittangent.xyz = skinnedBittangent;
+    bitangent.xyz = skinnedBitangent;
     
 #endif
 
     vsOutput.worldPos = mul(position, WorldMatrix).xyz;
     vsOutput.position = mul(float4(vsOutput.worldPos, 1.0), ViewProjMatrix);
     vsOutput.texcoord = input.texcoord;
-    vsOutput.sunShadowCoord = mul(float4(vsOutput.worldPos, 1.0), SunShadowMatrix).xyz;
+    vsOutput.sunShadowCoord = mul(float4(vsOutput.worldPos, 1.0), SunShadowMatrix);
     vsOutput.normal = mul(normal, (float3x3) WorldIT);
     vsOutput.tangent = mul(tangent.xyz, (float3x3) WorldIT);
-    vsOutput.bittangent = mul(bittangent.xyz, (float3x3) WorldIT);
+    vsOutput.bitangent = mul(bitangent.xyz, (float3x3) WorldIT);
     
     return vsOutput;
 }

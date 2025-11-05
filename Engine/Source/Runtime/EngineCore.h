@@ -17,7 +17,7 @@ namespace Engine
 		float FPS() const { return mFps; }
 
 	protected:
-		void LogicalTick(float deltaTime);
+		void LogicalTick(GameApp& app,float deltaTime);
 		void RenderTick(GameApp& app,float deltaTime);
 		void Tick(GameApp& app,float deltaTime);
 

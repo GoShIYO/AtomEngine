@@ -13,6 +13,9 @@ namespace AtomEngine
 
     extern ShadowBuffer gShadowBuffer;
 
+    extern ColorBuffer gSSAOFullScreen;
+    extern ColorBuffer gLinearDepth[2];
+
     void InitializeBuffers(uint32_t bufferWidth, uint32_t bufferHeight);
     void DestroyBuffers();
     void OnResize(uint32_t NativeWidth, uint32_t NativeHeight);

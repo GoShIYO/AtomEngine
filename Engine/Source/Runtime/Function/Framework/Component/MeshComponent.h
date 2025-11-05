@@ -17,7 +17,6 @@ namespace AtomEngine
 		~MeshComponent();
 
 		void Update(GraphicsContext& gfxContext,const TransformComponent& transform ,float deltaTime);
-		void Render(GraphicsContext& gfxContext,const RootSignature& rootSig,const GraphicsPSO& pso, const Matrix4x4& viewProjMat);
 
 		void Render(RenderQueue& sorter);
 	private:

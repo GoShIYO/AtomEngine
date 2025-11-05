@@ -10,6 +10,8 @@
 
 namespace AtomEngine
 {
+    using namespace entt;
+
     using Entity = entt::entity;
 
     struct NameComponent

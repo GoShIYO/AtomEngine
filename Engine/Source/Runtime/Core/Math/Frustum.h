@@ -12,7 +12,7 @@ namespace AtomEngine
 		Frustum() {}
 
 		Frustum(const Matrix4x4& ProjectionMatrix);
-
+		Frustum(float fovY, float aspect, float nearZ, float farZ);
 		enum CornerID
 		{
 			kNearLowerLeft, kNearUpperLeft, kNearLowerRight, kNearUpperRight,
@@ -34,10 +34,10 @@ namespace AtomEngine
 		friend Frustum operator* (const Transform& xform, const Frustum& frustum);
 	private:
 
-		//　透視錐台コンストラクター (ピラミッド型の錐台用)
+		//透視錐台コンストラクター (ピラミッド型の錐台用)
 		void ConstructPerspectiveFrustum(float HTan, float VTan, float NearClip, float FarClip);
 
-		// 正投影錐台コンストラクタ（箱型錐台用）
+		//正射影錐台コンストラクタ（箱型錐台用）
 		void ConstructOrthographicFrustum(float Left, float Right, float Top, float Bottom, float NearClip, float FarClip);
 
 		Vector3 m_FrustumCorners[8];		// 円錐台の角

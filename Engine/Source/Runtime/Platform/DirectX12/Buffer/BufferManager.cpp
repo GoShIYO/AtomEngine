@@ -10,6 +10,8 @@ namespace AtomEngine
 
 	ShadowBuffer gShadowBuffer;
 
+	ColorBuffer gSSAOFullScreen(Color(1.0f,1.0f,1.0f));
+	ColorBuffer gLinearDepth[2];
 
 	void InitializeBuffers(uint32_t bufferWidth, uint32_t bufferHeight)
 	{
@@ -23,6 +25,9 @@ namespace AtomEngine
 
 		gShadowBuffer.Create(L"Shadow Map", 2048, 2048);
 
+		gSSAOFullScreen.Create(L"SSAO Full Screen", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
+		gLinearDepth[0].Create(L"Linear Depth 0", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
+		gLinearDepth[1].Create(L"Linear Depth 1", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
 	}
 	void DestroyBuffers()
 	{
@@ -34,6 +39,9 @@ namespace AtomEngine
 
 		gShadowBuffer.Destroy();
 
+		gSSAOFullScreen.Destroy();
+		gLinearDepth[0].Destroy();
+		gLinearDepth[1].Destroy();
 	}
 	void OnResize(uint32_t Width, uint32_t Height)
 	{

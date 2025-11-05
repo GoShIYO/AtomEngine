@@ -9,11 +9,12 @@
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 #include "Runtime/Function/Render/RenderQueue.h"
 #include "Runtime/Resource/AssetManager.h"
-
+#include "Runtime/Function/Light/LightManager.h"
 #include "Runtime/Resource/Model.h"
 #include "Runtime/Core/Utility/Utility.h"
-
-#include "imgui.h"
+#include "Runtime/Function/Framework/Component/MeshComponent.h"
+#include "Runtime/Function/Render/RenderPasses/RenderPassManager.h"
+#include "Runtime/Function/Render/RenderPasses/RenderPassesInclude.h"
 
 namespace AtomEngine
 {
@@ -24,30 +25,30 @@ namespace AtomEngine
 	DescriptorHeap Renderer::gTextureHeap;
 	DescriptorHandle Renderer::gCommonTextures;
 
-	//uint32_t SSAOFullScreenID;
+	uint32_t SSAOFullScreenID;
 	uint32_t ShadowBufferID;
 
-	GraphicsPSO mDefaultPSO(L"Renderer: Default PSO"); // Not finalized.  Used as a template.
+	D3D12_VIEWPORT mViewport{};
+	D3D12_RECT mScissor{};
+	RenderPassManager* mRenderPassManager = nullptr;
 
 	void Renderer::Initialize()
 	{
 		SamplerDesc DefaultSamplerDesc;
-		DefaultSamplerDesc = SamplerLinearWrapDesc;
-		DefaultSamplerDesc.MaxAnisotropy = 8;
+		DefaultSamplerDesc.MaxAnisotropy = 16;
 
-		mRootSig.Reset(kNumRootBindings, 5);
+		mRootSig.Reset(kNumRootBindings, 3);
 
 		mRootSig.InitStaticSampler(10, DefaultSamplerDesc, D3D12_SHADER_VISIBILITY_PIXEL);
-		mRootSig.InitStaticSampler(11, SamplerShadowDesc, D3D12_SHADER_VISIBILITY_PIXEL);
-		mRootSig.InitStaticSampler(12, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
-		mRootSig.InitStaticSampler(13, SamplerPointBorderDesc, D3D12_SHADER_VISIBILITY_PIXEL);
-		mRootSig.InitStaticSampler(14, SamplerLinearBorderDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+		mRootSig.InitStaticSampler(11, SamplerAnisoWrapDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+		mRootSig.InitStaticSampler(12, SamplerShadowDesc, D3D12_SHADER_VISIBILITY_PIXEL);
 
 		mRootSig[kMeshConstants].InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 		mRootSig[kMaterialConstants].InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_PIXEL);
 		mRootSig[kMaterialSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 10, D3D12_SHADER_VISIBILITY_PIXEL);
 		mRootSig[kCommonSRVs].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 10, D3D12_SHADER_VISIBILITY_PIXEL);
 		mRootSig[kCommonCBV].InitAsConstantBuffer(1);
+        mRootSig[kLightConstants].InitAsConstantBuffer(2, D3D12_SHADER_VISIBILITY_PIXEL);
 		mRootSig[kSkinMatrices].InitAsBufferSRV(20, D3D12_SHADER_VISIBILITY_VERTEX);
 		mRootSig.Finalize(L"RootSig", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -198,65 +199,120 @@ namespace AtomEngine
 
 		gTextureHeap.Create(L"Scene Texture Descriptors", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4096);
 
-		//TODO:lightSystem初期化
-		//Lighting::InitializeResources();
+		//lightSystem初期化
+		LightManager::Initialize();
 
-		uint32_t DestCount = 3;
-		uint32_t SourceCounts[] = { 1, 1, 1 };
+		uint32_t DestCount = 9;
+		std::vector<uint32_t>SourceCounts(DestCount, 1);
 
 		//// 共通テクスチャの記述子テーブルを割り当てる
-		gCommonTextures = gTextureHeap.Alloc(3);
+		gCommonTextures = gTextureHeap.Alloc(9);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
 		{
 			GetDefaultTexture(kBlackCubeMap),
 			GetDefaultTexture(kBlackCubeMap),
+			GetDefaultTexture(kDefaultBRDFLUT),
 			gShadowBuffer.GetSRV(),
-			//TODO::LightSystem
+			gSSAOFullScreen.GetSRV(),
+			LightManager::GetLightSrv(),
+			LightManager::GetLightShadowSrv(),
+			LightManager::GetLightGridSrv(),
+			LightManager::GetLightGridBitMaskSrv()
 		};
 
 		DX12Core::gDevice->CopyDescriptors(1, &gCommonTextures,
-			&DestCount, DestCount, SourceTextures, SourceCounts,
+			&DestCount, DestCount, SourceTextures, SourceCounts.data(),
 			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-		//ShadowBufferID = gShadowBuffer.GetVersionID();
+		SSAOFullScreenID = gSSAOFullScreen.GetVersionID();
+		ShadowBufferID = gShadowBuffer.GetVersionID();
+		InitializeRenderPasses();
 	}
 
-	void Renderer::Update(float deltaTime)
+	void Renderer::InitializeRenderPasses()
 	{
-		if (/*SSAOFullScreenID == g_SSAOFullScreen.GetVersionID() &&*/
+		mRenderPassManager = RenderPassManager::GetInstance();
+		mRenderPassManager->RegisterRenderPass(std::make_unique<ForwardRenderingPass>());
+
+
+		mRenderPassManager->SetUpRenderPass();
+	}
+
+	void Renderer::Update(World& world,float deltaTime)
+	{
+		GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Update");
+		//ワールドからメッシュコンポーネントとトランスフォームコンポーネントを取得
+		auto view = world.View<MeshComponent,TransformComponent>();
+
+		for (auto entity : view)
+		{
+			//メッシュコンポーネントを更新
+			auto& mesh = view.get<MeshComponent>(entity);
+			auto& transform = view.get<TransformComponent>(entity);
+            mesh.Update(gfxContext,transform,deltaTime);
+		}
+		gfxContext.Finish();
+
+
+		mViewport.Width = (float)gSceneColorBuffer.GetWidth();
+		mViewport.Height = (float)gSceneColorBuffer.GetHeight();
+		mViewport.MinDepth = 0.0f;
+		mViewport.MaxDepth = 1.0f;
+
+		mScissor.left = 0;
+		mScissor.top = 0;
+		mScissor.right = (LONG)gSceneColorBuffer.GetWidth();
+		mScissor.bottom = (LONG)gSceneColorBuffer.GetHeight();
+
+		UpdateBuffers();
+	}
+
+	void Renderer::UpdateBuffers()
+	{
+		if (SSAOFullScreenID == gSSAOFullScreen.GetVersionID() &&
 			ShadowBufferID == gShadowBuffer.GetVersionID())
 		{
 			return;
 		}
 
 		uint32_t DestCount = 1;
-		uint32_t SourceCounts[] = { 1 };
+		std::vector<uint32_t>SourceCounts(DestCount, 1);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
 		{
-			/*SSAOFullScreenID.GetSRV(),*/
+			gSSAOFullScreen.GetSRV(),
 			gShadowBuffer.GetSRV(),
 		};
 
 		DescriptorHandle dest = gCommonTextures + gTextureHeap.GetDescriptorSize();
 
-		DX12Core::gDevice->CopyDescriptors(1, &dest, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		DX12Core::gDevice->CopyDescriptors(1, &dest, &DestCount,
+			DestCount, SourceTextures, SourceCounts.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 
-		//SSAOFullScreenID = g_SSAOFullScreen.GetVersionID();
+		SSAOFullScreenID = gSSAOFullScreen.GetVersionID();
 		ShadowBufferID = gShadowBuffer.GetVersionID();
 	}
 
-	void Renderer::Render(float deltaTime)
+	void Renderer::Render(World& world, Camera& camera,float deltaTime)
 	{
+		GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
 
+		mRenderPassManager->SetWorld(world);
+		mRenderPassManager->SetCamera(&camera);
+		mRenderPassManager->SetRenderTarget(&gSceneColorBuffer, &gSceneDepthBuffer);
+		mRenderPassManager->SetViewportAndScissor(mViewport, mScissor);
+		mRenderPassManager->RenderAll(gfxContext);
 
+		gfxContext.Finish();
 	}
 
 	void Renderer::Shutdown()
 	{
 		gTextureHeap.Destroy();
+		mRenderPassManager->Shutdown();
+		LightManager::Shutdown();
 	}
 
 	const GraphicsPSO& Renderer::GetPSO(uint16_t psoFlags)

@@ -75,22 +75,22 @@ namespace AtomEngine
 
 	void Matrix4x4::MakeAffine(const Vector3& scale, const Quaternion& orientation, const Vector3& position)
 	{
-		Matrix3x3 rot3x3;
-		orientation.ToRotationMatrix(rot3x3);
+		Matrix4x4 rot;
+		orientation.ToRotationMatrix(rot);
 
-		mat[0][0] = scale.x * rot3x3.mat[0][0];
-		mat[0][1] = scale.y * rot3x3.mat[0][1];
-		mat[0][2] = scale.z * rot3x3.mat[0][2];
+		mat[0][0] = scale.x * rot.mat[0][0];
+		mat[0][1] = scale.y * rot.mat[0][1];
+		mat[0][2] = scale.z * rot.mat[0][2];
 		mat[0][3] = 0.0f;
 
-		mat[1][0] = scale.x * rot3x3.mat[1][0];
-		mat[1][1] = scale.y * rot3x3.mat[1][1];
-		mat[1][2] = scale.z * rot3x3.mat[1][2];
+		mat[1][0] = scale.x * rot.mat[1][0];
+		mat[1][1] = scale.y * rot.mat[1][1];
+		mat[1][2] = scale.z * rot.mat[1][2];
 		mat[1][3] = 0.0f;
 
-		mat[2][0] = scale.x * rot3x3.mat[2][0];
-		mat[2][1] = scale.y * rot3x3.mat[2][1];
-		mat[2][2] = scale.z * rot3x3.mat[2][2];
+		mat[2][0] = scale.x * rot.mat[2][0];
+		mat[2][1] = scale.y * rot.mat[2][1];
+		mat[2][2] = scale.z * rot.mat[2][2];
 		mat[2][3] = 0.0f;
 
 		mat[3][0] = position.x;

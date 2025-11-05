@@ -3,6 +3,8 @@
 #include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
 #include "Runtime/Resource/TextureRef.h"
 #include "Runtime/Function/Camera/CameraBase.h"
+#include "Runtime/Function/Framework/ECS/World.h"
+
 namespace AtomEngine
 {
 	enum RootBindings
@@ -11,7 +13,8 @@ namespace AtomEngine
 		kMaterialConstants,		// マテリアル定数バッファ
 		kMaterialSRVs,			// テクスチャ
 		kCommonSRVs,			// 共通テクスチャ(depth 環境mapとか)
-		kCommonCBV,				// グローバル定数バッファ(カメラ ライト等)
+		kCommonCBV,				// グローバル定数バッファ
+        kLightConstants,		// ライト定数バッファ
 		kSkinMatrices,			// スキニング行列バッファ
 
 		kNumRootBindings
@@ -40,10 +43,10 @@ namespace AtomEngine
 	public:
 
 		static void Initialize();
-
-		static void Update(float deltaTime);
-
-		static void Render(float deltaTime);
+		static void InitializeRenderPasses();
+		static void Update(World& world,float deltaTime);
+		static void UpdateBuffers();
+		static void Render(World& world,Camera& camera ,float deltaTime);
 
 		static void Shutdown();
 

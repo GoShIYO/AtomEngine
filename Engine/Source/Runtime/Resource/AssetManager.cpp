@@ -321,7 +321,6 @@ namespace AtomEngine
 		model->mBoundingBox = modelData.boundingBox;
 		model->mBoundingSphere = modelData.boundingSphere;
 
-		model->mNumIndices = (uint32_t)modelData.indices.size();
 		model->mMeshData = std::move(modelData.meshes);
 		model->mSceneGraph = std::move(modelData.graphNodes);
 
@@ -336,7 +335,7 @@ namespace AtomEngine
 			vertexUpload.Unmap();
 
 			model->mVertexBuffer.Create(
-				L"ModelVertexBuffer_" + modelName,
+				RemoveExtension(modelName) + L"VertexBuffer",
 				uint32_t(vertexBufferSize / sizeof(Vertex)),
 				sizeof(Vertex),
 				vertexUpload
@@ -353,7 +352,7 @@ namespace AtomEngine
 			indexUpload.Unmap();
 
 			model->mIndexBuffer.Create(
-				L"ModelIndexBuffer_" + UTF8ToWString(filePath),
+				RemoveExtension(modelName) + L"IndexBuffer_",
 				static_cast<uint32_t>(modelData.indices.size()),
 				sizeof(uint32_t),
 				indexUpload

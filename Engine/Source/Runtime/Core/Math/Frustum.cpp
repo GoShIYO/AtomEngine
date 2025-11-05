@@ -93,4 +93,10 @@ namespace AtomEngine
             ConstructPerspectiveFrustum(RcpXX, RcpYY, NearClip, FarClip);
         }
     }
+    Frustum::Frustum(float fovY, float aspect, float nearZ, float farZ)
+    {
+        float vTan = tanf(fovY * 0.5f);
+        float hTan = vTan * aspect;
+        ConstructPerspectiveFrustum(hTan, vTan, nearZ, farZ);
+    }
 }

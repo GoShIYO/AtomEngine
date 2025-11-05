@@ -244,9 +244,6 @@
     <ClInclude Include="Source\Runtime\Function\Render\RenderQueue.h">
       <Filter>Engine\Runtime\Function\Render</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.h">
-      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.h">
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClInclude>
@@ -282,6 +279,9 @@
     <ClInclude Include="Source\Runtime\Function\Framework\ECS\GUID.h" />
     <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h" />
     <ClInclude Include="Source\Runtime\Function\Render\SkyboxRenderer.h" />
+    <ClInclude Include="Source\Runtime\Function\Camera\ShadowCamera.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassesInclude.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\editor.cpp">
@@ -494,12 +494,6 @@
     <ClCompile Include="Source\Runtime\Function\Render\RenderQueue.cpp">
       <Filter>Engine\Runtime\Function\Render</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ShadowPass.cpp">
-      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.cpp">
-      <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp">
       <Filter>Engine\Runtime\Function\Render\RenderPasses</Filter>
     </ClCompile>
@@ -523,6 +517,8 @@
     <ClCompile Include="Source\Runtime\Function\Framework\ECS\GUID.cpp" />
     <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\SkyboxRenderer.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Camera\ShadowCamera.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -643,6 +639,13 @@
     </FxCompile>
     <FxCompile Include="Asset\Shaders\Object3DSkinned.VS.hlsl" />
     <FxCompile Include="Asset\Shaders\Object3DMR.PS.hlsl" />
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_8.hlsl" />
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_16.hlsl" />
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_24.hlsl" />
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_32.hlsl" />
+    <FxCompile Include="Asset\Shaders\DepthViewVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\DepthViewPS.hlsl" />
+    <FxCompile Include="Asset\Shaders\IblBrdf.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Unility.hlsli">
@@ -657,5 +660,8 @@
     <None Include="Asset\Shaders\Object3D.hlsli">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Asset\Shaders\Light\FillLightGridCS.hlsli" />
+    <None Include="Asset\Shaders\Light\LightGrid.hlsli" />
+    <None Include="Asset\Shaders\Light\Lighting.hlsli" />
   </ItemGroup>
 </Project>

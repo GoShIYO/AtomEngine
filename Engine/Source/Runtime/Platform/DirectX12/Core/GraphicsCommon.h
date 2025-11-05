@@ -65,14 +65,13 @@ namespace AtomEngine
         kWhiteTransparent2D,    // 透過する白いテクスチャ
         kDefaultNormalMap,      // デフォルトの法線マップ
         kBlackCubeMap,          // 黒いキューブマップ
+        kDefaultBRDFLUT,        // デフォルトのBRDF LUT
 
         kNumDefaultTextures     // デフォルトテクスチャの数
     };
     D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID);
 
     extern RootSignature gCommonRS;
-    extern ComputePSO gGenerateMipsLinearPSO[4];
-    extern ComputePSO gGenerateMipsGammaPSO[4];
-    extern GraphicsPSO gDownsampleDepthPSO;
+
 }
 

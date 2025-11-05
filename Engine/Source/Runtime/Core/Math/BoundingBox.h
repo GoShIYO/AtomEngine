@@ -31,6 +31,24 @@ namespace AtomEngine
 		{
 			return AxisAlignedBox(Math::Min(mMin, box.mMin), Math::Max(mMax, box.mMax));
 		}
+		void Transform(const Matrix4x4& mat)
+		{
+			Vector3 corners[8] = {
+				{mMin.x, mMin.y, mMin.z},
+				{mMax.x, mMin.y, mMin.z},
+				{mMin.x, mMax.y, mMin.z},
+				{mMax.x, mMax.y, mMin.z},
+				{mMin.x, mMin.y, mMax.z},
+				{mMax.x, mMin.y, mMax.z},
+				{mMin.x, mMax.y, mMax.z},
+				{mMax.x, mMax.y, mMax.z},
+			};
+
+			AxisAlignedBox newBox;
+			for (auto& c : corners)
+				newBox.AddPoint(Math::TransformCoord(c, mat));
+			*this = newBox;
+		}
 
 		Vector3 GetMin() const { return mMin; }
 		Vector3 GetMax() const { return mMax; }

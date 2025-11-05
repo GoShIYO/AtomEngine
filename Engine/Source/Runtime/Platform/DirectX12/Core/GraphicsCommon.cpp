@@ -1,7 +1,12 @@
 #include "GraphicsCommon.h"
 #include "CommandSignature.h"
-#include "../Pipline/PiplineState.h"
 #include "Runtime/Resource/Texture.h"
+#include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
+#include "Runtime/Platform/DirectX12/Context/ComputeContext.h"
+#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+#include "Runtime/Platform/DirectX12/Buffer/ColorBuffer.h"
+
+#include "../Pipline/PiplineState.h"
 
 namespace AtomEngine
 {
@@ -15,11 +20,6 @@ namespace AtomEngine
     SamplerDesc SamplerLinearBorderDesc;
 
     Texture DefaultTextures[kNumDefaultTextures];
-    D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID)
-    {
-        ASSERT(texID < kNumDefaultTextures);
-        return DefaultTextures[texID].GetSRV();
-    }
 
     D3D12_CPU_DESCRIPTOR_HANDLE SamplerLinearWrap;
     D3D12_CPU_DESCRIPTOR_HANDLE SamplerAnisoWrap;
@@ -57,30 +57,45 @@ namespace AtomEngine
     CommandSignature DrawIndirectCommandSignature(1);
 
     RootSignature gCommonRS;
-    ComputePSO gGenerateMipsLinearPSO[4] =
-    {
-        {L"Generate Mips Linear CS"},
-        {L"Generate Mips Linear Odd X CS"},
-        {L"Generate Mips Linear Odd Y CS"},
-        {L"Generate Mips Linear Odd CS"},
-    };
+    RootSignature mBrdfLutRS;
+    ComputePSO mBrdfLutPSO;
+    ColorBuffer BRDF_LUT;
 
-    ComputePSO gGenerateMipsGammaPSO[4] =
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID)
     {
-        { L"Generate Mips Gamma CS" },
-        { L"Generate Mips Gamma Odd X CS" },
-        { L"Generate Mips Gamma Odd Y CS" },
-        { L"Generate Mips Gamma Odd CS" },
-    };
+        ASSERT(texID < kNumDefaultTextures);
+        if(texID == kDefaultBRDFLUT)
+            return BRDF_LUT.GetSRV();
+        return DefaultTextures[texID].GetSRV();
+    }
 
-    GraphicsPSO gDownsampleDepthPSO(L"DownsampleDepth PSO");
+    void GenerateBRDF_LUT(ComputeContext& Context)
+    {
+        constexpr uint32_t kBrdfSize = 512;
+        constexpr uint32_t thread = 16;
+         uint32_t groupX = DivideByMultiple(kBrdfSize, thread);
+         uint32_t groupY = DivideByMultiple(kBrdfSize, thread);
+
+         Context.TransitionResource(BRDF_LUT, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+         Context.SetRootSignature(mBrdfLutRS);
+         Context.SetPipelineState(mBrdfLutPSO);
+
+         Context.SetDynamicDescriptor(0, 0, BRDF_LUT.GetUAV());
+
+         Context.Dispatch(groupX, groupY, 1);
+
+         Context.InsertUAVBarrier(BRDF_LUT);
+         Context.TransitionResource(BRDF_LUT, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+    }
 
 	void InitializeCommonState(void)
 	{
         SamplerLinearWrapDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
         SamplerLinearWrap = SamplerLinearWrapDesc.CreateDescriptor();
 
-        SamplerAnisoWrapDesc.MaxAnisotropy = 4;
+        SamplerAnisoWrapDesc.MaxAnisotropy = 8;
         SamplerAnisoWrap = SamplerAnisoWrapDesc.CreateDescriptor();
 
         SamplerShadowDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
@@ -232,23 +247,29 @@ namespace AtomEngine
         gCommonRS.InitStaticSampler(2, SamplerLinearBorderDesc);
         gCommonRS.Finalize(L"GraphicsCommonRS");
 
-    /*    gDownsampleDepthPSO.SetRootSignature(gCommonRS);
-        gDownsampleDepthPSO.SetRasterizerState(RasterizerTwoSided);
-        gDownsampleDepthPSO.SetBlendState(BlendDisable);
-        gDownsampleDepthPSO.SetDepthStencilState(DepthStateReadWrite);
-        gDownsampleDepthPSO.SetSampleMask(0xFFFFFFFF);
-        gDownsampleDepthPSO.SetInputLayout(0, nullptr);
-        gDownsampleDepthPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-        gDownsampleDepthPSO.SetVertexShader(g_pScreenQuadCommonVS, sizeof(g_pScreenQuadCommonVS));
-        gDownsampleDepthPSO.SetPixelShader(g_pDownsampleDepthPS, sizeof(g_pDownsampleDepthPS));
-        gDownsampleDepthPSO.SetDepthTargetFormat(DXGI_FORMAT_D32_FLOAT);
-        gDownsampleDepthPSO.Finalize();*/
+        mBrdfLutRS.Reset(1, 0);
+        mBrdfLutRS[0].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
+        mBrdfLutRS.Finalize(L"BrdfLutRs");
+
+        auto brdfLutCS = ShaderCompiler::CompileBlob(L"IblBrdf.hlsl", L"cs_6_2", L"CSMain");
+        mBrdfLutPSO.SetRootSignature(mBrdfLutRS);
+        mBrdfLutPSO.SetComputeShader(brdfLutCS.Get());
+        mBrdfLutPSO.Finalize();
+
+        BRDF_LUT.Create(L"BRDF_LUT tex", 512, 512, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        ComputeContext& Context = ComputeContext::Begin(L"Generate BRDF LUT");
+        GenerateBRDF_LUT(Context);
+        Context.Finish(true);
+
+
 	}
 
 	void DestroyCommonState(void)
 	{
         for (uint32_t i = 0; i < kNumDefaultTextures; ++i)
             DefaultTextures[i].Destroy();
+        BRDF_LUT.Destroy();
 
         DispatchIndirectCommandSignature.Destroy();
         DrawIndirectCommandSignature.Destroy();

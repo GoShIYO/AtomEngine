@@ -12,6 +12,8 @@
 #include "Runtime/Platform/DirectX12/Pipline/RootSignature.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
 
+using namespace AtomEngine;
+
 class GameApp
 {
 public:
@@ -22,4 +24,9 @@ public:
 	virtual void Render() = 0;
 	virtual void Shutdown() = 0;
 	virtual bool Exit();
+	World& GetWorld() {return mWorld;}
+    Camera& GetCamera() {return mCamera;}
+protected:
+	World mWorld;
+	Camera mCamera;
 };

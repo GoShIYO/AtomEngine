@@ -1,12 +1,59 @@
 #pragma once
+#include "Runtime/Platform/DirectX12/Shader/LightData.h"
+#include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
+#include "Runtime/Function/Camera/CameraBase.h"
+#include "Runtime/Function/Camera/ShadowCamera.h"
+#include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 
 namespace AtomEngine
 {
+	struct LightDesc
+	{
+		LightType type = LightType::Point;
 
+		Vector3 position = { 0, 0, 0 };
+		Vector3 direction = { 0, -1, 0 };
+		Color color = { 1, 1, 1,1};
+		float radius = 1.0f;
+		Radian innerAngle;
+		Radian outerAngle;
+		Matrix4x4 shadowMatrix;
+	};
 
-    class LightManager
-    {
-    };
+	class LightManager
+	{
+	public:
+		static void Initialize();
+
+		static uint32_t AddLight(const LightDesc& desc);
+
+		static void RemoveLight(uint32_t lightID);
+		
+		static void UploadResources(const ShadowCamera& camera);
+		static void UpdateLight(uint32_t lightID, const LightDesc& desc);
+
+		static void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
+
+		static void Shutdown();
+
+		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightSrv(){return gLightBuffer.GetSRV();}
+		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightShadowSrv(){return mLightShadowArray.GetSRV();}
+		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightGridSrv(){return gLightGrid.GetSRV();}
+		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightGridBitMaskSrv(){return gLightGridBitMask.GetSRV();}
+	private:
+		static std::vector<LightData> gLights;
+
+		static StructuredBuffer gLightBuffer;
+		static ByteAddressBuffer gLightGrid;
+		static ByteAddressBuffer gLightGridBitMask;
+
+		static ColorBuffer mLightShadowArray;
+		static ShadowBuffer mLightShadowTempBuffer;
+		static Matrix4x4 mLightShadowMatrix[MAX_LIGHTS];
+
+		static std::unordered_map<uint32_t, uint32_t> gLightIDToIndex;
+		static uint32_t gNextLightID;
+	};
 }
 
 

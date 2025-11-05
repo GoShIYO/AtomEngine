@@ -23,6 +23,7 @@ namespace AtomEngine
 		
 		Color() = default;
         Color(float r_, float g_, float b_, float a_) : r(r_), g(g_), b(b_), a(a_) {}
+		Color(float r_, float g_, float b_) : r(r_), g(g_), b(b_), a(1.0f) {}
         Color(const Vector3& v) : r(v.x), g(v.y), b(v.z), a(1.0f) {}
         Color(const Vector4& v) : r(v.x), g(v.y), b(v.z), a(v.w) {}
 

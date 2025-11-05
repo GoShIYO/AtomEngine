@@ -18,8 +18,8 @@ namespace AtomEngine
 
         inline operator Vector4() const { return m_repr; }
 
-        // 飛行機が向いている方向を返します。(正規化されない可能性があります)
-        Vector3 GetNormal(void) const { return Vector3(m_repr); }
+        // 平面が向いている方向を返します。(正規化されない可能性があります)
+        Vector3 GetNormal(void) const { return Vector3(m_repr).NormalizedCopy(); }
 
         // 平面上の最近接点を返します
         Vector3 GetPointOnPlane(void) const { return -GetNormal() * m_repr.w; }

@@ -166,6 +166,7 @@ namespace AtomEngine
 		static float InvSqrt(float value) { return 1.f / Sqrt(value); }
 		static bool  Equal(float a, float b, float tolerance = std::numeric_limits<float>::epsilon());
 		static float Clamp(float v, float min, float max) { return std::clamp(v, min, max); }
+		static Vector3 Floor(const Vector3& v);
 
 		static float DegreesToRadians(float degrees);
 		static float RadiansToDegrees(float radians);
@@ -199,6 +200,10 @@ namespace AtomEngine
 
 		static Vector3 TransformNormal(const Vector3& v, const Matrix4x4& mat);
 
+		static Vector3 TransformCoord(const Vector3& v, const Matrix4x4& mat);
+
+		static Matrix4x4 InverseTranspose(const Matrix4x4& mat);
+
 		static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
 
 		static Matrix4x4
@@ -217,6 +222,24 @@ namespace AtomEngine
 		{
 			return lhs + alpha * (rhs - lhs);
 		}
+
+		template <typename T>
+		static T Clamp(const T& value, const T& min, const T& max)
+		{
+			return std::clamp(value, min, max);
+		}
+
+		template <typename T>
+		static T Max(const T& a, const T& b)
+		{
+			return std::max(a, b);
+		}
+
+		template <typename T>
+        static T Min(const T& a, const T& b)
+        {
+            return std::min(a, b);
+        }
 
 	public:
 		static constexpr float Infinity = std::numeric_limits<float>::infinity();
@@ -300,5 +323,4 @@ namespace AtomEngine
 	{
 		return (T)((value + alignment - 1) / alignment);
 	}
-
 }

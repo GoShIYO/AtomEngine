@@ -26,9 +26,9 @@ namespace AtomEngine
         std::string name;
 
 		Vector4 baseColorFactor = { 1.0f, 1.0f, 1.0f, 1.0f };
-		Vector3 emissiveFactor = { 0.0f, 0.0f, 0.0f };
-		float metallicFactor = 0.0f;
-		float roughnessFactor = 0.0f;
+		Vector3 emissiveFactor = { 1.0f, 1.0f, 1.0f };
+		float metallicFactor = 1.0f;
+		float roughnessFactor = 1.0f;
 	
         uint8_t textureMask = 0;
 

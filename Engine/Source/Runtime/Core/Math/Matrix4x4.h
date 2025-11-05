@@ -500,6 +500,11 @@ namespace AtomEngine
 
 		Vector3 GetTrans() const { return Vector3(mat[3][0], mat[3][1], mat[3][2]); }
 
+		Matrix3x3 Get3x3()const
+		{
+            return Matrix3x3(*this);
+		}
+
 		Quaternion GetRotation() const
 		{
 			return Quaternion(*this);
@@ -982,14 +987,41 @@ namespace AtomEngine
 	inline Vector3 Math::Transfrom(const Vector3& v, const Matrix4x4& mat)
 	{
 		Vector4 temp(v, 1.0f);
-		return Vector3(temp * mat);
+		Vector4 result = temp * mat;
+		return Vector3(result.x / result.w,
+			result.y / result.w,
+			result.z / result.w);
 	}
 
 	inline Vector3 Math::TransformNormal(const Vector3& v, const Matrix4x4& mat)
 	{
-		Vector4 temp(v, 0.0f);
-		return Vector3(temp * mat).NormalizedCopy();
+		Matrix3x3 normalMat = mat.Inverse().Transpose().Get3x3();
+		return (normalMat * v).NormalizedCopy();
 	}
+
+	inline Vector3 Math::TransformCoord(const Vector3& v, const Matrix4x4& mat)
+	{
+		Vector4 temp(v, 1.0f);
+		Vector4 result = temp * mat;
+		return Vector3(result.x / result.w,
+			result.y / result.w,
+			result.z / result.w);
+	}
+
+	inline Matrix4x4 Math::InverseTranspose(const Matrix4x4& mat)
+	{
+		const Vector3 x = mat.GetX();
+		const Vector3 y = mat.GetY();
+		const Vector3 z = mat.GetZ();
+
+		const Vector3 inv0 = Cross(y, z);
+		const Vector3 inv1 = Cross(z, x);
+		const Vector3 inv2 = Cross(x, y);
+		const float  rDet = 1.0f / (Dot(z, inv2));
+
+		return Matrix4x4(inv0, inv1, inv2) * rDet;
+	}
+
 	inline Matrix4x4 Math::Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
 	{
 		Matrix4x4 result;

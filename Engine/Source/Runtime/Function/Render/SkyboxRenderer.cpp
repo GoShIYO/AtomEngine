@@ -52,7 +52,7 @@ namespace AtomEngine
 		mEnvironmentMap = environmentMap;
 	}
 
-	void SkyboxRenderer::SetIBLTextures(TextureRef specularIBL, TextureRef diffuseIBL)
+	void SkyboxRenderer::SetIBLTextures(TextureRef diffuseIBL, TextureRef specularIBL)
 	{
 		mRadianceCubeMap = specularIBL;
 		mIrradianceCubeMap = diffuseIBL;
@@ -62,17 +62,18 @@ namespace AtomEngine
 		{
 			ID3D12Resource* texRes = const_cast<ID3D12Resource*>(mRadianceCubeMap.Get()->GetResource());
 			const D3D12_RESOURCE_DESC& texDesc = texRes->GetDesc();
-			mSpecularIBLRange = std::max(0.0f, (float)texDesc.MipLevels - 1);
-			mSpecularIBLBias = std::min(mSpecularIBLBias,mSpecularIBLRange);
+			mSpecularIBLRange = Math::Max(0.0f, (float)texDesc.MipLevels - 1);
+			mSpecularIBLBias = Math::Min(mSpecularIBLBias,mSpecularIBLRange);
 		}
 
-		uint32_t DestCount = 2;
-		uint32_t SourceCounts[] = { 1, 1 };
+		uint32_t DestCount = 3;
+		uint32_t SourceCounts[] = { 1, 1, 1};
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
 		{
 			specularIBL.IsValid() ? specularIBL.GetSRV() : GetDefaultTexture(kBlackCubeMap),
-			diffuseIBL.IsValid() ? diffuseIBL.GetSRV() : GetDefaultTexture(kBlackCubeMap)
+			diffuseIBL.IsValid() ? diffuseIBL.GetSRV() : GetDefaultTexture(kBlackCubeMap),
+            mBRDF_LUT.IsValid() ? mBRDF_LUT.GetSRV() : GetDefaultTexture(kDefaultBRDFLUT)
 		};
 		auto& commonTextures = Renderer::GetCommonTextures();
 
@@ -81,16 +82,21 @@ namespace AtomEngine
 
 	}
 
+	void SkyboxRenderer::SetBRDF_LUT(const std::wstring& BRDF_LUT_File)
+	{
+        mBRDF_LUT = AssetManager::LoadTextureFile(BRDF_LUT_File);
+	}
+
 	void SkyboxRenderer::SetEnvironmentMap(const std::wstring& file)
 	{
 		mEnvironmentMap = AssetManager::LoadTextureFile(file);
 	}
 
-	void SkyboxRenderer::SetIBLTextures(const std::wstring& specularFile, const std::wstring& diffuseFile)
+	void SkyboxRenderer::SetIBLTextures(const std::wstring& diffuseFile,const std::wstring& specularFile)
 	{
 		TextureRef specularIBL = AssetManager::LoadTextureFile(specularFile);
 		TextureRef diffuseIBL = AssetManager::LoadTextureFile(diffuseFile);
-        SetIBLTextures(specularIBL, diffuseIBL);
+        SetIBLTextures(diffuseIBL,specularIBL);
 	}
 
 	void SkyboxRenderer::SetIBLBias(float LODBias)
@@ -98,15 +104,15 @@ namespace AtomEngine
 		mSpecularIBLBias = std::min(LODBias, mSpecularIBLRange);
 	}
 
-	void SkyboxRenderer::Render(GraphicsContext& context, const Camera& camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor)
+	void SkyboxRenderer::Render(GraphicsContext& context, const Camera* camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor)
 	{
 		__declspec(align(16)) struct SkyboxVSCB
 		{
 			Matrix4x4 ProjInverse;
 			Matrix4x4 ViewInverse;
 		} skyVSCB;
-		skyVSCB.ProjInverse = camera.GetProjMatrix().Inverse();
-		skyVSCB.ViewInverse = camera.GetViewMatrix().Inverse();
+		skyVSCB.ProjInverse = camera->GetProjMatrix().Inverse();
+		skyVSCB.ViewInverse = camera->GetViewMatrix().Inverse();
 
 		__declspec(align(16)) struct SkyboxPSCB
 		{
@@ -115,6 +121,7 @@ namespace AtomEngine
 		skyPSCB.TextureLevel = mSpecularIBLBias;
 
 		auto& textureHeap = Renderer::GetTextureHeap();
+		auto& commonTextures = Renderer::GetCommonTextures();
 
 		context.SetRootSignature(mSkyboxRootSig);
 		context.SetPipelineState(mSkyboxPSO);
@@ -128,7 +135,7 @@ namespace AtomEngine
 		context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, textureHeap.GetHeapPointer());
 		context.SetDynamicConstantBufferView(kMeshConstants, sizeof(SkyboxVSCB), &skyVSCB);
 		context.SetDynamicConstantBufferView(kMaterialConstants, sizeof(SkyboxPSCB), &skyPSCB);
-		context.SetDynamicDescriptor(2, 0, mEnvironmentMap.GetSRV());
+		context.SetDynamicDescriptor(2, 0, mRadianceCubeMap.GetSRV());
 
 		context.Draw(3);
 

@@ -26,6 +26,7 @@ namespace AtomEngine
 
 		void InitializeDx12(bool RequireDXRSupport = false);
 		void ShutdownDx12();
+		uint32_t GetFrameIndex();
 
 		void OnResize(uint32_t width, uint32_t height);
 		void Present();

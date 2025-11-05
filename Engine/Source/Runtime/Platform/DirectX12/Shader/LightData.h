@@ -4,6 +4,7 @@
 
 #ifdef __cplusplus
 #include "Runtime/Core/Math/MathInclude.h"
+using float2 = AtomEngine::Vector2;
 using float3 = AtomEngine::Vector3;
 using float4x4 = AtomEngine::Matrix4x4;
 using uint = uint32_t;
@@ -12,20 +13,23 @@ enum class LightType : uint
 {
     Point = 0,      // Point light
     Spot,           // Spot light
-    Directional,    // Directional light
+    SpotShadow,     // Spot light with shadow
 };
-
 #endif // 
 
-struct alignas(16) LightData
+#define MAX_LIGHTS 128
+#define TILE_SIZE (4 + MAX_LIGHTS * 4)
+
+struct LightData
 {
     float3 position;
     float radiusSq;
     float3 color;
-    uint type;          // 0=directional, 1=Point, 2=Spot
+
+    uint type;
     float3 direction;
-    float innerCos;         // For spot
-    float4x4 shadowMatrix;
+    float innerCos;
     float outerCos;
-    float3 pad0;
+
+    float4x4 shadowMatrix;
 };

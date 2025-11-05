@@ -39,6 +39,10 @@ namespace AtomEngine
 
 		static Quaternion GetQuaternionFromDirection(const Vector3& direction, const Vector3& upDir);
 
+		static Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
+
+		static Quaternion LookRotation(const Vector3& dir, const Vector3& up);
+
 		void ToAngleAxis(Radian& angle, Vector3& axis) const;
 
 
@@ -99,17 +103,25 @@ namespace AtomEngine
 
 		float Length() const { return std::sqrt( x * x + y * y + z * z + w * w); }
 
-		void Normalize(void)
+		void Normalize()
 		{
-			float factor = 1.0f / this->Length();
-			*this = *this * factor;
+			float len = this->Length();
+			if (len > 1e-6f)
+			{
+				float factor = 1.0f / len;
+				*this = *this * factor;
+			}
+			else
+			{
+				*this = IDENTITY;
+			}
 		}
 
-		Quaternion NormalizeCopy() const 
-		{ 
-			Quaternion q = *this; 
-			q.Normalize(); 
-			return q; 
+		Quaternion NormalizeCopy() const
+		{
+			Quaternion q = *this;
+			q.Normalize();
+			return q;
 		}
 
 		Quaternion Inverse() const

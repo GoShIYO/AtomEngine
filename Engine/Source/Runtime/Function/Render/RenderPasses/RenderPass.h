@@ -1,5 +1,6 @@
 #pragma once
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
+#include "Runtime/Function/Framework/ECS/World.h"
 #include "../RenderQueue.h"
 
 namespace AtomEngine
@@ -9,17 +10,19 @@ namespace AtomEngine
     public:
         virtual ~RenderPass() = default;
 
-        virtual void Setup(GraphicsContext& context) {}
-        virtual void Execute(GraphicsContext& context, RenderQueue& queue, GlobalConstants& globals) = 0;
-        virtual void Cleanup(GraphicsContext& context) {}
+        virtual void Render(GraphicsContext& gfxContext) = 0;
 
         void SetRenderTarget(ColorBuffer* rtv, DepthBuffer* dsv) { mRTV = rtv; mDSV = dsv; }
         void SetDepthStencilTarget(DepthBuffer* dsv) { mDSV = dsv; }
-        void SetCamera(CameraBase* camera) { mCamera = camera; }
-
+        void SetCamera(Camera* camera) { mCamera = camera; }
+        void SetViewportAndScissor(const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor){ mViewport = viewport; mScissor = scissor;}
+        void SetWorld(World& world){mWorld = &world;}
     protected:
-        const CameraBase* mCamera = nullptr;
+        const Camera* mCamera = nullptr;
         ColorBuffer* mRTV = nullptr;
         DepthBuffer* mDSV = nullptr;
+        D3D12_VIEWPORT mViewport{};
+        D3D12_RECT mScissor{};
+        World* mWorld = nullptr;
     };
 }

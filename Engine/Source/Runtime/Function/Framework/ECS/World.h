@@ -39,6 +39,18 @@ namespace AtomEngine
             mDispatcher.trigger(ComponentRemovedEvent{ e, std::type_index(typeid(T)) });
         }
 
+        template<typename... Components>
+        decltype(auto) View()
+        {
+            return mRegistry.view<Components...>();
+        }
+
+        template<typename... Components>
+        decltype(auto) ViewFor(Entity e)
+        {
+            return mRegistry.try_get<Components...>(e);
+        }
+
         struct ComponentAddedEvent
         {
             Entity entity;

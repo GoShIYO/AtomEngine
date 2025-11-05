@@ -195,7 +195,7 @@ namespace AtomEngine
 		for (uint32_t i = 0; i < mesh->mNumFaces; i++)
 		{
 			aiFace face = mesh->mFaces[i];
-			assert(face.mNumIndices == 3);
+			ASSERT(face.mNumIndices == 3);
 			for (uint32_t j = 0; j < face.mNumIndices; j++)
 				model.indices.push_back(static_cast<uint32_t>(face.mIndices[j]) + vertexBase);
 		}
@@ -241,8 +241,15 @@ namespace AtomEngine
 		sub.vertexOffset = vertexBase;
 		sub.vertexCount = outMesh.vertexCount;
 		sub.materialIndex = mesh->mMaterialIndex;
-		sub.bounds = aabb;
+		AxisAlignedBox subBounds;
+		for (uint32_t i = 0; i < sub.indexCount; ++i)
+		{
+			uint32_t index = model.indices[sub.indexOffset + i];
+			subBounds.AddPoint(model.vertices[index].position);
+		}
+		sub.bounds = subBounds;
 		outMesh.subMeshes.push_back(sub);
+		outMesh.boundingBox.AddBoundingBox(subBounds);
 
 		return outMesh;
 	}
@@ -261,7 +268,6 @@ namespace AtomEngine
 			material.baseColorFactor[1] = baseColor.g;
 			material.baseColorFactor[2] = baseColor.b;
 			material.baseColorFactor[3] = baseColor.a;
-			
 		}
 
 		float metallic = 0.0f, roughness = 0.5f;
@@ -270,9 +276,13 @@ namespace AtomEngine
 		material.metallicFactor = metallic;
 		material.roughnessFactor = roughness;
 
-		float transmission = 0.0f;
-		if (AI_SUCCESS == mat->Get(AI_MATKEY_TRANSMISSION_FACTOR, transmission))
-			material.transmissionFactor = transmission;
+		aiColor3D emission = {1,1,1};
+		if (mat->Get(AI_MATKEY_COLOR_EMISSIVE, emission))
+		{
+            material.emissiveFactor[0] = emission.r;
+			material.emissiveFactor[1] = emission.g;
+			material.emissiveFactor[2] = emission.b;
+		}
 
 		aiString transmissionTex;
 		if (AI_SUCCESS == mat->GetTexture(aiTextureType_TRANSMISSION, 0, &transmissionTex))
@@ -411,28 +421,49 @@ namespace AtomEngine
 		return thisIndex;
 	}
 
+	float ComputeBoundingSphereRadius(const AxisAlignedBox& box, const std::vector<Vector3>& vertices)
+	{
+		Vector3 center = box.GetCenter();
+		float radius = 0.0f;
+		for (const auto& v : vertices)
+		{
+			float dist = (v - center).Length();
+			radius = std::max(radius, dist);
+		}
+		return radius;
+	}
 
 	void ModelLoader::ComputeBoundingVolumes(ModelData& model)
 	{
-		std::function<AxisAlignedBox(const Node*)> computeBounds = [&](const Node* node) -> AxisAlignedBox
+		std::function<AxisAlignedBox(const Node*, const Matrix4x4&)> computeBounds =
+			[&](const Node* node, const Matrix4x4& parentTransform) -> AxisAlignedBox
 			{
+				Matrix4x4 localTransform = node->localTransform * parentTransform;
 				AxisAlignedBox bounds;
+
 				for (auto meshIdx : node->meshIndices)
 				{
-					auto& mesh = model.meshes[meshIdx];
-					bounds.AddBoundingBox(mesh.boundingBox);
+					const auto& mesh = model.meshes[meshIdx];
+					AxisAlignedBox transformedBox = mesh.boundingBox;
+					transformedBox.Transform(localTransform);
+					bounds.AddBoundingBox(transformedBox);
 				}
+
 				for (auto& child : node->children)
-					bounds.AddBoundingBox(computeBounds(child.get()));
+					bounds.AddBoundingBox(computeBounds(child.get(), localTransform));
 
 				return bounds;
 			};
 
 		if (model.rootNode)
 		{
-			model.boundingBox = computeBounds(model.rootNode.get());
-			model.boundingSphere = BoundingSphere(model.boundingBox.GetCenter(), model.boundingBox.GetRadius());
+			model.boundingBox = computeBounds(model.rootNode.get(), Matrix4x4::IDENTITY);
+			std::vector<Vector3> allVertices;
+			for (auto& v : model.vertices)
+				allVertices.push_back(v.position);
+			float radius = ComputeBoundingSphereRadius(model.boundingBox, allVertices);
+
+			model.boundingSphere = BoundingSphere(model.boundingBox.GetCenter(), radius);
 		}
 	}
-	
 }

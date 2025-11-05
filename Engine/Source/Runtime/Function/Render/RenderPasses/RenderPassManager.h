@@ -3,28 +3,34 @@
 
 namespace AtomEngine
 {
-	class RenderPassManager
-	{
-	public:
-		static RenderPassManager* GetInstance();
+    class RenderPassManager
+    {
+    public:
+        static RenderPassManager* GetInstance();
 
-		void SetUpRenderPass();
+        void RegisterRenderPass(std::unique_ptr<RenderPass> pass);
+        void SetUpRenderPass();
 
-	private:
-		
-		std::vector<std::unique_ptr<RenderPass>> mAllPasses;
-		
-		std::vector<RenderPass*> mCurrentPasses;
+        void RenderAll(GraphicsContext& context);
 
-	private:
-		RenderPassManager() = default;
+        void SetRenderTarget(ColorBuffer* rtv, DepthBuffer* dsv);
+        void SetDepthStencilTarget(DepthBuffer* dsv);
+        void SetCamera(Camera* camera);
+        void SetViewportAndScissor(const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor);
+        void SetWorld(World& world);
+
+        void Shutdown();
+    private:
+        std::vector<std::unique_ptr<RenderPass>> mAllPasses;
+        std::vector<RenderPass*> mCurrentPasses;
+
+    private:
+        RenderPassManager() = default;
         ~RenderPassManager() = default;
         RenderPassManager(const RenderPassManager&) = delete;
         RenderPassManager& operator=(const RenderPassManager&) = delete;
-        RenderPassManager(RenderPassManager&&) = delete;
-        RenderPassManager& operator=(RenderPassManager&&) = delete;
+    };
 
-	};
 }
 
 

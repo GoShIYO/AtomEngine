@@ -45,9 +45,7 @@ namespace AtomEngine
 
         Color GetClearColor(void) const { return m_ClearColor; }
 
-        // これはすべてのテクスチャサイズで機能しますが、速度と品質のために、2の累乗（必ずしも平方である必要はありません）を使用。
-        // ArrayCount に 0 を渡して、作成時にミップ用のスペースを確保します。
-        void GenerateMipMaps(CommandContext& Context);
+        //void GenerateMipMaps(CommandContext& Context);
 
     protected:
 

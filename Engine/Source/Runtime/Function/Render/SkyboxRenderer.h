@@ -14,13 +14,14 @@ namespace AtomEngine
 		void Shutdown();
 
 		void SetEnvironmentMap(TextureRef environmentMap);
-		void SetIBLTextures(TextureRef specularIBL, TextureRef diffuseIBL);
-		
+		void SetIBLTextures(TextureRef diffuseIBL, TextureRef specularIBL);
+		void SetBRDF_LUT(const std::wstring& BRDF_LUT_File);
+
 		void SetEnvironmentMap(const std::wstring& file);
-		void SetIBLTextures(const std::wstring& specularFile,const std::wstring& diffuseFile);
+		void SetIBLTextures(const std::wstring& diffuseFile, const std::wstring& specularFile);
 
 		void SetIBLBias(float LODBias);
-		void Render(GraphicsContext& context, const Camera& camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor);
+		void Render(GraphicsContext& context, const Camera* camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor);
 		float GetIBLRange()const;
 		float GetIBLBias()const;
 
@@ -28,6 +29,8 @@ namespace AtomEngine
 		TextureRef mEnvironmentMap;
 		TextureRef mRadianceCubeMap;
 		TextureRef mIrradianceCubeMap;
+		TextureRef mBRDF_LUT;
+
 		float mSpecularIBLRange;
 		float mSpecularIBLBias;
 

@@ -339,6 +339,15 @@ namespace AtomEngine
 		);
 	}
 
+	inline Vector3 Math::Floor(const Vector3& v)
+	{
+		return Vector3(
+			std::floor(v.x),
+			std::floor(v.y),
+			std::floor(v.z)
+		);
+	}
+
 	inline Vector3 Math::Select(const Vector3& a, const Vector3& b, const Vector3& control)
 	{
 		XMVECTOR va = XMVectorSet(a.x, a.y, a.z, 0.0f);

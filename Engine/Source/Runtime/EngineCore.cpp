@@ -49,11 +49,11 @@ namespace Engine
 		return mIsQuit;
 	}
 
-	void AtomEngine::LogicalTick(float deltaTime)
+	void AtomEngine::LogicalTick(GameApp& app,float deltaTime)
 	{
 		gContext.input->Update();
 
-		Renderer::Update(deltaTime);
+		Renderer::Update(app.GetWorld(),deltaTime);
 	}
 
 	void AtomEngine::RenderTick(GameApp& app,float deltaTime)
@@ -61,7 +61,7 @@ namespace Engine
 
 		app.Render();
 		
-		Renderer::Render(deltaTime);
+		Renderer::Render(app.GetWorld(),app.GetCamera(), deltaTime);
 
 		DX12Core::Present();
 	}
@@ -99,7 +99,7 @@ namespace Engine
 	{
 		gContext.imgui->Bengin();
 
-		LogicalTick(deltaTime);
+		LogicalTick(app,deltaTime);
 		CalculateFPS(deltaTime);
 
 		app.Update(deltaTime);

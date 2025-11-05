@@ -22,12 +22,12 @@ __declspec(align(256)) struct MeshConstants
 __declspec(align(256)) struct MaterialConstants
 {
 	float4 baseColorFactor = { 1,1,1,1 };      // default=[1,1,1,1]
-	float3 emissiveFactor = { 0,0,0 };         // default=[0,0,0]
+	float3 emissiveFactor = { 1,1,1 };         // default=[1,1,1]
 	float normalTextureScale = 1.0f;           // default=1
-	float metallicFactor = 0.0f;               // default=0
-	float roughnessFactor = 0.5f;              // default=0.5
-	float pad[2];
-	Matrix4x4 uvTransform = Matrix4x4::IDENTITY;
+	float3 FresnelF0 = { 0.04f,0.04f,0.04f };
+	float pad0;
+	float metallicFactor = 1.0f;               // default=1
+	float roughnessFactor = 1.0f;              // default=1
 };
 
 __declspec(align(256)) struct GlobalConstants
@@ -35,8 +35,11 @@ __declspec(align(256)) struct GlobalConstants
 	float4x4 ViewProjMatrix;		// ビュー・プロジェクション行列
 	float4x4 SunShadowMatrix;		// light space行列
 	float3 CameraPos;				// カメラ位置
+	float pad0;
 	float3 SunDirection;			// メイン平行光源の方向
+	float pad1;
 	float3 SunIntensity;			// メイン平行光源の強度
+	float pad2;
 	float IBLRange;					// IBLの範囲
 	float IBLBias;					// IBLのバイアス
 };

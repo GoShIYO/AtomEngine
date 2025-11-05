@@ -403,6 +403,11 @@ namespace AtomEngine
 			}
 		}
 
+		uint32_t GetFrameIndex()
+		{
+			return (gCurrentBuffer % 2);
+		}
+
 		void DX12Core::OnResize(uint32_t width, uint32_t height)
 		{
 			gCommandManager.IdleGPU();
