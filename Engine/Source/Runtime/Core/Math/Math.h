@@ -202,6 +202,8 @@ namespace AtomEngine
 
 		static Vector3 TransformCoord(const Vector3& v, const Matrix4x4& mat);
 
+		static Matrix3x3 InverseTranspose(const Matrix3x3& mat);
+
 		static Matrix4x4 InverseTranspose(const Matrix4x4& mat);
 
 		static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);

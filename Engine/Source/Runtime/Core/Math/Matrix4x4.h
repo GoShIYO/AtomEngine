@@ -854,7 +854,7 @@ namespace AtomEngine
 
 		bool IsAffine(void) const
 		{
-			return mat[3][0] == 0 && mat[3][1] == 0 && mat[3][2] == 0 && mat[3][3] == 1;
+			return mat[0][3] == 0 && mat[1][3] == 0 && mat[2][3] == 0 && mat[3][3] == 1;
 		}
 
 		Matrix4x4 InverseAffine() const;
@@ -872,7 +872,8 @@ namespace AtomEngine
 		{
 			assert(IsAffine());
 
-			return Vector4(mat[0][0] * v.x + mat[0][1] * v.y + mat[0][2] * v.z + mat[0][3] * v.w,
+			return Vector4(
+				mat[0][0] * v.x + mat[0][1] * v.y + mat[0][2] * v.z + mat[0][3] * v.w,
 				mat[1][0] * v.x + mat[1][1] * v.y + mat[1][2] * v.z + mat[1][3] * v.w,
 				mat[2][0] * v.x + mat[2][1] * v.y + mat[2][2] * v.z + mat[2][3] * v.w,
 				v.w);

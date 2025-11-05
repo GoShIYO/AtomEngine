@@ -16,6 +16,10 @@ namespace AtomEngine
 		void SetRotation(const Quaternion& q) { mTransform.rotation = q; mTransform.rotation.Normalize(); }
         void SetScale(const Vector3& v) { mTransform.scale = v; }
 		
+		const Vector3& GetTranslation() const { return mTransform.transition; }
+		const Quaternion& GetRotation() const { return mTransform.rotation; }
+        const Vector3& GetScale() const { return mTransform.scale; }
+
 	private:
 		Transform mTransform;
 	};

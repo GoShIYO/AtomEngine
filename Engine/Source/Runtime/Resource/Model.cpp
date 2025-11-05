@@ -23,8 +23,8 @@ namespace AtomEngine
             float sphereScale = Math::Sqrt(std::max({ scaleXSqr, scaleYSqr, scaleZSqr }));
 
             BoundingSphere sphereLS = mBoundingSphere;
-            BoundingSphere sphereWS = BoundingSphere(sphereXform * sphereLS.GetCenter(), sphereScale * sphereLS.GetRadius());
-            BoundingSphere sphereVS = BoundingSphere(viewMat * sphereWS.GetCenter(), sphereWS.GetRadius());
+            BoundingSphere sphereWS = BoundingSphere(sphereLS.GetCenter() * sphereXform, sphereScale * sphereLS.GetRadius());
+            BoundingSphere sphereVS = BoundingSphere(sphereWS.GetCenter() * viewMat, sphereWS.GetRadius());
 
             if (!frustum.IntersectSphere(sphereVS))
                 continue;
@@ -49,7 +49,6 @@ namespace AtomEngine
             }
         }
     }
-
 
     void Model::Destroy()
     {

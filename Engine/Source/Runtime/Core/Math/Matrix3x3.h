@@ -263,4 +263,17 @@ namespace AtomEngine
 		static const Matrix3x3 ZERO;
 		static const Matrix3x3 IDENTITY;
 	};
+	inline Matrix3x3 Math::InverseTranspose(const Matrix3x3& mat)
+	{
+		const Vector3 x = mat.GetX();
+		const Vector3 y = mat.GetY();
+		const Vector3 z = mat.GetZ();
+
+		const Vector3 inv0 = Cross(y, z);
+		const Vector3 inv1 = Cross(z, x);
+		const Vector3 inv2 = Cross(x, y);
+		const float rDet = 1.0f / (Dot(z, inv2));
+
+		return Matrix3x3(inv0, inv1, inv2) * rDet;
+	}
 }

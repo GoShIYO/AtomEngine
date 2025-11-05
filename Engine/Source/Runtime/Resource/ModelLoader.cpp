@@ -52,7 +52,7 @@ namespace AtomEngine
 		return false;
 	}
 
-	Matrix4x4 ConvertTransform(const aiMatrix4x4& matrix)
+	Transform ConvertTransform(const aiMatrix4x4& matrix)
 	{
 		aiVector3D scale, translate;
 		aiQuaternion rotate;
@@ -63,7 +63,7 @@ namespace AtomEngine
 		transform.rotation = Quaternion(rotate.x, rotate.y, rotate.z, rotate.w);
 		transform.transition = Vector3(translate.x, translate.y, translate.z);
 
-		return transform.GetMatrix();
+		return transform;
 	}
 
 	bool ModelLoader::LoadModel(ModelData& model, const std::string& filePath)
@@ -113,22 +113,23 @@ namespace AtomEngine
 		auto outNode = std::make_unique<Node>();
 		outNode->name = node->mName.C_Str();
 		outNode->parent = parent;
-		outNode->localTransform = ConvertTransform(node->mTransformation);
+		outNode->transform = ConvertTransform(node->mTransformation);
 
+		auto localTransform = outNode->transform.GetMatrix();
 		if (parent)
-			outNode->globalTransform = outNode->localTransform * parent->globalTransform;
+			outNode->globalTransform = localTransform * parent->globalTransform;
 		else
-			outNode->globalTransform = outNode->localTransform;
+			outNode->globalTransform = localTransform;
 
 		GraphNode gnode{};
-		gnode.xform = outNode->localTransform;
-		gnode.rotation = Quaternion(outNode->localTransform);
-		gnode.scale = outNode->localTransform.GetScale();
+		gnode.xform = localTransform;
+		gnode.rotation = outNode->transform.rotation;
+		gnode.scale = outNode->transform.scale;
 		gnode.matrixIdx = static_cast<uint32_t>(model.graphNodes.size());
 		gnode.hasChildren = (node->mNumChildren > 0);
 		gnode.hasSibling = (parent && parent->children.size() > 0);
 		gnode.staleMatrix = true;
-		gnode.skeletonRoot = node->mParent ? false : true;
+		gnode.skeletonRoot = scene->HasSkeletons() ? (node->mParent ? false : true) : false;
 		model.graphNodes.push_back(gnode);
 
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
@@ -148,6 +149,9 @@ namespace AtomEngine
 
 		return outNode;
 	}
+	
+	std::map<std::string, uint16_t> m_JointNameToIndex;
+	uint16_t m_NextJointIndex = 0;
 
 	Mesh ModelLoader::ProcessMesh(ModelData& model, aiMesh* mesh)
 	{
@@ -202,9 +206,13 @@ namespace AtomEngine
 
 		if (mesh->HasBones())
 		{
+			outMesh.numJoints = mesh->mNumBones;
+			outMesh.startJoint = (uint16_t)model.jointIndices.size();
+
 			outMesh.psoFlags |= kHasSkin;
 			for (uint32_t b = 0; b < mesh->mNumBones; ++b)
 			{
+
 				aiBone* bone = mesh->mBones[b];
 				std::string jointName = bone->mName.C_Str();
 				JointWeightData& jwd = model.skinClusterData[jointName];
@@ -223,7 +231,22 @@ namespace AtomEngine
 					uint32_t globalVertexId = vertexBase + localVertexId;
 					jwd.vertexWeights.push_back({ weight, globalVertexId });
 				}
+				uint16_t jointIndex;
+				if (m_JointNameToIndex.find(jointName) == m_JointNameToIndex.end())
+				{
+					jointIndex = m_NextJointIndex++;
+					m_JointNameToIndex[jointName] = jointIndex;
+
+					model.jointIBMs.push_back(ConvertTransform(bone->mOffsetMatrix).GetMatrix());
+				}
+				else
+				{
+					jointIndex = m_JointNameToIndex[jointName];
+				}
+
+				model.jointIndices.push_back(jointIndex);
 			}
+
 		}
 
 		outMesh.boundingBox = aabb;
@@ -375,12 +398,6 @@ namespace AtomEngine
 
 		skeleton.rootJoint = skeleton.joints.empty() ? -1 : 0;
 
-		for (auto& mesh : model.meshes)
-		{
-			mesh.numJoints = (uint16_t)model.skeleton.joints.size();
-			mesh.startJoint = 0;
-		}
-
 		return skeleton;
 	}
 
@@ -393,7 +410,7 @@ namespace AtomEngine
 		int32_t thisIndex = -1;
 
 		auto it = model.skinClusterData.find(node.name);
-		if (it != model.skinClusterData.end())
+		if (it == model.skinClusterData.end())
 		{
 			thisIndex = static_cast<int32_t>(joints.size());
 			joints.emplace_back();
@@ -401,12 +418,13 @@ namespace AtomEngine
 
 			joint.name = node.name;
 			joint.index = thisIndex;
-			joint.parentIndex = parent.has_value() ? parent.value() : -1;
-			joint.localBindPose = node.localTransform;
-			joint.inverseBindPose = it->second.inverseBindPoseMatrix;
+			joint.parent = parent.has_value() ? parent.value() : -1;
+			joint.localBindPose = node.transform.GetMatrix();
+			joint.inverseBindPose = Matrix4x4::IDENTITY;
+			joint.transform = node.transform;
 
-			if (joint.parentIndex >= 0)
-				joints[joint.parentIndex].children.push_back(joint.index);
+			if (joint.parent > 0)
+				joints[joint.parent.value()].children.push_back(joint.index);
 		}
 
 		for (auto& child : node.children)
@@ -438,7 +456,7 @@ namespace AtomEngine
 		std::function<AxisAlignedBox(const Node*, const Matrix4x4&)> computeBounds =
 			[&](const Node* node, const Matrix4x4& parentTransform) -> AxisAlignedBox
 			{
-				Matrix4x4 localTransform = node->localTransform * parentTransform;
+				Matrix4x4 localTransform = node->transform.GetMatrix() * parentTransform;
 				AxisAlignedBox bounds;
 
 				for (auto meshIdx : node->meshIndices)

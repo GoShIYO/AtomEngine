@@ -13,20 +13,24 @@ namespace AtomEngine
 	class MeshComponent
 	{
 	public:
-		MeshComponent(std::shared_ptr<const Model> model);
+		MeshComponent(std::shared_ptr<Model> model);
 		~MeshComponent();
 
 		void Update(GraphicsContext& gfxContext,const TransformComponent& transform ,float deltaTime);
 
 		void Render(RenderQueue& sorter);
+
+		void UpdateAnimation(float deltaTime);
 	private:
-		std::shared_ptr<const Model> mModel = nullptr;
+		std::shared_ptr<Model> mModel = nullptr;
 		UploadBuffer mMeshConstantsCPU;
 		ByteAddressBuffer mMeshConstantsGPU;
 		
 		Matrix4x4 mWorldMatrix;
 
 		std::vector<GraphNode> mAnimGraph;
+		std::vector<AnimationState> mAnimState;
+
 		std::vector<JointXform> mSkeletonTransforms;
 		std::vector<Matrix4x4> mBoundingSphereTransforms;
 	};

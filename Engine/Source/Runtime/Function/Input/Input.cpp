@@ -2,6 +2,7 @@
 #include "Runtime/Core/LogSystem/LogSystem.h"
 #include "Runtime/Core/Utility/Utility.h"
 #include "Runtime/Function/Render/WindowManager.h"
+#include "imgui.h"
 
 #pragma comment(lib, "gameinput.lib")
 
@@ -24,10 +25,10 @@ namespace AtomEngine
 		// [GameInput]
 		// GameInputDeviceInfo contains general and type-specific information of a given device
 		const GameInputDeviceInfo* info = nullptr;
-#if GAMEINPUT_API_VERSION >= 1
+#if GAMEINPUT_API_VERSION >= 2
 		device->GetDeviceInfo(&info);
 #else
-		info = device->GetDeviceInfo();
+		deviceInfo = device->GetDeviceInfo();
 #endif
 
 		GameInputKind deviceKind = info->supportedInput;
@@ -72,7 +73,7 @@ namespace AtomEngine
 
 	void Input::Shutdown()
 	{
-#if GAMEINPUT_API_VERSION >= 1
+#if GAMEINPUT_API_VERSION >= 2
 		mInput->UnregisterCallback(mDeviceCallbackToken);
 #else
 		mInput->UnregisterCallback(mDeviceCallbackToken, UINT64_MAX);
@@ -81,6 +82,11 @@ namespace AtomEngine
 
 	void Input::Update()
 	{
+		ImGuiIO& io = ImGui::GetIO();
+
+		if (io.WantCaptureMouse || io.WantCaptureKeyboard)
+			return;
+
 #pragma region keyboard入力
 		// キーの押す状態を更新
 		std::memcpy(mPreKeys, mkeys, sizeof(mkeys));

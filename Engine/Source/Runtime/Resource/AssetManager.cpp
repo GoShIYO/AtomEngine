@@ -401,8 +401,8 @@ namespace AtomEngine
 
 		if (!modelData.skeleton.joints.empty())
 		{
-
-			model->mJointIBMs.resize(modelData.skeleton.joints.size());
+			
+			/*model->mJointIBMs.resize(modelData.skeleton.joints.size());
 			for (size_t i = 0; i < modelData.skeleton.joints.size(); ++i)
 			{
 				model->mJointIBMs[i] = modelData.skeleton.joints[i].inverseBindPose;
@@ -414,7 +414,9 @@ namespace AtomEngine
 				{
 					model->mJointIndices.push_back(static_cast<uint16_t>(vtxIdx));
 				}
-			}
+			}*/
+			model->mJointIBMs = std::move(modelData.jointIBMs);
+            model->mJointIndices = std::move(modelData.jointIndices);
 		}
 
 		sModelDataCache[modelName] = model;

@@ -4,7 +4,7 @@
 
 namespace AtomEngine
 {
-	MeshComponent::MeshComponent(std::shared_ptr<const Model>model)
+	MeshComponent::MeshComponent(std::shared_ptr<Model>model)
 	{
 		if (!model)
 		{
@@ -26,11 +26,14 @@ namespace AtomEngine
 
 			if (!model->mAnimationData.empty())
 			{
-				//TODO : animation
+				mAnimGraph.resize(model->mSceneGraph.size());
+				std::memcpy(mAnimGraph.data(), model->mSceneGraph.data(), model->mSceneGraph.size() * sizeof(GraphNode));
+				mAnimState.resize(model->mAnimationData.size());
 			}
 			else
 			{
-
+				mAnimGraph.clear();
+				mAnimState.clear();
 			}
 		}
 	}
@@ -48,14 +51,13 @@ namespace AtomEngine
 
 		size_t stackIdx = 0;
 		Matrix4x4 matrixStack[kMaxStackDepth];
-		mWorldMatrix = transform.GetMatrix();
-		Matrix4x4 ParentMatrix = mWorldMatrix;
+		Matrix4x4 ParentMatrix = transform.GetMatrix();
 
 		MeshConstants* cb = (MeshConstants*)mMeshConstantsCPU.Map();
 
 		if (!mAnimGraph.empty())
 		{
-
+			UpdateAnimation(deltaTime);
 			for (uint32_t i = 0; i < mAnimGraph.size(); ++i)
 			{
 				GraphNode& node = mAnimGraph[i];
@@ -76,14 +78,12 @@ namespace AtomEngine
 			Matrix4x4 xform = Node->xform;
 			if (!Node->skeletonRoot)
 				xform = xform * ParentMatrix;
-			else
-				xform = xform * mWorldMatrix;
 
 			// 変換を親の行列と連結し、行列リストを更新します
 			{
 				MeshConstants& cbv = cb[Node->matrixIdx];
 				cbv.worldMatrix = xform;
-				cbv.worldInverseTranspose = xform.Inverse().Transpose();
+				cbv.worldInverseTranspose = Math::InverseTranspose(xform);
 
 				mBoundingSphereTransforms[Node->matrixIdx] = xform;
 			}
@@ -129,6 +129,34 @@ namespace AtomEngine
 			mModel->Render(sorter, mMeshConstantsGPU,
 				mBoundingSphereTransforms,
 				mSkeletonTransforms.data());
+		}
+	}
+	void MeshComponent::UpdateAnimation(float deltaTime)
+	{
+
+		for (uint32_t i = 0; i < mAnimState.size(); ++i)
+		{
+			AnimationState& animState = mAnimState[i];
+			if (animState.state == AnimationState::kStopped)
+				continue;
+			animState.time += deltaTime;
+			const AnimationClip& clip = mModel->mAnimationData[i];
+
+			if (animState.state == AnimationState::kLooping)
+				animState.time = fmodf(animState.time, clip.duration);
+			else if (animState.time > clip.duration)
+			{
+				animState.time = clip.duration;
+				animState.state = AnimationState::kStopped;
+			}
+			auto& time = animState.time;
+			for (auto& curve : clip.curves)
+			{
+				auto& joint = mModel->mSkeleton.joints[curve.targetJoint];
+				joint.transform.transition = CalculateValue(curve.translation, time);
+				joint.transform.rotation = CaculateRotation(curve.rotation, time);
+				joint.transform.scale = CalculateValue(curve.scale, time);
+			}
 		}
 	}
 }

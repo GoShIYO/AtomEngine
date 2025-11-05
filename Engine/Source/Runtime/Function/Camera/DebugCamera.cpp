@@ -3,131 +3,186 @@
 
 namespace AtomEngine
 {
-    DebugCamera::DebugCamera(Camera& camera)
-        : CameraController(camera)
-        , mMoveSpeed(5.0f)
-        , mRotateSpeed(0.25f)
-        , mWheelSpeed(0.5f)
-        , mPreWheelY(0)
-    {
-        mCurrMousePos = { 0,0 };
-        mPrevMousePos = { 0,0 };
-        memset(mIsShifting, 0, sizeof(mIsShifting));
-        memset(mShiftTimer, 0, sizeof(mShiftTimer));
+	DebugCamera::DebugCamera(Camera& camera)
+		: CameraController(camera)
+		, mMoveSpeed(5.0f)
+		, mRotateSpeed(0.005f)
+		, mPanSpeed(0.002f)
+		, mZoomSpeed(1.0f)
+	{
+		mCurrentPos = camera.GetPosition();
+		mTargetPos = mCurrentPos;
+		mCurrentRot = camera.GetRotation();
+		mTargetRot = mCurrentRot;
+	}
 
-        mCurrentPos = mTargetPos = mTargetCamera.GetPosition();
-        mCurrentRot = mTargetRot = Quaternion::LookRotation(
-            (Vector3::ZERO - mTargetCamera.GetPosition()).NormalizedCopy(), Vector3::UP);
-    }
+	void DebugCamera::Update(float deltaTime)
+	{
+		if (mMode == CameraMode::Fly && mPrevMode == CameraMode::Orbit)
+		{
+			mRadius = (mTarget - mCurrentPos).Length();
+		}
+		else if (mMode == CameraMode::Orbit && mPrevMode == CameraMode::Fly)
+		{
+			// Fly -> Orbit
+			// 1. 从当前相机姿态计算 forward 方向
+			Vector3 forward = mCurrentRot * Vector3::FORWARD;
 
-    void DebugCamera::Update(float deltaTime)
-    {
-        mInput->GetMousePosition(&mCurrMousePos.x, &mCurrMousePos.y);
+			Vector3 newTarget = mCurrentPos + forward * mRadius;
+			mTarget = VInterpTo(mTarget, newTarget, deltaTime, 10.0f);
 
-        MoveView(deltaTime);
-        RotateView(deltaTime);
-        TranslateView(deltaTime);
+			Vector3 offset = mCurrentPos - mTarget;
+			mRadius = offset.Length();
+			if (mRadius > 0.0001f)
+			{
+				mYaw = atan2f(offset.x, offset.z);
+				mPitch = asinf(offset.y / mRadius);
+			}
+		}
+		mPrevMode = mMode;
 
-        mCurrentPos = VInterpTo(mCurrentPos, mTargetPos, deltaTime, mInterpSpeed);
-        mCurrentRot = Quaternion::Slerp(mCurrentRot, mTargetRot, deltaTime * mInterpSpeed);
+		int mouseX, mouseY;
+		mInput->GetMousePosition(&mouseX, &mouseY);
 
-        mTargetCamera.SetPosition(mCurrentPos);
-        mTargetCamera.SetRotation(mCurrentRot);
-        mTargetCamera.Update();
+		if (mFirstFrame)
+		{
+			mPrevMouseX = mouseX;
+			mPrevMouseY = mouseY;
+			mFirstFrame = false;
+		}
 
-        mPrevMousePos = mCurrMousePos;
-    }
+		float dx = float(mouseX - mPrevMouseX);
+		float dy = float(mouseY - mPrevMouseY);
+		mPrevMouseX = mouseX;
+		mPrevMouseY = mouseY;
 
+		bool isLeftMouse = mInput->IsPressMouse(0);
+		bool isMiddleMouse = mInput->IsPressMouse(2);
+		bool isRightMouse = mInput->IsPressMouse(1);
+		bool isShift = mInput->IsPressKey(VK_LSHIFT);
+		if (isShift)
+			mMode = CameraMode::Fly;
+		else
+			mMode = CameraMode::Orbit;
 
-    void DebugCamera::MoveView(float dt)
-    {
-        Vector3 forward = mTargetCamera.GetForwardVec();
-        Vector3 right = mTargetCamera.GetRightVec();
+		if (mMode == CameraMode::Orbit)
+		{
+			//左クリック(回転)
+			if (isLeftMouse)
+				UpdateOrbit(dx, dy);
+			//中クリック(移動)
+			else if (isMiddleMouse)
+				UpdatePan(dx, dy);
+			//右クリック(ズーム)
+			else if (isRightMouse)
+				UpdateZoom(dy);
 
-        if (mInput->IsPressKey('W')) mTargetPos += forward * (mMoveSpeed * dt);
-        if (mInput->IsPressKey('S')) mTargetPos -= forward * (mMoveSpeed * dt);
-        if (mInput->IsPressKey('A')) mTargetPos -= right * (mMoveSpeed * dt);
-        if (mInput->IsPressKey('D')) mTargetPos += right * (mMoveSpeed * dt);
+			float wheel = (float)mInput->GetMouseState().wheelY;
+			if (wheel != 0.0f)
+				UpdateZoom(-(wheel - mPrevMouseWheel) * 0.05f);
+			mPrevMouseWheel = wheel;
 
-        int64_t curWheelY = mInput->GetMouseState().wheelY;
-        mTargetPos += forward * ((curWheelY - mPreWheelY) / 120.0f * mWheelSpeed);
-        mPreWheelY = curWheelY;
-    }
+			Vector3 eye;
+			eye.x = mTarget.x + mRadius * cosf(mPitch) * sinf(mYaw);
+			eye.y = mTarget.y + mRadius * sinf(mPitch);
+			eye.z = mTarget.z + mRadius * cosf(mPitch) * cosf(mYaw);
+			
+			Quaternion newRot = Quaternion::LookRotation((mTarget - eye).NormalizedCopy(), Vector3::UP);
+			if (Quaternion::Dot(newRot, mTargetRot) < 0.0f)
+				newRot = -newRot;
+            mTargetRot = newRot;
 
-    void DebugCamera::RotateView(float dt)
-    {
-        if (mInput->IsTriggerMouse(1))
-            mPrevMousePos = mCurrMousePos;
-        if (mInput->IsPressMouse(1))
-        {
-            float dx = DirectX::XMConvertToRadians((mCurrMousePos.x - mPrevMousePos.x) * mRotateSpeed);
-            float dy = DirectX::XMConvertToRadians((mCurrMousePos.y - mPrevMousePos.y) * mRotateSpeed);
+			mTargetPos = eye;
+		}
+		else if (mMode == CameraMode::Fly)
+		{
+			if (isRightMouse)
+				UpdateRotation(-dx, -dy);
+			UpdateMovement(deltaTime);
+		}
 
-            if (mInput->IsPressKey(VK_LMENU))
-            {
-                Vector3 lookAt = Vector3::ZERO;
-                Vector3 toCamera = mTargetPos - lookAt;
-                float radius = toCamera.Length();
+		mCurrentPos = VInterpTo(mCurrentPos, mTargetPos, deltaTime, 8.0f);
+		mCurrentRot = QInterpTo(mCurrentRot, mTargetRot, deltaTime, 8.0f);
 
-                float yaw = Math::atan2(toCamera.x, toCamera.z);
-                float pitch = Math::asin(toCamera.y / radius);
+		mTargetCamera.SetPosition(mCurrentPos);
+		mTargetCamera.SetRotation(mCurrentRot);
+		mTargetCamera.Update();
+	}
 
-                yaw -= dx;
-                pitch -= dy;
+	void DebugCamera::UpdateOrbit(float dx, float dy)
+	{
+		mYaw -= dx * mRotateSpeed;
+		mPitch -= dy * mRotateSpeed;
 
-                constexpr float limit = DirectX::XMConvertToRadians(89.9f);
-                pitch = std::clamp(pitch, -limit, limit);
+		mPitch = std::clamp(mPitch, -Math::HalfPI + 0.1f, Math::HalfPI - 0.1f);
+	}
 
-                Vector3 newPos;
-                newPos.x = lookAt.x + radius * sinf(yaw) * cosf(pitch);
-                newPos.y = lookAt.y + radius * sinf(pitch);
-                newPos.z = lookAt.z + radius * cosf(yaw) * cosf(pitch);
+	void DebugCamera::UpdatePan(float dx, float dy)
+	{
+		Vector3 right = mTargetCamera.GetRightVec();
+		Vector3 up = mTargetCamera.GetUpVec();
 
-                Vector3 forward = (lookAt - newPos).NormalizedCopy();
-                Vector3 right = Vector3::UP.Cross(forward).NormalizedCopy();
-                Vector3 up = forward.Cross(right).NormalizedCopy();
+		mTarget += (-right * dx * mPanSpeed) + (up * dy * mPanSpeed);
+	}
 
-                mTargetPos = newPos;
-                mTargetRot.FromAxes(right, up, forward);
-            }
-            else
-            {
-                Quaternion q = mTargetRot;
-                Quaternion rotY = Quaternion(Vector3::UP, dx);
-                Quaternion rotX = Quaternion(mTargetCamera.GetRightVec(), dy);
+	void DebugCamera::UpdateZoom(float dy)
+	{
+		mRadius *= (1.0f - dy * mZoomSpeed * 0.01f);
+		mRadius = Math::Max(mRadius, 0.1f);
+	}
 
-                mTargetRot = q * rotY * rotX;
-            }
-        }
-    }
+	void DebugCamera::UpdateMovement(float dt)
+	{
+		Vector3 forward = mTargetRot * Vector3::FORWARD;
+		Vector3 right = mTargetRot * Vector3::RIGHT;
+		Vector3 up = mTargetRot * Vector3::UP;
 
-    void DebugCamera::TranslateView(float dt)
-    {
-        if (mInput->IsTriggerMouse(2))
-            mPrevMousePos = mCurrMousePos;
+		Vector3 dir = Vector3::ZERO;
 
-        if (!mInput->IsPressMouse(2))
-            return;
+		if (mInput->IsPressKey('W')) dir += forward;
+		if (mInput->IsPressKey('S')) dir -= forward;
+		if (mInput->IsPressKey('A')) dir -= right;
+		if (mInput->IsPressKey('D')) dir += right;
+		if (mInput->IsPressKey('E')) dir += up;
+		if (mInput->IsPressKey('Q')) dir -= up;
 
-        float dx = (mCurrMousePos.x - mPrevMousePos.x) * 0.5f;
-        float dy = (mCurrMousePos.y - mPrevMousePos.y) * 0.5f;
+		if (dir.LengthSqr() > 0.0f)
+			dir.Normalize();
 
-        Vector3 right = mTargetCamera.GetRightVec();
-        Vector3 up = mTargetCamera.GetUpVec();
+		float speed = mMoveSpeed;
+		if (mInput->IsPressKey(VK_SHIFT))
+			speed *= mBoostMultiplier;
 
-        mTargetPos += (-dx * right + dy * up) * dt;
-    }
+		mTargetPos += dir * speed * dt;
+	}
 
-    Vector3 DebugCamera::VInterpTo(const Vector3& current, const Vector3& target, float dt, float speed)
-    {
-        if (speed <= 0.0f) return target;
+	void DebugCamera::UpdateRotation(float dx, float dy)
+	{
+		mYaw -= dx * mRotateSpeed * 0.5f;
+		mPitch -= dy * mRotateSpeed * 0.5f;
+		mPitch = std::clamp(mPitch, -Math::HalfPI + 0.05f, Math::HalfPI - 0.05f);
 
-        Vector3 delta = target - current;
-        float dist = delta.Length();
+		Quaternion qYaw = Quaternion::GetQuaternionFromAngleAxis(Radian(mYaw), Vector3::UP);
+		Quaternion qPitch = Quaternion::GetQuaternionFromAngleAxis(Radian(mPitch), Vector3::RIGHT);
+		mTargetRot = qPitch * qYaw;
+	}
 
-        if (dist < 0.0001f) return target;
+	Vector3 DebugCamera::VInterpTo(const Vector3& current, const Vector3& target, float dt, float speed)
+	{
+		if (speed <= 0.0f) return target;
 
-        float move = dist * std::clamp(dt * speed, 0.0f, 1.0f);
-        return current + delta.NormalizedCopy() * move;
-    }
+		Vector3 delta = target - current;
+		float dist = delta.Length();
+
+		if (dist < 0.0001f) return target;
+
+		float move = dist * std::clamp(dt * speed, 0.0f, 1.0f);
+		return current + delta.NormalizedCopy() * move;
+	}
+	Quaternion DebugCamera::QInterpTo(const Quaternion& current, const Quaternion& target, float dt, float speed)
+	{
+		if (speed <= 0.0f) return target;
+		float alpha = std::clamp(dt * speed, 0.0f, 1.0f);
+		return Quaternion::Slerp(current, target, alpha);
+	}
 }

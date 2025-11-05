@@ -166,50 +166,24 @@ namespace AtomEngine
 	Quaternion Quaternion::LookRotation(const Vector3& forward, const Vector3& up)
 	{
 		Vector3 f = forward.NormalizedCopy();
-		Vector3 r = up.Cross(f).NormalizedCopy();
-		Vector3 u = f.Cross(r);
 
-		Matrix3x3 m(r,u,f);
-		
-		float trace = m.mat[0][0] + m.mat[1][1] + m.mat[2][2];
+		Vector3 u = up;
+		if (fabsf(Math::Dot(f, u)) > 0.999f)
+			u = fabsf(f.y) < 0.999f ? Vector3::UP : Vector3::RIGHT;
+
+		Vector3 r = Math::Cross(u, f).NormalizedCopy();
+		u = Math::Cross(f, r).NormalizedCopy();
+
+		Matrix3x3 rot(r, u, f);
 		Quaternion q;
-
-		if (trace > 0.0f)
-		{
-			float s = sqrtf(trace + 1.0f) * 2.0f;
-			q.w = 0.25f * s;
-			q.x = (m.mat[2][1] - m.mat[1][2]) / s;
-			q.y = (m.mat[0][2] - m.mat[2][0]) / s;
-			q.z = (m.mat[1][0] - m.mat[0][1]) / s;
-		}
-		else if ((m.mat[0][0] > m.mat[1][1]) && (m.mat[0][0] > m.mat[2][2]))
-		{
-			float s = sqrtf(1.0f + m.mat[0][0] - m.mat[1][1] - m.mat[2][2]) * 2.0f;
-			q.w = (m.mat[2][1] - m.mat[1][2]) / s;
-			q.x = 0.25f * s;
-			q.y = (m.mat[0][1] + m.mat[1][0]) / s;
-			q.z = (m.mat[0][2] + m.mat[2][0]) / s;
-		}
-		else if (m.mat[1][1] > m.mat[2][2])
-		{
-			float s = sqrtf(1.0f + m.mat[1][1] - m.mat[0][0] - m.mat[2][2]) * 2.0f;
-			q.w = (m.mat[0][2] - m.mat[2][0]) / s;
-			q.x = (m.mat[0][1] + m.mat[1][0]) / s;
-			q.y = 0.25f * s;
-			q.z = (m.mat[1][2] + m.mat[2][1]) / s;
-		}
-		else
-		{
-			float s = sqrtf(1.0f + m.mat[2][2] - m.mat[0][0] - m.mat[1][1]) * 2.0f;
-			q.w = (m.mat[1][0] - m.mat[0][1]) / s;
-			q.x = (m.mat[0][2] + m.mat[2][0]) / s;
-			q.y = (m.mat[1][2] + m.mat[2][1]) / s;
-			q.z = 0.25f * s;
-		}
-
-		return q.NormalizeCopy();
+		q.FromRotationMatrix(rot);
+		return q;
 	}
 
+	float Quaternion::Dot(const Quaternion& lhs, const Quaternion& rhs)
+	{
+		return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+	}
 
 	void Quaternion::ToAngleAxis(Radian& angle, Vector3& axis) const
 	{

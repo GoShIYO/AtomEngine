@@ -97,7 +97,7 @@ namespace AtomEngine
 		defaultPSO.SetDepthStencilState(DepthStateReadWrite);
 		defaultPSO.SetInputLayout(_countof(defaultInput), defaultInput);
 		defaultPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-		defaultPSO.SetRenderTargetFormat(ColorFormat, DepthFormat);
+		defaultPSO.SetRenderTargetFormats(1,&ColorFormat, DepthFormat);
 		defaultPSO.SetVertexShader(defaultVS.Get());
 		defaultPSO.SetPixelShader(defaultPS.Get());
 		defaultPSO.Finalize();

@@ -63,6 +63,7 @@ namespace AtomEngine
 		std::vector<GraphNode> mSceneGraph;
 
 		Skeleton mSkeleton;
+		uint32_t mNumAnimations = 0;
 	protected:
 
 		void Destroy();

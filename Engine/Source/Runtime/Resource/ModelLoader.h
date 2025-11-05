@@ -17,7 +17,7 @@ namespace AtomEngine
     {
         std::string name;
 
-        Matrix4x4 localTransform;
+        Transform transform;
         Matrix4x4 globalTransform;
         std::vector<uint32_t> meshIndices;
 
@@ -42,6 +42,8 @@ namespace AtomEngine
         Skeleton skeleton;
         
         std::vector<GraphNode> graphNodes;
+        std::vector<uint16_t> jointIndices;
+        std::vector<Matrix4x4> jointIBMs;
     };
 
     class ModelLoader

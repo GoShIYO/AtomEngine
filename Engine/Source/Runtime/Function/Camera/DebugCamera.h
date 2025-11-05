@@ -10,49 +10,54 @@ namespace AtomEngine
     public:
         DebugCamera(Camera& camera);
 
-        void Update(float deltaTime) override;
+        void Update(float dt) override;
+
+        void SetTarget(const Vector3& target) { mTarget = target; }
+        void SetDistance(float dist) { mRadius = dist; }
+        float GetDistance() const { return mRadius; }
+        void SetMoveSpeed(float speed) { mMoveSpeed = speed; }
+        void SetLookSensitivity(float sens) { mLookSensitivity = sens; }
 
     private:
+        void UpdateOrbit(float dx, float dy);
+        void UpdatePan(float dx, float dy);
+        void UpdateZoom(float dy);
+        void UpdateMovement(float dt);
+        void UpdateRotation(float dx, float dy);
 
-        void MoveView(float dt);
-
-        void RotateView(float dt);
-
-        void TranslateView(float dt);
+        Vector3 VInterpTo(const Vector3& current, const Vector3& target, float dt, float speed);
+        Quaternion QInterpTo(const Quaternion& current, const Quaternion& target, float dt, float speed);
 
     private:
-        struct POINT
+        enum class CameraMode
         {
-            int x;
-            int y;
+            Orbit,
+            Fly
         };
-        POINT mCurrMousePos;
-        POINT mPrevMousePos;
+        CameraMode mMode = CameraMode::Orbit;
+        CameraMode mPrevMode = CameraMode::Orbit;
+        Vector3 mTarget;
+        float mRadius = 5.0f;
 
         float mMoveSpeed;
-        float mRotateSpeed;
-        float mWheelSpeed;
-        int64_t mPreWheelY;
+        float mBoostMultiplier = 3.0f;
+        float mLookSensitivity = 0.0025f;
 
-        bool mIsShifting[4];
-        float mShiftTimer[4];
-        
         Vector3 mCurrentPos;
         Vector3 mTargetPos;
-        float mInterpSpeed = 8.0f;
-
-        float mOrbitX = 0.0f;
-        float mOrbitY = 0.0f;
-        float mOrbitRadius = 10.0f;
-        Vector3 mOrbitCenter = Vector3::ZERO;
-
-        Vector3 mStartPos;
-        Vector3 mStartLookAt;
-        Quaternion mStartRot;
         Quaternion mCurrentRot;
         Quaternion mTargetRot;
 
-    private:
-        Vector3 VInterpTo(const Vector3& current, const Vector3& target, float dt, float speed);
+        float mYaw;
+        float mPitch;
+
+        float mRotateSpeed;
+        float mPanSpeed;
+        float mZoomSpeed;
+
+        int mPrevMouseX = 0;
+        int mPrevMouseY = 0;
+        float mPrevMouseWheel = 0.0f;
+        bool mFirstFrame = true;
     };
 }

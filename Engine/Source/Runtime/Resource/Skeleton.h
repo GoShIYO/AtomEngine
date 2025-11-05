@@ -1,6 +1,7 @@
 #pragma once
 #include "Runtime/Core/Math/MathInclude.h"
 #include <unordered_map>
+#include <optional>
 
 namespace AtomEngine
 {
@@ -15,9 +16,10 @@ namespace AtomEngine
     {
         std::string name;
         int32_t index;
-        int32_t parentIndex;
+        std::optional<int32_t> parent;
         std::vector<int32_t> children;
 
+        Transform transform;
         Matrix4x4 localBindPose;
         Matrix4x4 inverseBindPose;
     };

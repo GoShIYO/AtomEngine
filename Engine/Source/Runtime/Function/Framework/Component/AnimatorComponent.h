@@ -4,7 +4,7 @@
 
 namespace AtomEngine
 {
-	struct AnimationState
+	/*struct AnimationState
 	{
 		enum Mode { kStopped, kPlaying, kLooping };
 		Mode mode = kStopped;
@@ -48,7 +48,7 @@ namespace AtomEngine
 					state.mode = AnimationState::kStopped;
 			}
 		}
-	};
+	};*/
 
 }
 

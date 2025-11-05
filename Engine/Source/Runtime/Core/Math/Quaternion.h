@@ -42,6 +42,8 @@ namespace AtomEngine
 		static Quaternion Slerp(const Quaternion& q1, const Quaternion& q2, float t);
 
 		static Quaternion LookRotation(const Vector3& dir, const Vector3& up);
+		
+		static float Dot(const Quaternion& lhs, const Quaternion& rhs);
 
 		void ToAngleAxis(Radian& angle, Vector3& axis) const;
 

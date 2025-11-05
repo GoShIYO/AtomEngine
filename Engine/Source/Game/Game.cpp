@@ -23,7 +23,7 @@ void Game::Initialize()
 
 	}
 
-	auto model = AssetManager::LoadModel(L"Asset/Models/DamagedHelmet.gltf");
+	auto model = AssetManager::LoadModel(L"Asset/Models/DamagedHelmet/DamagedHelmet.gltf");
 	m_GameObject = std::make_unique<GameObject>(mWorld.CreateGameObject("testObj"));
 	m_GameObject->AddComponent<MeshComponent>(model);
 	m_GameObject->AddComponent<TransformComponent>();
@@ -32,7 +32,6 @@ void Game::Initialize()
 void Game::Update(float deltaTime)
 {
 	gContext.imgui->ShowPerformanceWindow(deltaTime);
-
 	m_DebugCamera->Update(deltaTime);
 
 	static Vector3 pos;

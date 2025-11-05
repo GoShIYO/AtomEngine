@@ -663,5 +663,6 @@
     <None Include="Asset\Shaders\Light\FillLightGridCS.hlsli" />
     <None Include="Asset\Shaders\Light\LightGrid.hlsli" />
     <None Include="Asset\Shaders\Light\Lighting.hlsli" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
