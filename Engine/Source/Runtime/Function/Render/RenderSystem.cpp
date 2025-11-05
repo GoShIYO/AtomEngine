@@ -35,7 +35,7 @@ namespace AtomEngine
 	void Renderer::Initialize()
 	{
 		SamplerDesc DefaultSamplerDesc;
-		DefaultSamplerDesc.MaxAnisotropy = 16;
+		DefaultSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
 		mRootSig.Reset(kNumRootBindings, 3);
 

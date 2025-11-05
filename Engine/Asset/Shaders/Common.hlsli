@@ -14,71 +14,45 @@ float Pow5(float x)
     return xSq * xSq * x;
 }
 
-// Shlick's approximation of Fresnel
-float3 FresnelShlick(float3 F0, float3 F90, float cosine)
+float3 Fresnel_Schlick(float3 F0, float cosine)
+{
+    return F0 + (1.0 - F0) * Pow5(1.0 - cosine);
+}
+
+// Fresnel-Schlick with F90 (used in Burley diffuse)
+float3 Fresnel_Schlick_F90(float3 F0, float3 F90, float cosine)
 {
     return lerp(F0, F90, Pow5(1.0 - cosine));
 }
 
-float FresnelShlick(float F0, float F90, float cosine)
+float Fresnel_Schlick(float F0, float F90, float cosine)
 {
     return lerp(F0, F90, Pow5(1.0 - cosine));
 }
 
-float3 FresnelSchlick(float cosTheta, float3 F0)
+// GGX Normal Distribution D
+float D_GGX(float NdotH, float alphaSqr)
 {
-    return F0 + (1.0f - F0) * Pow5(1.0f - cosTheta);
-}
-
-float DistributionGGX(float3 N, float3 H, float roughness)
-{
-    float a = roughness * roughness;
-    float a2 = a * a;
-    float NdotH = saturate(dot(N, H));
-    float NdotH2 = NdotH * NdotH;
-
-    float num = a2;
-    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    float denom = NdotH * NdotH * (alphaSqr - 1.0) + 1.0;
     denom = PI * denom * denom;
-
-    return num / denom;
-}
-//
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
-    float r = (roughness + 1.0);
-    float k = (r * r) / 8.0;
-
-    float num = NdotV;
-    float denom = NdotV * (1.0 - k) + k;
-
-    return num / denom;
+    return alphaSqr / max(1e-6, denom);
 }
 
-float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
+// Schlick-GGX geometric
+float G_SchlickGGX_single(float NdotX, float k)
 {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-
-    return ggx1 * ggx2;
+    return NdotX / max(1e-6, NdotX * (1.0 - k) + k);
+}
+float G_Smith(float NdotV, float NdotL, float k)
+{
+    return G_SchlickGGX_single(NdotV, k) * G_SchlickGGX_single(NdotL, k);
 }
 
-float KullaContyGeometry(float3 N, float3 V, float3 L, float roughness)
+float3 Diffuse_Burley(float3 albedo, float roughness, float NdotL, float NdotV, float LdotH)
 {
-    float NdotV = saturate(dot(N, V));
-    float NdotL = saturate(dot(N, L));
-    
-    float a2 = roughness * roughness;
-    float GGX1 = 2.0 * NdotL / (NdotL + sqrt(a2 + (1.0 - a2) * NdotL * NdotL));
-    float GGX2 = 2.0 * NdotV / (NdotV + sqrt(a2 + (1.0 - a2) * NdotV * NdotV));
-    return GGX1 * GGX2;
-}
-
-float3 fresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
-{
-    float3 roughnessFactor = 1.0 - roughness;
-    return F0 + (max(roughnessFactor, F0) - F0) * Pow5(clamp(1.0 - cosTheta, 0.0, 1.0));
+    float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
+    float3 F_L = Fresnel_Schlick(1, fd90, NdotL);
+    float3 F_V = Fresnel_Schlick(1, fd90, NdotV);
+    return albedo * (F_L * F_V);
 }
 
