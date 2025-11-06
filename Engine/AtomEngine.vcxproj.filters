@@ -1,0 +1,704 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="Asset\Shaders\DepthOnlySkinVS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\DepthOnlyVS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\DepthViewPS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\DepthViewVS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_8.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_16.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_24.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_32.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\FullScreenQuad.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\IblBrdf.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Object3D.PS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Object3D.VS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Object3DMR.PS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Object3DSkinned.VS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PresentPS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\SharpeningUpsamplePS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\SkyboxPS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\SkyboxVS.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\testShader.hlsl">
+      <Filter>Assets\Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Editor\main.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix3x3.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Matrix4x4.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Math.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Random.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Quaternion.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector2.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector3.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Vector4.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\BoundingSphere.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Color\Color.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Camera\CameraBase.cpp">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Camera\CameraController.cpp">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Animation.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.cpp">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\AssetManager.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Camera\DebugCamera.cpp">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Math\Frustum.cpp">
+      <Filter>Engine\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\editor.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\EngineCore.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Application\GameApp.cpp">
+      <Filter>Engine\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\GameObject.cpp">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Global\GlobalContext.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\GraphEditor.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\GUID.cpp">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\ImCurveEdit.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\ImGradient.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_demo.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_draw.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_impl_dx12.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_impl_win32.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_tables.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\imgui_widgets.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ImGuiCommon.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\ImGuizmo.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="External\imgui\ImSequencer.cpp">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.cpp">
+      <Filter>Engine\Function\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp">
+      <Filter>Engine\Function\Render\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Input\Input.cpp">
+      <Filter>Engine\Function\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Model.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.cpp">
+      <Filter>Engine\Function\Render\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderQueue.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\RenderSystem.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Sprite\Sprite.cpp">
+      <Filter>Engine\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Utility\Utility.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
+      <Filter>Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\SkyboxRenderer.cpp">
+      <Filter>Engine\Function\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Camera\ShadowCamera.cpp">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Sprite\SpriteCommon.cpp">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\Texture.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\TextureRef.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Framework\ECS\World.cpp">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp">
+      <Filter>Engine\Function\Render</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Runtime\Core\Math\Math.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\MathInclude.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Matrix3x3.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Matrix4x4.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Random.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Quaternion.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Vector2.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Vector3.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Vector4.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\BoundingBox.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\BoundingPlane.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\BoundingSphere.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Color\Color.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Camera\CameraBase.h">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Camera\CameraController.h">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Animation.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\AssetManager.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\ComputeContext.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ConstantBufferStructures.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\D3dUtility\d3dInclude.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Camera\DebugCamera.h">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorAllocator.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Frustum.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\ECSCommon.h">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\editor.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\EngineCore.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Application\GameApp.h">
+      <Filter>Engine\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\GameObject.h">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Global\GlobalContext.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\GraphEditor.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\GraphicsContext.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\GUID.h">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Utility\Hash.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imconfig.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\ImCurveEdit.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\ImGradient.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_impl_dx12.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_impl_win32.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imgui_internal.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ImGuiCommon.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\ImGuizmo.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\ImSequencer.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_rectpack.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_textedit.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\imstb_truetype.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="External\imgui\ImZoomSlider.h">
+      <Filter>Engine\Core\External\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.h">
+      <Filter>Engine\Function\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Light\LightManager.h">
+      <Filter>Engine\Function\Render\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\LogSystem\LogSystem.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Input\Input.h">
+      <Filter>Engine\Function\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Mesh.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Model.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\ModelLoader.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Material.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassManager.h">
+      <Filter>Engine\Function\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPass.h">
+      <Filter>Engine\Function\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassesInclude.h">
+      <Filter>Engine\Function\Render\RenderPass</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderQueue.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\RenderSystem.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\ShaderCompiler.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Sprite\Sprite.h">
+      <Filter>Engine\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Utility\Utility.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\TexUtil.h">
+      <Filter>Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\SkyboxRenderer.h">
+      <Filter>Engine\Function\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Camera\ShadowCamera.h">
+      <Filter>Engine\Function\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Sprite\SpriteCommon.h">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Skeleton.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\Texture.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\TextureRef.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Math\Transform.h">
+      <Filter>Engine\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h">
+      <Filter>Engine\Platform\DirectX12</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\TransformComponent.h">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h">
+      <Filter>Engine\Function\Render</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Asset\Shaders\Common.hlsli">
+      <Filter>Assets\Shader</Filter>
+    </None>
+    <None Include="Asset\Shaders\Light\FillLightGridCS.hlsli">
+      <Filter>Assets\Shader</Filter>
+    </None>
+    <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl">
+      <Filter>Engine\Function\FrameWork\ECS</Filter>
+    </None>
+    <None Include="Asset\Shaders\Light\LightGrid.hlsli">
+      <Filter>Assets\Shader</Filter>
+    </None>
+    <None Include="Asset\Shaders\Light\Lighting.hlsli">
+      <Filter>Assets\Shader</Filter>
+    </None>
+    <None Include="Asset\Shaders\Object3D.hlsli">
+      <Filter>Assets\Shader</Filter>
+    </None>
+    <None Include="packages.config">
+      <Filter>Engine\Core\External</Filter>
+    </None>
+    <None Include="Asset\Shaders\Unility.hlsli">
+      <Filter>Assets\Shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{eebfcd65-173c-44fe-8be5-c10cb297a182}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{8f44ed0d-8f95-4831-99c1-2eedf508e49e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{69b9e237-a7f3-47b8-92bf-8b5b5df2e1c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Application">
+      <UniqueIdentifier>{1072fcfb-06e9-4d22-b872-7f2354630072}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core">
+      <UniqueIdentifier>{338072c8-0566-4fe6-a8f5-68b7e6a39fe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function">
+      <UniqueIdentifier>{9ce17d1f-412f-4d8a-acbc-773dc8101726}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Platform">
+      <UniqueIdentifier>{b29e1815-499a-4c03-886e-d68a164f064e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Resource">
+      <UniqueIdentifier>{b9fa984f-fbe0-4d03-8951-3a499217cc30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core\Math">
+      <UniqueIdentifier>{31ed95d9-01ec-4297-8979-fb2428af3a89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Platform\DirectX12">
+      <UniqueIdentifier>{602ea200-e729-44f2-bc21-4a119ec7b4bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Camera">
+      <UniqueIdentifier>{c3d6c003-ce90-4cc0-8a86-f2d5b4c0114b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{8dbd27ec-52ab-4918-8230-cf7457c9766e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Shader">
+      <UniqueIdentifier>{026679c6-63de-46cd-a551-c1afd1a62224}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\FrameWork">
+      <UniqueIdentifier>{8f5eefc0-2fbe-4af8-81af-b5df2938a541}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\FrameWork\Component">
+      <UniqueIdentifier>{594d0e24-83d8-4a31-a499-07d746df202f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\FrameWork\ECS">
+      <UniqueIdentifier>{b5d3a016-2a68-4462-8be3-66850b8207cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Render">
+      <UniqueIdentifier>{5fb045b3-c0b6-4648-bc41-9ba98ed42108}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core\External">
+      <UniqueIdentifier>{938a555a-38e2-4c8e-afb6-ffe7d02942cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Core\External\ImGui">
+      <UniqueIdentifier>{c71cbbdb-678c-49c3-aca2-e858298753a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Render\RenderPass">
+      <UniqueIdentifier>{bbc599c4-2cca-43d1-9e3f-287a963588eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Render\Light">
+      <UniqueIdentifier>{18df68b3-f15c-4458-bab1-4c24b215195d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Function\Input">
+      <UniqueIdentifier>{c4081c95-d6b7-402b-8ece-376cb26ac137}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
