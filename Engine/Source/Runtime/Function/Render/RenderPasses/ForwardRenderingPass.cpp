@@ -28,18 +28,11 @@ namespace AtomEngine
 		const D3D12_VIEWPORT& viewport = mViewport;
 		const D3D12_RECT& scissor = mScissor;
 
-		ImGui::DragFloat("mSunLightIntensity", &mSunLightIntensity, 0.01f, 0.0f, 1000.0f);
-		ImGui::DragFloat("mSunOrientation", &mSunOrientation, 0.01f, -Math::PI, Math::PI);
-		ImGui::DragFloat("mSunInclination", &mSunInclination, 0.01f, -Math::PI, Math::PI);
+		ImGui::DragFloat("SunLightIntensity", &mSunLightIntensity, 0.01f, 0.0f, 1000.0f);
+		ImGui::DragFloat3("SunDirection", mSunDirection.ptr(), 0.01f, -1.0f, 1.0f);
 		ImGui::DragFloat("mIBLBias", &mIBLBias, 0.1f, 0.0f, 10.0f);
-
-		float costheta = Math::cos(mSunOrientation);
-		float sintheta = Math::sin(mSunOrientation);
-		float cosphi = Math::cos(mSunInclination * Math::HalfPI);
-		float sinphi = Math::sin(mSunInclination * Math::HalfPI);
-
-		Vector3 SunDirection = Math::Normalize(Vector3(costheta * cosphi, sinphi, sintheta * cosphi));
-		mShadowCamera.UpdateMatrix(-SunDirection, Vector3(0, -500.0f, 0), Vector3(5000, 3000, 3000),
+		mSunDirection.Normalize();
+		mShadowCamera.UpdateMatrix(-mSunDirection, Vector3(0, -500.0f, 0), Vector3(5000, 3000, 3000),
 			(uint32_t)gShadowBuffer.GetWidth(), (uint32_t)gShadowBuffer.GetHeight(), 16);
 		mSkybox.SetIBLBias(mIBLBias);
 
@@ -47,7 +40,7 @@ namespace AtomEngine
 		globals.ViewProjMatrix = mCamera->GetViewProjMatrix();
 		globals.SunShadowMatrix = mShadowCamera.GetShadowMatrix();
 		globals.CameraPos = mCamera->GetPosition();
-		globals.SunDirection = SunDirection;
+		globals.SunDirection = mSunDirection;
 		globals.SunIntensity = Vector3(mSunLightIntensity);
 		globals.IBLRange = mSkybox.GetIBLRange();
 		globals.IBLBias = mSkybox.GetIBLBias();

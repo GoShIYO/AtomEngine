@@ -79,7 +79,7 @@ namespace AtomEngine
 
 			float wheel = (float)mInput->GetMouseState().wheelY;
 			if (wheel != 0.0f)
-				UpdateZoom(-(wheel - mPrevMouseWheel) * 0.05f);
+				UpdateZoom((wheel - mPrevMouseWheel) * 0.05f);
 			mPrevMouseWheel = wheel;
 
 			Vector3 eye;

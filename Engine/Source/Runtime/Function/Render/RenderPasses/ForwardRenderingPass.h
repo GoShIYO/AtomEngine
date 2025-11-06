@@ -18,8 +18,7 @@ namespace AtomEngine
 		ShadowCamera mShadowCamera;
 
 		float mSunLightIntensity = 4.0f;
-		float mSunOrientation = -0.5f;
-		float mSunInclination = 0.75f;
+		Vector3 mSunDirection = { 0,-1,0 };
 		float mIBLBias = 2.0f;
 	};
 }
