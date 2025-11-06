@@ -68,7 +68,7 @@ namespace AtomEngine
 
 		{
 			RenderQueue shadowSorter(RenderQueue::kShadows);
-			shadowSorter.SetCamera(*mCamera);
+			shadowSorter.SetCamera(mShadowCamera);
 			shadowSorter.SetDepthStencilTarget(gShadowBuffer);
 
 			for (auto entity : view)
