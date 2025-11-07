@@ -171,6 +171,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MaterialComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\Primitive.h" />
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\RenderPassesInclude.h" />
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\ShadowCamera.h" />
@@ -180,6 +182,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Camera\DebugCamera.h" />
     <ClInclude Include="Source\Editor\ImGuiCommon.h" />
     <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h" />
+    <ClInclude Include="Source\Runtime\Resource\GeometryGenerator.h" />
     <ClInclude Include="Source\Runtime\Resource\Skeleton.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h" />
     <ClInclude Include="Source\Runtime\Function\Light\LightManager.h" />
@@ -272,6 +275,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MaterialComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\Primitive.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.cpp" />
     <ClCompile Include="Source\Runtime\Function\Camera\ShadowCamera.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\SkyboxRenderer.cpp" />
@@ -280,6 +285,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Runtime\Function\Camera\DebugCamera.cpp" />
     <ClCompile Include="Source\Editor\ImGuiCommon.cpp" />
     <ClCompile Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\GeometryGenerator.cpp" />
     <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp" />
     <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp" />
     <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
@@ -778,9 +784,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="Asset\Shaders\Light\FillLightGridCS.hlsli" />
     <None Include="Asset\Shaders\Light\LightGrid.hlsli" />
     <None Include="Asset\Shaders\Light\Lighting.hlsli" />
-    <None Include="Asset\Shaders\Object3D.hlsli">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
-    </None>
     <None Include="Asset\Shaders\Unility.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

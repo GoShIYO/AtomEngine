@@ -112,10 +112,10 @@ namespace AtomEngine
 		const Material& material,
 		const Model& model,
 		TextureSlot slot,
-		const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& DefaultTextures)
+		const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& DefaultTextures,
+		uint32_t matIdx)
 	{
 		const uint32_t mask = material.textureMask;
-		//const uint32_t slotBit = (1u << static_cast<uint8_t>(slot));
 
 		if ((mask & slot) != slot)
 		{
@@ -136,8 +136,9 @@ namespace AtomEngine
 		{
 			if (material.textures[i].slot == slot)
 			{
-				if (i < model.mTextures.size())
-					return model.mTextures[i]->GetSRV();
+				const auto& modelTexture = model.mTextures.find(matIdx)->second;
+				if (i < modelTexture.size())
+					return modelTexture[i]->GetSRV();
 			}
 		}
 
@@ -157,30 +158,39 @@ namespace AtomEngine
 	void LoadMaterialTexture(
 		Model& model,
 		const ModelData& modelData,
-		const std::vector<MaterialTexture>& textures,
+		const std::map<uint32_t, std::vector<MaterialTexture>>& textures,
 		const std::wstring& basePath)
 	{
 		static_assert((_alignof(MaterialConstants) & 255) == 0, "CBVs need 256 byte alignment");
 
-		const uint32_t numTextures = (uint32_t)textures.size();
-		model.mTextures.resize(numTextures);
-		for (size_t ti = 0; ti < numTextures; ++ti)
-		{
-			std::wstring originalFile = basePath + textures[ti].name;
-			bool optionalSRGB =
-				(textures[ti].slot & (TextureSlot::kBaseColor | TextureSlot::kEmissive)) ? true : false;
-			CompileTextureOnDemand(originalFile, TextureOptions(optionalSRGB));
-
-			std::wstring ddsFile = RemoveExtension(originalFile) + L".dds";
-			model.mTextures[ti] = AssetManager::LoadTextureFile(ddsFile);
-		}
 
 		const uint32_t numMaterials = (uint32_t)modelData.materials.size();
 		std::vector<uint32_t> tableOffsets(numMaterials);
 		std::vector<bool> hasMRTextures(numMaterials);
 
+		for (uint32_t matIdx = 0; matIdx < numMaterials; ++matIdx)
+		{
+			auto& mataTextures = textures.find(matIdx)->second;
+			const uint32_t numTextures = mataTextures.size();
+
+			auto& modelTextures = model.mTextures[matIdx];
+			modelTextures.resize(numTextures);
+
+			for (size_t ti = 0; ti < numTextures; ++ti)
+			{
+				std::wstring originalFile = basePath + mataTextures[ti].name;
+				bool optionalSRGB =
+					(mataTextures[ti].slot & (TextureSlot::kBaseColor | TextureSlot::kEmissive)) ? true : false;
+				CompileTextureOnDemand(originalFile, TextureOptions(optionalSRGB));
+
+				std::wstring ddsFile = RemoveExtension(originalFile) + L".dds";
+				modelTextures[ti] = AssetManager::LoadTextureFile(ddsFile);
+			}
+		}
+
 		for (size_t matIdx = 0; matIdx < numMaterials; ++matIdx)
 		{
+
 			const auto& material = modelData.materials[matIdx];
 			uint32_t mask = material.textureMask;
 			hasMRTextures[matIdx] = (mask & kMetallicRoughness) == kMetallicRoughness;
@@ -223,22 +233,23 @@ namespace AtomEngine
 			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> sourceTextures(numBindTextures);
 
 			uint32_t texIndex = 0;
+			
 			if (mask & kMetallicRoughness)
 			{
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kMetallicRoughness, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kNormal, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kOcclusion, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kEmissive, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures,matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kMetallicRoughness, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kNormal, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kOcclusion, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kEmissive, DefaultTextures, matIdx);
 			}
 			else
 			{
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kMetallic, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kRoughness, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kNormal, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kOcclusion, DefaultTextures);
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kEmissive, DefaultTextures);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kMetallic, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kRoughness, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kNormal, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kOcclusion, DefaultTextures, matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kEmissive, DefaultTextures, matIdx);
 			}
 			DX12Core::gDevice->CopyDescriptors(1, &TextureHandles, &DestCount,
 				DestCount, sourceTextures.data(), SourceCounts.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -359,40 +370,41 @@ namespace AtomEngine
 			);
 		}
 
-		//マテリアル定数バッファアップロード
-		if (modelData.materials.size() > 0)
-		{
-			size_t materialSize = modelData.materials.size() * sizeof(MaterialConstants);
-
-			UploadBuffer materialConstants;
-			materialConstants.Create(L"Material Constant Upload", materialSize);
-			MaterialConstants* materialCBV = (MaterialConstants*)materialConstants.Map();
-			for (uint32_t i = 0; i < modelData.materials.size(); ++i)
-			{
-				MaterialConstants materialCB;
-				materialCB.baseColorFactor = modelData.materials[i].baseColorFactor;
-                materialCB.emissiveFactor = modelData.materials[i].emissiveFactor;
-                materialCB.metallicFactor = modelData.materials[i].metallicFactor;
-				materialCB.roughnessFactor = modelData.materials[i].roughnessFactor;
-
-				memcpy(materialCBV, &materialCB, sizeof(MaterialConstants));
-				materialCBV++;
-			}
-			materialConstants.Unmap();
-			model->mMaterialConstants.Create(L"Material Constants",
-				(uint32_t)modelData.materials.size(), sizeof(MaterialConstants), materialConstants);
-		}
-
-		std::vector<MaterialTexture> textures;
+		std::map<uint32_t,std::vector<MaterialTexture>> textures;
 		for (uint32_t m = 0; m < modelData.materials.size(); ++m)
 		{
 			for (uint32_t t = 0; t < modelData.materials[m].textures.size(); ++t)
 			{
-				textures.push_back(modelData.materials[m].textures[t]);
+				textures[m].push_back(modelData.materials[m].textures[t]);
 			}
 		}
 
 		LoadMaterialTexture(*model, modelData, textures, basePath);
+
+		//マテリアル定数バッファアップロード
+		if (modelData.materials.size() > 0)
+		{
+			model->mMaterials = std::move(modelData.materials);
+			//size_t materialSize = modelData.materials.size() * sizeof(MaterialConstants);
+			//
+			//UploadBuffer materialConstants;
+			//materialConstants.Create(L"Material Constant Upload", materialSize);
+			//MaterialConstants* materialCBV = (MaterialConstants*)materialConstants.Map();
+			//for (uint32_t i = 0; i < modelData.materials.size(); ++i)
+			//{
+			//	MaterialConstants materialCB;
+			//	materialCB.baseColorFactor = modelData.materials[i].baseColorFactor;
+            //    materialCB.emissiveFactor = modelData.materials[i].emissiveFactor;
+            //    materialCB.metallicFactor = modelData.materials[i].metallicFactor;
+			//	materialCB.roughnessFactor = modelData.materials[i].roughnessFactor;
+			//
+			//	memcpy(materialCBV, &materialCB, sizeof(MaterialConstants));
+			//	materialCBV++;
+			//}
+			//materialConstants.Unmap();
+			//model->mMaterialConstants.Create(L"Material Constants",
+				//(uint32_t)modelData.materials.size(), sizeof(MaterialConstants), materialConstants);
+		}
 
 		if (!modelData.animations.empty())
 		{

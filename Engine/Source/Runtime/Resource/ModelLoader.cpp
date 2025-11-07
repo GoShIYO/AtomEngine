@@ -13,6 +13,7 @@ namespace AtomEngine
 	static const TextureMapping textureMap[] =
 	{
 		{ aiTextureType_BASE_COLOR,					TextureSlot::kBaseColor			},
+		{ aiTextureType_DIFFUSE,					TextureSlot::kBaseColor			},		
 		{ aiTextureType_NORMALS,					TextureSlot::kNormal			},
 		{ aiTextureType_HEIGHT,						TextureSlot::kNormal			},
 		{ aiTextureType_LIGHTMAP,					TextureSlot::kOcclusion			},
@@ -25,11 +26,6 @@ namespace AtomEngine
 		if (mat.baseColorFactor.w < 1.0f)
 			return true;
 
-		if (mat.transmissionFactor > 0.0f)
-			return true;
-
-		if (mat.hasTransmissionTexture)
-			return true;
 		if(mat.hasAlphaBlend)
 			return true;
 
@@ -201,7 +197,7 @@ namespace AtomEngine
 			aiFace face = mesh->mFaces[i];
 			ASSERT(face.mNumIndices == 3);
 			for (uint32_t j = 0; j < face.mNumIndices; j++)
-				model.indices.push_back(static_cast<uint32_t>(face.mIndices[j]) + vertexBase);
+				model.indices.push_back(static_cast<uint32_t>(face.mIndices[j]));
 		}
 
 		if (mesh->HasBones())
@@ -306,10 +302,6 @@ namespace AtomEngine
 			material.emissiveFactor[1] = emission.g;
 			material.emissiveFactor[2] = emission.b;
 		}
-
-		aiString transmissionTex;
-		if (AI_SUCCESS == mat->GetTexture(aiTextureType_TRANSMISSION, 0, &transmissionTex))
-			material.hasTransmissionTexture = true;
 
 		float opacity = 1.0f;
 		if (AI_SUCCESS == mat->Get(AI_MATKEY_OPACITY, opacity))

@@ -118,18 +118,18 @@ float4 main(VSOutput input) : SV_Target0
 {
     
     #ifdef USE_METALLICROUGHNESS
-    float4 baseColor = baseColorFactor * pow(baseColorTexture.Sample(defaultSampler, input.texcoord),2.2);
+    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
     float metallic = metallicRoughnessFactor.x * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).b;
     float roughness = metallicRoughnessFactor.y * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).g;
     float occlusion = occlusionTexture.Sample(defaultSampler, input.texcoord);
-    float3 emissive = emissiveFactor * pow(emissiveTexture.Sample(defaultSampler, input.texcoord),2.2);
+    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
     float3 N = ComputeNormal(input, input.texcoord);
     #else
-    float4 baseColor = baseColorFactor * pow(baseColorTexture.Sample(defaultSampler, input.texcoord), 2.2);
+    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
     float metallic = metallicRoughnessFactor.x * metallicTexture.Sample(defaultSampler, input.texcoord);
     float roughness = metallicRoughnessFactor.y * roughnessTexture.Sample(defaultSampler, input.texcoord);
     float occlusion = occlusionTexture.Sample(defaultSampler, input.texcoord);
-    float3 emissive = emissiveFactor * pow(emissiveTexture.Sample(defaultSampler, input.texcoord), 2.2);
+    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
     float3 N = ComputeNormal(input, input.texcoord);
     #endif
    
@@ -157,15 +157,14 @@ float4 main(VSOutput input) : SV_Target0
     //シャドウ
     float shadow = CalcShadowFactor(input.sunShadowCoord);
 
-    // Diffuse Burley
+    //Diffuse Burley
     float3 diffuseTerm = Diffuse_Burley(diffuseAlbedo, roughness, NdotL, NdotV, LdotH);
 
-    // Specular: D * G * F
+    //Specular: D * G * F
     float D = D_GGX(NdotH, alphaSqr);
-    // Schlick-GGX geometric
-    float k = (roughness + 1.0);
-    k = (k * k) / 8.0;
-    float G = G_Smith(NdotV, NdotL, k);
+    //Schlick-GGX geometric
+    float G = G_Smith(NdotV, NdotL, roughness);
+    //Fresnel
     float3 F = Fresnel_Schlick(specularAlbedo, LdotH);
 
     float3 specularTerm = (D * G) * F;
@@ -179,5 +178,7 @@ float4 main(VSOutput input) : SV_Target0
     
     float3 color = emissive + dirLight + diffuseIBL + specularIBL;
 
+    //todo: tiled light
+    
     return float4(color, baseColor.a);
 }

@@ -33,7 +33,7 @@ namespace AtomEngine
         D3D12_GPU_DESCRIPTOR_HANDLE GpuVisibleHandle = mDynamicViewDescriptorHeap.UploadDirect(Target.GetUAV());
         CD3DX12_RECT ClearRect(0, 0, (LONG)Target.GetWidth(), (LONG)Target.GetHeight());
 
-        const float* ClearColor = Target.GetClearColor().GetPtr();
+        const float* ClearColor = Target.GetClearColor().ptr();
         mCommandList->ClearUnorderedAccessViewFloat(GpuVisibleHandle, Target.GetUAV(), Target.GetResource(), ClearColor, 1, &ClearRect);
     }
 

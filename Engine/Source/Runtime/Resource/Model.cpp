@@ -11,6 +11,16 @@ namespace AtomEngine
     void Model::Render(RenderQueue& sorter, const GpuBuffer& meshConstants,
         const std::vector<Matrix4x4> sphereTransforms, const JointXform* skeleton) const
     {
+        Render(sorter, meshConstants, mMaterialConstants, sphereTransforms, skeleton);
+    }
+
+    void Model::Render(
+        RenderQueue& sorter, 
+        const GpuBuffer& meshConstants, 
+        const GpuBuffer& materialConstants, 
+        const std::vector<Matrix4x4> sphereTransforms,
+        const JointXform* skeleton)const
+    {
         const Frustum& frustum = sorter.GetViewFrustum();
         const Matrix4x4& viewMat = sorter.GetViewMatrix();
 
@@ -40,7 +50,7 @@ namespace AtomEngine
                     meshConstants.GetGpuVirtualAddress() + meshIdx * sizeof(MeshConstants);
 
                 D3D12_GPU_VIRTUAL_ADDRESS materialCBV =
-                    mMaterialConstants.GetGpuVirtualAddress() + sub.materialIndex * sizeof(MaterialConstants);
+                    materialConstants.GetGpuVirtualAddress() + sub.materialIndex * sizeof(MaterialConstants);
 
                 sorter.AddMesh(mesh, skeleton,
                     mVertexBuffer.VertexBufferView(),

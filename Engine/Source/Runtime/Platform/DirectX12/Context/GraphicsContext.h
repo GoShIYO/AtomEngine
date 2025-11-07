@@ -122,7 +122,7 @@ namespace AtomEngine
 
 	inline void GraphicsContext::SetBlendFactor(Color BlendFactor)
 	{
-		mCommandList->OMSetBlendFactor(BlendFactor.GetPtr());
+		mCommandList->OMSetBlendFactor(BlendFactor.ptr());
 	}
 
 	inline void GraphicsContext::SetPrimitiveTopology(D3D12_PRIMITIVE_TOPOLOGY Topology)

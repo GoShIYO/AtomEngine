@@ -27,8 +27,8 @@ namespace AtomEngine
         Color(const Vector3& v) : r(v.x), g(v.y), b(v.z), a(1.0f) {}
         Color(const Vector4& v) : r(v.x), g(v.y), b(v.z), a(v.w) {}
 
-		float* GetPtr(void) { return reinterpret_cast<float*>(this); }
-		float& operator[](int idx) { return GetPtr()[idx]; }
+		float* ptr(void) { return reinterpret_cast<float*>(this); }
+		float& operator[](int idx) { return ptr()[idx]; }
 
 		Color(uint32_t rgba)
 		{

@@ -307,6 +307,9 @@
     <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp">
       <Filter>Engine\Function\Render</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\GeometryGenerator.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\Primitive.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MaterialComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Runtime\Core\Math\Math.h">
@@ -606,6 +609,9 @@
     <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h">
       <Filter>Engine\Function\Render</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\GeometryGenerator.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\Primitive.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MaterialComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">
@@ -621,9 +627,6 @@
       <Filter>Assets\Shader</Filter>
     </None>
     <None Include="Asset\Shaders\Light\Lighting.hlsli">
-      <Filter>Assets\Shader</Filter>
-    </None>
-    <None Include="Asset\Shaders\Object3D.hlsli">
       <Filter>Assets\Shader</Filter>
     </None>
     <None Include="packages.config">

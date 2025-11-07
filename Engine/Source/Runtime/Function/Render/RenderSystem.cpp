@@ -243,17 +243,17 @@ namespace AtomEngine
 	{
 		GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Update");
 		//ワールドからメッシュコンポーネントとトランスフォームコンポーネントを取得
-		auto view = world.View<MeshComponent,TransformComponent>();
+		auto view = world.View<MeshComponent,TransformComponent,MaterialComponent>();
 
 		for (auto entity : view)
 		{
 			//メッシュコンポーネントを更新
 			auto& mesh = view.get<MeshComponent>(entity);
+			auto& material = view.get<MaterialComponent>(entity);
 			auto& transform = view.get<TransformComponent>(entity);
-            mesh.Update(gfxContext,transform,deltaTime);
+            mesh.Update(gfxContext,transform, material,deltaTime);
 		}
 		gfxContext.Finish();
-
 
 		mViewport.Width = (float)gSceneColorBuffer.GetWidth();
 		mViewport.Height = (float)gSceneColorBuffer.GetHeight();

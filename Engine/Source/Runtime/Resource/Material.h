@@ -29,11 +29,10 @@ namespace AtomEngine
 		Vector3 emissiveFactor = { 1.0f, 1.0f, 1.0f };
 		float metallicFactor = 1.0f;
 		float roughnessFactor = 1.0f;
-	
-        uint8_t textureMask = 0;
+	    float normalScale = 1.0f;
+        float ao = 1.0f;
 
-        float transmissionFactor = 0.0f;
-        bool hasTransmissionTexture = false;
+        uint8_t textureMask = 0;
         bool hasAlphaBlend = false;
 
         std::vector<MaterialTexture> textures;

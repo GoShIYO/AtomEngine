@@ -19,67 +19,69 @@ namespace AtomEngine
 		float distance,
 		int subMeshIndex)
 	{
-		for (const SubMesh& sub : mesh.subMeshes)
+		if (subMeshIndex < 0 || subMeshIndex >= (int)mesh.subMeshes.size())
+			return;
+
+		SortKey key;
+		key.value = (uint64_t)mRenderObjects.size();
+
+		bool skinned = (mesh.psoFlags & kHasSkin) == kHasSkin;
+		bool MRWorkFlow = (mesh.psoFlags & kHasMRTexture) == kHasMRTexture;
+		bool alphaBlend = (mesh.psoFlags & kAlphaBlend) == kAlphaBlend;
+		uint64_t depthIndex = skinned ? (uint64_t)PSOIndex::kPSO_DepthOnly_Skin : (uint64_t)PSOIndex::kPSO_DepthOnly;
+
+		union float_or_int { float f; uint32_t u; } dist;
+		dist.f = std::max(distance, 0.0f);
+
+		if (mBatchType == kShadows)
 		{
-			SortKey key;
-			key.value = mRenderObjects.size();
+			if (alphaBlend)
+				return;
 
-			bool skinned = (mesh.psoFlags & kHasSkin) == kHasSkin;
-			bool MRWorkFlow = (mesh.psoFlags & kHasMRTexture) == kHasMRTexture;
-			bool alphaBlend = (mesh.psoFlags & kAlphaBlend) == kAlphaBlend;
-			uint64_t depthIndex = skinned ? (uint64_t)PSOIndex::kPSO_DepthOnly_Skin : (uint64_t)PSOIndex::kPSO_DepthOnly;
-			
-			union float_or_int { float f; uint32_t u; } dist;
-			dist.f = std::max(distance, 0.0f);
-
-			if (mBatchType == kShadows)
-			{
-				if (alphaBlend)
-					return;
-
-				key.passID = kZPass;
-				key.psoIdx = skinned ? (uint64_t)PSOIndex::kPSO_Shadow_Skin : (uint64_t)PSOIndex::kPSO_Shadow;
-				key.key = dist.u;
-				mSortKeys.push_back(key.value);
-				mTypeCounts[kZPass]++;
-			}
-			else if (mesh.psoFlags & kAlphaBlend)
-			{
-				key.passID = kTransparent;
-				key.psoIdx = mesh.pso;
-				key.key = ~dist.u;
-				mSortKeys.push_back(key.value);
-				mTypeCounts[kTransparent]++;
-			}
-			else
-			{
-				key.passID = kZPass;
-				key.psoIdx = depthIndex;
-				key.key = dist.u;
-				mSortKeys.push_back(key.value);
-				mTypeCounts[kZPass]++;
-
-
-				key.passID = kOpaque;
-				key.psoIdx = mesh.pso;
-				key.key = dist.u;
-				mSortKeys.push_back(key.value);
-				mTypeCounts[kOpaque]++;
-			}
-
-			RenderObject obj{};
-			obj.mesh = &mesh;
-			obj.skeleton = skeleton;
-			obj.vbv = vbv;
-			obj.ibv = ibv;
-			obj.meshCBV = meshCBV;
-			obj.materialCBV = materialCBV;
-			obj.subMeshIndex = subMeshIndex;
-			obj.srvTable = mesh.subMeshes[subMeshIndex].srvTableIndex;
-
-			mRenderObjects.push_back(obj);
+			key.passID = kZPass;
+			key.psoIdx = skinned ? (uint64_t)PSOIndex::kPSO_Shadow_Skin : (uint64_t)PSOIndex::kPSO_Shadow;
+			key.key = dist.u;
+			mSortKeys.push_back(key.value);
+			mTypeCounts[kZPass]++;
 		}
+		else if (mesh.psoFlags & kAlphaBlend)
+		{
+			key.passID = kTransparent;
+			key.psoIdx = mesh.pso;
+			key.key = ~dist.u;
+			mSortKeys.push_back(key.value);
+			mTypeCounts[kTransparent]++;
+		}
+		else
+		{
+			// Z pass
+			key.passID = kZPass;
+			key.psoIdx = depthIndex;
+			key.key = dist.u;
+			mSortKeys.push_back(key.value);
+			mTypeCounts[kZPass]++;
+
+			// Opaque pass
+			key.passID = kOpaque;
+			key.psoIdx = mesh.pso;
+			key.key = dist.u;
+			mSortKeys.push_back(key.value);
+			mTypeCounts[kOpaque]++;
+		}
+
+		RenderObject obj{};
+		obj.mesh = &mesh;
+		obj.skeleton = skeleton;
+		obj.vbv = vbv;
+		obj.ibv = ibv;
+		obj.meshCBV = meshCBV;
+		obj.materialCBV = materialCBV;
+		obj.subMeshIndex = subMeshIndex;
+		obj.srvTable = mesh.subMeshes[subMeshIndex].srvTableIndex;
+
+		mRenderObjects.push_back(obj);
 	}
+
 
 	void RenderQueue::Sort()
 	{
@@ -146,7 +148,7 @@ namespace AtomEngine
 				mScissor.left = 0;
 				mScissor.right = mDSV->GetWidth();
 				mScissor.top = 0;
-				mScissor.bottom = mDSV->GetWidth();
+				mScissor.bottom = mDSV->GetHeight();
 			}
 		}
 

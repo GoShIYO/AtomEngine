@@ -13,6 +13,7 @@
 #include "../Core/Math/BoundingSphere.h"
 
 #include <span>
+#include <map>
 
 namespace AtomEngine
 {
@@ -45,7 +46,13 @@ namespace AtomEngine
 		void Render(RenderQueue& sorter,
 			const GpuBuffer& meshConstants,
 			const std::vector<Matrix4x4> sphereTransforms,
-			const JointXform* skelton ) const;
+			const JointXform* skeleton) const;
+
+		void Render(RenderQueue& sorter,
+			const GpuBuffer& meshConstants,
+			const GpuBuffer& materialConstants,
+			const std::vector<Matrix4x4> sphereTransforms,
+			const JointXform* skelton)const;
 
 		BoundingSphere mBoundingSphere;
 		AxisAlignedBox mBoundingBox;
@@ -54,7 +61,8 @@ namespace AtomEngine
 		ByteAddressBuffer mIndexBuffer;
 		ByteAddressBuffer mMaterialConstants;
 
-		std::vector<TextureRef> mTextures;
+		std::vector<Material> mMaterials;
+		std::map<uint32_t,std::vector<TextureRef>> mTextures;
 		std::vector<Mesh> mMeshData;
 		std::vector<uint8_t> mKeyFrameData;
 		std::vector<AnimationClip> mAnimationData;

@@ -1,6 +1,6 @@
 #pragma once
 #include "TransformComponent.h"
-#include "Runtime/Resource/Model.h"
+#include "MaterialComponent.h"
 #include "Runtime/Platform/DirectX12/Buffer/GpuBuffer.h"
 #include "Runtime/Platform/DirectX12/Buffer/UploadBuffer.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
@@ -17,7 +17,7 @@ namespace AtomEngine
 		~MeshComponent();
 
 		void Update(GraphicsContext& gfxContext,const TransformComponent& transform ,float deltaTime);
-
+		void Update(GraphicsContext& gfxContext, const TransformComponent& transform, const MaterialComponent& material, float deltaTime);
 		void Render(RenderQueue& sorter);
 
 		void UpdateAnimation(float deltaTime);
@@ -26,7 +26,8 @@ namespace AtomEngine
 		UploadBuffer mMeshConstantsCPU;
 		ByteAddressBuffer mMeshConstantsGPU;
 		
-		Matrix4x4 mWorldMatrix;
+		UploadBuffer mMaterialConstantsCPU;
+		ByteAddressBuffer mMaterialConstantsGPU;
 
 		std::vector<GraphNode> mAnimGraph;
 		std::vector<AnimationState> mAnimState;

@@ -1,4 +1,3 @@
-
 SamplerState defaultSampler : register(s10);
 SamplerState anisotropicSampler : register(s11);
 SamplerComparisonState shadowSampler : register(s12);
@@ -19,7 +18,7 @@ float3 Fresnel_Schlick(float3 F0, float cosine)
     return F0 + (1.0 - F0) * Pow5(1.0 - cosine);
 }
 
-// Fresnel-Schlick with F90 (used in Burley diffuse)
+// Fresnel-Schlick
 float3 Fresnel_Schlick_F90(float3 F0, float3 F90, float cosine)
 {
     return lerp(F0, F90, Pow5(1.0 - cosine));
@@ -43,8 +42,10 @@ float G_SchlickGGX_single(float NdotX, float k)
 {
     return NdotX / max(1e-6, NdotX * (1.0 - k) + k);
 }
-float G_Smith(float NdotV, float NdotL, float k)
+float G_Smith(float NdotV, float NdotL, float roughness)
 {
+    float k = (roughness + 1.0);
+    k = (k * k) / 8.0;
     return G_SchlickGGX_single(NdotV, k) * G_SchlickGGX_single(NdotL, k);
 }
 
