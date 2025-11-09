@@ -27,6 +27,7 @@ namespace AtomEngine
 		uint32_t vertexOffset = 0;
 		uint32_t vertexCount = 0;
 
+		uint32_t meshCbvIndex = 0;
 		uint32_t materialIndex = 0;
 		uint32_t srvTableIndex = 0;
 		AxisAlignedBox bounds;

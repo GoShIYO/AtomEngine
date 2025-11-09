@@ -34,6 +34,9 @@ namespace AtomEngine
 
 	bool SetTextures(Material& material, aiMaterial* mat, aiTextureType type, TextureSlot slot)
 	{
+		if (material.textureMask & slot)
+			return false;
+
 		aiString texPath;
 		if (mat->GetTexture(type, 0, &texPath) == AI_SUCCESS && texPath.length > 0)
 		{
@@ -133,7 +136,12 @@ namespace AtomEngine
 			uint32_t meshIndex = static_cast<uint32_t>(model.meshes.size());
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 
-			model.meshes.push_back(ProcessMesh(model, mesh));
+			Mesh newMesh = ProcessMesh(model, mesh);
+			for (auto& sub : newMesh.subMeshes)
+			{
+				sub.meshCbvIndex = gnode.matrixIdx;
+			}
+			model.meshes.push_back(std::move(newMesh));
 			outNode->meshIndices.push_back(meshIndex);
 		}
 
@@ -260,6 +268,7 @@ namespace AtomEngine
 		sub.vertexOffset = vertexBase;
 		sub.vertexCount = outMesh.vertexCount;
 		sub.materialIndex = mesh->mMaterialIndex;
+
 		AxisAlignedBox subBounds;
 		for (uint32_t i = 0; i < sub.indexCount; ++i)
 		{

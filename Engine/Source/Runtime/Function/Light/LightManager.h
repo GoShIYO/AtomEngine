@@ -29,7 +29,7 @@ namespace AtomEngine
 
 		static void RemoveLight(uint32_t lightID);
 		
-		static void UploadResources(const ShadowCamera& camera);
+		static void UploadResources();
 		static void UpdateLight(uint32_t lightID, const LightDesc& desc);
 
 		static void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
@@ -37,9 +37,15 @@ namespace AtomEngine
 		static void Shutdown();
 
 		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightSrv(){return gLightBuffer.GetSRV();}
-		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightShadowSrv(){return mLightShadowArray.GetSRV();}
+		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightShadowSrv(){return gLightShadowArray.GetSRV();}
 		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightGridSrv(){return gLightGrid.GetSRV();}
 		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightGridBitMaskSrv(){return gLightGridBitMask.GetSRV();}
+
+		static ColorBuffer& GetLightShadowArray(){return gLightShadowArray;}
+        static ShadowBuffer& GetLightShadowTempBuffer(){return gLightShadowTempBuffer;}
+	public:
+		static uint32_t LightGridDim;
+
 	private:
 		static std::vector<LightData> gLights;
 
@@ -47,12 +53,13 @@ namespace AtomEngine
 		static ByteAddressBuffer gLightGrid;
 		static ByteAddressBuffer gLightGridBitMask;
 
-		static ColorBuffer mLightShadowArray;
-		static ShadowBuffer mLightShadowTempBuffer;
-		static Matrix4x4 mLightShadowMatrix[MAX_LIGHTS];
+		static ColorBuffer gLightShadowArray;
+		static ShadowBuffer gLightShadowTempBuffer;
+		static Matrix4x4 gLightShadowMatrix[MAX_LIGHTS];
 
 		static std::unordered_map<uint32_t, uint32_t> gLightIDToIndex;
 		static uint32_t gNextLightID;
+		static bool dirty;
 	};
 }
 

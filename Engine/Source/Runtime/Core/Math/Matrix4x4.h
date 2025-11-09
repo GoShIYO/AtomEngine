@@ -985,7 +985,7 @@ namespace AtomEngine
 
 	Vector4 operator*(const Vector4& v, const Matrix4x4& mat);
 
-	inline Vector3 Math::Transfrom(const Vector3& v, const Matrix4x4& mat)
+	inline Vector3 Math::Transform(const Vector3& v, const Matrix4x4& mat)
 	{
 		Vector4 temp(v, 1.0f);
 		Vector4 result = temp * mat;

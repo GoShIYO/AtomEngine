@@ -171,12 +171,12 @@ namespace AtomEngine
 		for (uint32_t matIdx = 0; matIdx < numMaterials; ++matIdx)
 		{
 			auto& mataTextures = textures.find(matIdx)->second;
-			const uint32_t numTextures = mataTextures.size();
+			const uint32_t numTextures = (uint32_t)mataTextures.size();
 
 			auto& modelTextures = model.mTextures[matIdx];
 			modelTextures.resize(numTextures);
 
-			for (size_t ti = 0; ti < numTextures; ++ti)
+			for (uint32_t ti = 0; ti < numTextures; ++ti)
 			{
 				std::wstring originalFile = basePath + mataTextures[ti].name;
 				bool optionalSRGB =
@@ -188,7 +188,7 @@ namespace AtomEngine
 			}
 		}
 
-		for (size_t matIdx = 0; matIdx < numMaterials; ++matIdx)
+		for (uint32_t matIdx = 0; matIdx < numMaterials; ++matIdx)
 		{
 
 			const auto& material = modelData.materials[matIdx];
@@ -256,13 +256,13 @@ namespace AtomEngine
 
 			tableOffsets[matIdx] = SRVDescriptorTable;
 		}
-		for (size_t i = 0; i < model.mMeshData.size(); ++i)
+		for (uint32_t i = 0; i < model.mMeshData.size(); ++i)
 		{
 			auto& mesh = model.mMeshData[i];
 
 			if (!mesh.subMeshes.empty())
 				mesh.srvTable = tableOffsets[mesh.subMeshes[0].materialIndex];
-			for (size_t j = 0; j < mesh.subMeshes.size(); ++j)
+			for (uint32_t j = 0; j < mesh.subMeshes.size(); ++j)
 			{
 				auto& subMesh = mesh.subMeshes[j];
 				subMesh.srvTableIndex = tableOffsets[subMesh.materialIndex];
@@ -347,7 +347,7 @@ namespace AtomEngine
 
 			model->mVertexBuffer.Create(
 				RemoveExtension(modelName) + L"VertexBuffer",
-				uint32_t(vertexBufferSize / sizeof(Vertex)),
+				static_cast<uint32_t>(modelData.vertices.size()),
 				sizeof(Vertex),
 				vertexUpload
 			);
@@ -363,7 +363,7 @@ namespace AtomEngine
 			indexUpload.Unmap();
 
 			model->mIndexBuffer.Create(
-				RemoveExtension(modelName) + L"IndexBuffer_",
+				RemoveExtension(modelName) + L"IndexBuffer",
 				static_cast<uint32_t>(modelData.indices.size()),
 				sizeof(uint32_t),
 				indexUpload

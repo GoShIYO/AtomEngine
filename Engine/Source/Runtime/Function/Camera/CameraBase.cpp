@@ -26,11 +26,11 @@ namespace AtomEngine
 	void CameraBase::SetLookDirection(const Vector3& forward, const Vector3& up)
 	{
 		float forwardLenSq = forward.LengthSqr();
-		auto f = Math::Select(forward * std::sqrtf(1.0f / forwardLenSq), Vector3::FORWARD, forwardLenSq < Math::Epsilon);
+		auto f = Math::Select(forward * Math::Sqrt(1.0f / forwardLenSq), Vector3::FORWARD, forwardLenSq < Math::Epsilon);
 
 		Vector3 right = Math::Cross(up, f);
 		float rightLenSq = right.LengthSqr();
-		right = Math::Select(right * std::sqrtf(1.0f / rightLenSq),
+		right = Math::Select(right * Math::Sqrt(1.0f / rightLenSq),
 			Quaternion(Radian(-Math::HalfPI), Vector3::UP) * forward,
 			rightLenSq < Math::Epsilon);
 

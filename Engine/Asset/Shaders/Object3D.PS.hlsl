@@ -29,18 +29,6 @@ cbuffer MaterialConstants : register(b0)
     float2 metallicRoughnessFactor;
 }
 
-cbuffer GlobalConstants : register(b1)
-{
-    float4x4 ViewProj;
-    float4x4 SunShadowMatrix;
-    float3 ViewerPos;
-    float3 SunDirection;
-    float3 SunIntensity;
-    float _pad1;
-    float IBLRange;
-    float IBLBias;
-}
-
 struct VSOutput
 {
     float4 position : SV_POSITION;
@@ -116,7 +104,10 @@ float3 Specular_IBL(float3 specularAlbedo, float3 V, float3 N, float roughness)
 
 float4 main(VSOutput input) : SV_Target0
 {
-    
+    float gloss = 128.0;
+    float3 normal = input.normal;
+    AntiAliasSpecular(normal, gloss);
+
     #ifdef USE_METALLICROUGHNESS
     float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
     float metallic = metallicRoughnessFactor.x * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).b;
@@ -132,7 +123,9 @@ float4 main(VSOutput input) : SV_Target0
     float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
     float3 N = ComputeNormal(input, input.texcoord);
     #endif
-   
+
+    float2 pixelPos = input.position.xy;
+    
     float3 V = normalize(ViewerPos - input.worldPos);
 
     float3 F0 = lerp(FresnelF0, baseColor.rgb, metallic);
@@ -142,34 +135,9 @@ float4 main(VSOutput input) : SV_Target0
     float3 specularAlbedo = F0 * occlusion;
 
     roughness = saturate(roughness);
-    float alpha = roughness * roughness;
-    float alphaSqr = alpha * alpha;
     //太陽光(平行光源)
-    float3 L = normalize(-SunDirection);
-    float3 H = normalize(L + V);
+    float3 dirLight = ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, roughness, N, V, -SunDirection, SunIntensity, input.sunShadowCoord.xyz, texSunShadow);
 
-    //dot
-    float NdotV = saturate(dot(N, V));
-    float NdotL = saturate(dot(N, L));
-    float NdotH = saturate(dot(N, H));
-    float LdotH = saturate(dot(L, H));
-
-    //シャドウ
-    float shadow = CalcShadowFactor(input.sunShadowCoord);
-
-    //Diffuse Burley
-    float3 diffuseTerm = Diffuse_Burley(diffuseAlbedo, roughness, NdotL, NdotV, LdotH);
-
-    //Specular: D * G * F
-    float D = D_GGX(NdotH, alphaSqr);
-    //Schlick-GGX geometric
-    float G = G_Smith(NdotV, NdotL, roughness);
-    //Fresnel
-    float3 F = Fresnel_Schlick(specularAlbedo, LdotH);
-
-    float3 specularTerm = (D * G) * F;
-    //直接光
-    float3 dirLight = NdotL * SunIntensity * (diffuseTerm + specularTerm) * shadow;
     //間接光
     //拡散反射
     float3 diffuseIBL = Diffuse_IBL(diffuseAlbedo,roughness,N,V);
@@ -179,6 +147,10 @@ float4 main(VSOutput input) : SV_Target0
     float3 color = emissive + dirLight + diffuseIBL + specularIBL;
 
     //todo: tiled light
-    
+    float3 tiledLightColor = 0.0f;
+    ShadeLights(tiledLightColor, pixelPos, diffuseAlbedo, specularAlbedo, roughness, N, V, input.worldPos);
+
+    color += tiledLightColor;
+
     return float4(color, baseColor.a);
 }

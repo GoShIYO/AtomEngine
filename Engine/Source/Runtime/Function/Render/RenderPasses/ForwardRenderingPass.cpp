@@ -2,6 +2,8 @@
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 #include "Runtime/Function/Framework/Component/MeshComponent.h"
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
+#include "Runtime/Function/Light/LightManager.h"
+#include "Runtime/Function/Render/RenderSystem.h"
 #include "imgui.h"
 
 namespace AtomEngine
@@ -20,6 +22,11 @@ namespace AtomEngine
 	{
 		mSkybox.Shutdown();
 	}
+	struct ShadowParams
+	{
+		Vector3 Center;
+		Vector3 Bounds;
+	};
 
 	void ForwardRenderingPass::Render(GraphicsContext& gfxContext)
 	{
@@ -27,12 +34,23 @@ namespace AtomEngine
 
 		const D3D12_VIEWPORT& viewport = mViewport;
 		const D3D12_RECT& scissor = mScissor;
-
+		float costheta = cosf(mSunOrientation);
+		float sintheta = sinf(mSunOrientation);
+		float cosphi = cosf(mSunInclination * Math::HalfPI);
+		float sinphi = sinf(mSunInclination * Math::HalfPI);
+		//mSunDirection = Math::Normalize(Vector3(costheta * cosphi, sinphi, sintheta * cosphi));
+		ImGui::Begin("Forward Rendering");
 		ImGui::DragFloat("SunLightIntensity", &mSunLightIntensity, 0.01f, 0.0f, 1000.0f);
-		ImGui::DragFloat3("SunDirection", mSunDirection.ptr(), 0.01f, -1.0f, 1.0f);
-		ImGui::DragFloat("mIBLBias", &mIBLBias, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat("SunOrientation", &mSunOrientation, 0.01f);
+		ImGui::DragFloat("SunInclination", &mSunInclination, 0.01f,0.0f,1.0f);
+		ImGui::DragFloat3("SunDirection", mSunDirection.ptr(), 0.01f);
+		ImGui::DragFloat("IBLBias", &mIBLBias, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat3("SunCenter", mShadowCenter.ptr(), 0.1f);
+		ImGui::DragFloat3("SunBounds", mShadowBounds.ptr(), 0.1f,0.1f);
+		ImGui::End();
+
 		mSunDirection.Normalize();
-		mShadowCamera.UpdateMatrix(-mSunDirection, Vector3(0, -500.0f, 0), Vector3(5000, 3000, 3000),
+		mShadowCamera.UpdateMatrix(mSunDirection, mShadowCenter, mShadowBounds,
 			(uint32_t)gShadowBuffer.GetWidth(), (uint32_t)gShadowBuffer.GetHeight(), 16);
 		mSkybox.SetIBLBias(mIBLBias);
 
@@ -44,7 +62,12 @@ namespace AtomEngine
 		globals.SunIntensity = Vector3(mSunLightIntensity);
 		globals.IBLRange = mSkybox.GetIBLRange();
 		globals.IBLBias = mSkybox.GetIBLBias();
-		
+		globals.ShadowTexelSize[0] = 1.0f / gShadowBuffer.GetWidth();
+		globals.InvTileDim[0] = 1.0f / LightManager::LightGridDim;
+		globals.InvTileDim[1] = 1.0f / LightManager::LightGridDim;
+		globals.TileCount[0] = DivideByMultiple(gSceneColorBuffer.GetWidth(), LightManager::LightGridDim);
+		globals.TileCount[1] = DivideByMultiple(gSceneColorBuffer.GetHeight(), LightManager::LightGridDim);
+
 		gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 		gfxContext.ClearDepth(gSceneDepthBuffer);
 
@@ -54,13 +77,7 @@ namespace AtomEngine
 		queue.SetDepthStencilTarget(gSceneDepthBuffer);
 		queue.AddRenderTarget(gSceneColorBuffer);
 
-		auto view = mWorld->GetRegistry().view<MeshComponent>();
-
-		for (auto entity : view)
-		{
-			auto& mesh = view.get<MeshComponent>(entity);
-			mesh.Render(queue);
-		}
+		RenderObjects(queue);
 
 		queue.Sort();
 
@@ -71,15 +88,13 @@ namespace AtomEngine
 			shadowSorter.SetCamera(mShadowCamera);
 			shadowSorter.SetDepthStencilTarget(gShadowBuffer);
 
-			for (auto entity : view)
-			{
-				auto& mesh = view.get<MeshComponent>(entity);
-				mesh.Render(shadowSorter);
-			}
+			RenderObjects(shadowSorter);
 
 			shadowSorter.Sort();
 			shadowSorter.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
 		}
+
+        LightManager::FillLightGrid(gfxContext,*mCamera);
 
 		gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		gfxContext.ClearColor(gSceneColorBuffer);
@@ -94,5 +109,16 @@ namespace AtomEngine
 		}
 
 		queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
+	}
+	
+	void ForwardRenderingPass::RenderObjects(RenderQueue& queue)
+	{
+		auto view = mWorld->GetRegistry().view<MeshComponent>();
+
+		for (auto entity : view)
+		{
+			auto& mesh = view.get<MeshComponent>(entity);
+			mesh.Render(queue);
+		}
 	}
 }

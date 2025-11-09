@@ -39,20 +39,20 @@ namespace AtomEngine
 
 	inline void Printf(const char* format, ...)
 	{
-		char buffer[256];
+		char buffer[1024];
 		va_list ap;
 		va_start(ap, format);
-		vsprintf_s(buffer, 256, format, ap);
+		vsprintf_s(buffer, 1024, format, ap);
 		va_end(ap);
 		Print(buffer);
 	}
 
 	inline void Printf(const wchar_t* format, ...)
 	{
-		wchar_t buffer[256];
+		wchar_t buffer[1024];
 		va_list ap;
 		va_start(ap, format);
-		vswprintf(buffer, 256, format, ap);
+		vswprintf(buffer, 1024, format, ap);
 		va_end(ap);
 		Print(buffer);
 	}

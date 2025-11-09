@@ -196,7 +196,7 @@ namespace AtomEngine
 
 		static float Distance(const Vector3& a, const Vector3& b);
 
-		static Vector3 Transfrom(const Vector3& v, const Matrix4x4& mat);
+		static Vector3 Transform(const Vector3& v, const Matrix4x4& mat);
 
 		static Vector3 TransformNormal(const Vector3& v, const Matrix4x4& mat);
 
@@ -217,7 +217,7 @@ namespace AtomEngine
 		static Matrix4x4 MakePerspectiveMatrix(Radian fovy, float aspect, float znear = 0.1f, float zfar = 100.0f);
 
 		static Matrix4x4
-			MakeOrthographicProjectionMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+			MakeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float nearClip, float farClip);
 
 		template <typename T>
 		static T Lerp(const T& lhs, const T& rhs, float alpha)

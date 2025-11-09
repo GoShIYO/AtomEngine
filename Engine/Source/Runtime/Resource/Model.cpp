@@ -26,28 +26,28 @@ namespace AtomEngine
 
         for (size_t meshIdx = 0; meshIdx < mMeshData.size(); ++meshIdx)
         {
-            const Matrix4x4& sphereXform = sphereTransforms[meshIdx];
-            float scaleXSqr = sphereXform.GetX().LengthSqr();
-            float scaleYSqr = sphereXform.GetY().LengthSqr();
-            float scaleZSqr = sphereXform.GetZ().LengthSqr();
-            float sphereScale = Math::Sqrt(std::max({ scaleXSqr, scaleYSqr, scaleZSqr }));
-
-            BoundingSphere sphereLS = mBoundingSphere;
-            BoundingSphere sphereWS = BoundingSphere(sphereLS.GetCenter() * sphereXform, sphereScale * sphereLS.GetRadius());
-            BoundingSphere sphereVS = BoundingSphere(sphereWS.GetCenter() * viewMat, sphereWS.GetRadius());
-
-            if (!frustum.IntersectSphere(sphereVS))
-                continue;
-
-            float distance = -sphereVS.GetCenter().z - sphereVS.GetRadius();
-
             const Mesh& mesh = mMeshData[meshIdx];
             for (uint32_t subIdx = 0; subIdx < mesh.subMeshes.size(); ++subIdx)
             {
                 const SubMesh& sub = mesh.subMeshes[subIdx];
 
+                const Matrix4x4& sphereXform = sphereTransforms[sub.meshCbvIndex];
+                float scaleXSqr = sphereXform.GetX().LengthSqr();
+                float scaleYSqr = sphereXform.GetY().LengthSqr();
+                float scaleZSqr = sphereXform.GetZ().LengthSqr();
+                float sphereScale = Math::Sqrt(std::max({ scaleXSqr, scaleYSqr, scaleZSqr }));
+
+                BoundingSphere sphereLS = mBoundingSphere;
+                BoundingSphere sphereWS = BoundingSphere(sphereLS.GetCenter() * sphereXform, sphereScale * sphereLS.GetRadius());
+                BoundingSphere sphereVS = BoundingSphere(sphereWS.GetCenter() * viewMat, sphereWS.GetRadius());
+
+                if (!frustum.IntersectSphere(sphereVS))
+                    continue;
+
+                float distance = sphereVS.GetCenter().z - sphereVS.GetRadius();
+
                 D3D12_GPU_VIRTUAL_ADDRESS meshCBV =
-                    meshConstants.GetGpuVirtualAddress() + meshIdx * sizeof(MeshConstants);
+                    meshConstants.GetGpuVirtualAddress() + sub.meshCbvIndex * sizeof(MeshConstants);
 
                 D3D12_GPU_VIRTUAL_ADDRESS materialCBV =
                     materialConstants.GetGpuVirtualAddress() + sub.materialIndex * sizeof(MaterialConstants);

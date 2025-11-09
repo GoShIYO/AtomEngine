@@ -98,7 +98,7 @@ namespace AtomEngine
 		return result;
 	}
 
-	Matrix4x4 Math::MakeOrthographicProjectionMatrix(float left, float top, float right, float bottom, float nearClip, float farClip)
+	Matrix4x4 Math::MakeOrthographicProjectionMatrix(float left, float right, float bottom, float top, float nearClip, float farClip)
 	{
 		Matrix4x4 result = {
 			2 / (right - left), 0.0f, 0.0f, 0.0f,

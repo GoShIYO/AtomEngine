@@ -1,8 +1,16 @@
 #include"../Common.hlsli"
 #include"LightGrid.hlsli"
 
-cbuffer LightConstants : register(b2)
+cbuffer GlobalConstants : register(b1)
 {
+    float4x4 ViewProj;
+    float4x4 SunShadowMatrix;
+    float3 ViewerPos;
+    float3 SunDirection;
+    float3 SunIntensity;
+    float _pad1;
+    float IBLRange;
+    float IBLBias;
     float4 ShadowTexelSize;
     float4 InvTileDim;
     uint4 TileCount;
@@ -62,7 +70,6 @@ float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
     return result * result;
 }
 
-
 float GetShadowConeLight(uint lightIndex, float3 shadowCoord)
 {
     float result = lightShadowArrayTex.SampleCmpLevelZero(
@@ -71,48 +78,57 @@ float GetShadowConeLight(uint lightIndex, float3 shadowCoord)
 }
 
 float3 ApplyLightCommon(
-    float3 diffuseColor, // Diffuse albedo
-    float3 specularColor, // Specular albedo
-    float specularMask, // Where is it shiny or dingy?
-    float gloss, // Specular power
-    float3 normal, // World-space normal
-    float3 viewDir, // World-space vector from eye to point
-    float3 lightDir, // World-space vector from point to light
-    float3 lightColor // Radiance of directional light
+    float3 diffuseColor,    // Diffuse albedo
+    float3 specularColor,   // F0
+    float roughness,        // roughness
+    float3 normal,
+    float3 viewDir,
+    float3 lightDir,
+    float3 lightColor
     )
 {
-    float3 halfVec = normalize(lightDir - viewDir);
-    float nDotH = saturate(dot(halfVec, normal));
+    float3 L = normalize(lightDir);
+    float3 H = normalize(L + viewDir);
 
-    FSchlick(diffuseColor, specularColor, lightDir, halfVec);
+    //dot
+    float NdotV = saturate(dot(normal, viewDir));
+    float NdotL = saturate(dot(normal, lightDir));
+    float NdotH = saturate(dot(normal, H));
+    float LdotH = saturate(dot(lightDir, H));
 
-    float specularFactor = specularMask * pow(nDotH, gloss) * (gloss + 2) / 8;
-
-    float nDotL = saturate(dot(normal, lightDir));
-
-    return nDotL * lightColor * (diffuseColor + specularFactor * specularColor);
+    float alpha = roughness * roughness;
+    float alphaSqr = alpha * alpha;
+    //Specular: D * G * F
+    float D = D_GGX(NdotH, alphaSqr);
+    //Schlick-GGX geometric
+    float G = G_Smith(NdotV, NdotL, roughness);
+    //Fresnel
+    float3 F = Fresnel_Schlick(specularColor, LdotH);
+    
+    //Diffuse Burley
+    float3 diffuse = Diffuse_Burley(diffuseColor, roughness, NdotL, NdotV, LdotH);
+    float3 specular = (D * G) * F;
+    
+    return NdotL * lightColor * (diffuse + specular);
 }
 
 float3 ApplyDirectionalLight(
     float3 diffuseColor, // Diffuse albedo
     float3 specularColor, // Specular albedo
-    float specularMask, // Where is it shiny or dingy?
-    float gloss, // Specular power
+    float roughness,
     float3 normal, // World-space normal
     float3 viewDir, // World-space vector from eye to point
     float3 lightDir, // World-space vector from point to light
     float3 lightColor, // Radiance of directional light
     float3 shadowCoord, // Shadow coordinate (Shadow map UV & light-relative Z)
-	Texture2D<float> ShadowMap
-    )
+	Texture2D<float> texShadow
+)
 {
-    float shadow = GetDirectionalShadow(shadowCoord, ShadowMap);
-
+    float shadow = GetDirectionalShadow(shadowCoord, texShadow);
     return shadow * ApplyLightCommon(
         diffuseColor,
         specularColor,
-        specularMask,
-        gloss,
+        roughness,
         normal,
         viewDir,
         lightDir,
@@ -123,8 +139,7 @@ float3 ApplyDirectionalLight(
 float3 ApplyPointLight(
     float3 diffuseColor, // Diffuse albedo
     float3 specularColor, // Specular albedo
-    float specularMask, // Where is it shiny or dingy?
-    float gloss, // Specular power
+    float roughness,
     float3 normal, // World-space normal
     float3 viewDir, // World-space vector from eye to point
     float3 worldPos, // World-space fragment position
@@ -146,8 +161,7 @@ float3 ApplyPointLight(
     return distanceFalloff * ApplyLightCommon(
         diffuseColor,
         specularColor,
-        specularMask,
-        gloss,
+        roughness,
         normal,
         viewDir,
         lightDir,
@@ -159,8 +173,7 @@ float3 ApplyConeLight(
     float3 diffuseColor, // Diffuse albedo
     float3 specularColor, // Specular albedo
     float specularMask, // Where is it shiny or dingy?
-    float gloss, // Specular power
-    float3 normal, // World-space normal
+    float roughness,
     float3 viewDir, // World-space vector from eye to point
     float3 worldPos, // World-space fragment position
     float3 lightPos, // World-space light position
@@ -188,8 +201,7 @@ float3 ApplyConeLight(
         diffuseColor,
         specularColor,
         specularMask,
-        gloss,
-        normal,
+        roughness,
         viewDir,
         lightDir,
         lightColor
@@ -200,8 +212,7 @@ float3 ApplyConeShadowedLight(
     float3 diffuseColor, // Diffuse albedo
     float3 specularColor, // Specular albedo
     float specularMask, // Where is it shiny or dingy?
-    float gloss, // Specular power
-    float3 normal, // World-space normal
+    float roughness, // Specular power
     float3 viewDir, // World-space vector from eye to point
     float3 worldPos, // World-space fragment position
     float3 lightPos, // World-space light position
@@ -214,7 +225,7 @@ float3 ApplyConeShadowedLight(
     uint lightIndex
     )
 {
-    float4 shadowCoord = mul(shadowTextureMatrix, float4(worldPos, 1.0));
+    float4 shadowCoord = mul(float4(worldPos, 1.0),shadowTextureMatrix);
     shadowCoord.xyz *= rcp(shadowCoord.w);
     float shadow = GetShadowConeLight(lightIndex, shadowCoord.xyz);
 
@@ -222,8 +233,7 @@ float3 ApplyConeShadowedLight(
         diffuseColor,
         specularColor,
         specularMask,
-        gloss,
-        normal,
+        roughness,
         viewDir,
         worldPos,
         lightPos,
@@ -252,12 +262,6 @@ uint WaveOr(uint mask)
     return WaveActiveBitOr(mask);
 }
 
-uint64_t Ballot64(bool b)
-{
-    uint4 ballots = WaveActiveBallot(b);
-    return (uint64_t) ballots.y << 32 | (uint64_t) ballots.x;
-}
-
 // Helper function for iterating over a sparse list of bits.  Gets the offset of the next
 // set bit, clears it, and returns the offset.
 uint PullNextBit(inout uint bits)
@@ -270,9 +274,8 @@ uint PullNextBit(inout uint bits)
 void ShadeLights(inout float3 colorSum, uint2 pixelPos,
 	float3 diffuseAlbedo, // Diffuse albedo
 	float3 specularAlbedo, // Specular albedo
-	float specularMask, // Where is it shiny or dingy?
-	float gloss,
-	float3 normal,
+	float roughness,
+    float3 normal,
 	float3 viewDir,
 	float3 worldPos
 	)
@@ -293,8 +296,7 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
 #define POINT_LIGHT_ARGS \
     diffuseAlbedo, \
     specularAlbedo, \
-    specularMask, \
-    gloss, \
+    roughness, \
     normal, \
     viewDir, \
     worldPos, \

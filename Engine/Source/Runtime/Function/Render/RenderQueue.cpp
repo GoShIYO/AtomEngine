@@ -44,6 +44,10 @@ namespace AtomEngine
 			mSortKeys.push_back(key.value);
 			mTypeCounts[kZPass]++;
 		}
+		else if (mBatchType == kLightShadows)
+		{
+
+		}
 		else if (mesh.psoFlags & kAlphaBlend)
 		{
 			key.passID = kTransparent;

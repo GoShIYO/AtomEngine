@@ -3,14 +3,14 @@
 namespace AtomEngine
 {
 	void ShadowCamera::UpdateMatrix(
-			const Vector3& lightDir,
+		const Vector3& lightDir,
 		const Vector3& shadowCenter,
 		const Vector3& shadowBounds,
 		uint32_t BufferWidth,
 		uint32_t BufferHeight,
 		uint32_t BufferPrecision
 	)
-	{ 
+	{
 		SetLookDirection(lightDir, Vector3::FORWARD);
 
 		Vector3 RcpDimensions = 1 / shadowBounds;
@@ -22,9 +22,19 @@ namespace AtomEngine
 
 		SetPosition(center);
 
-		SetProjMatrix(Matrix4x4::MakeScale(Vector3(2.0f, 2.0f, 1.0f) * RcpDimensions));
+		float l = -shadowBounds.x * 0.5f;
+		float r = shadowBounds.x * 0.5f;
+		float b = -shadowBounds.y * 0.5f;
+		float t = shadowBounds.y * 0.5f;
+		float n = -shadowBounds.z * 0.5f;
+		float f = shadowBounds.z * 0.5f;
+
+		auto proj = Math::MakeOrthographicProjectionMatrix(l, r, b, t, n, f);
+
+		SetProjMatrix(proj);
+
 		Update();
 
-		mShadowMatrix = mViewProjMatrix * Matrix4x4(Matrix3x3::MakeScale({ 0.5f,-0.5f,1.0f }), Vector3(0.5f, 0.5f, 1.0f));
+		mShadowMatrix = mViewProjMatrix * Matrix4x4(Matrix3x3::MakeScale({ 0.5f,-0.5f,1.0f }), Vector3(0.5f, 0.5f, 0.0f));
 	}
 }

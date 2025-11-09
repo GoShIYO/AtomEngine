@@ -42,4 +42,7 @@ __declspec(align(256)) struct GlobalConstants
 	float pad2;
 	float IBLRange;					// IBLの範囲
 	float IBLBias;					// IBLのバイアス
+	float ShadowTexelSize[4];
+	float InvTileDim[4];
+	uint32_t TileCount[4];
 };

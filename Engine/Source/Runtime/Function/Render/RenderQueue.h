@@ -34,7 +34,7 @@ namespace AtomEngine
 	class RenderQueue
 	{
 	public:
-		enum BatchType { kDefault, kShadows };
+		enum BatchType { kDefault,kLightShadows,kShadows };
 		enum DrawType { kZPass, kOpaque, kTransparent,kNumTypes };
 
 		RenderQueue(BatchType type)

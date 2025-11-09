@@ -270,6 +270,8 @@ namespace AtomEngine
 
 	void Renderer::UpdateBuffers()
 	{
+		LightManager::UploadResources();
+
 		if (SSAOFullScreenID == gSSAOFullScreen.GetVersionID() &&
 			ShadowBufferID == gShadowBuffer.GetVersionID())
 		{

@@ -13,14 +13,14 @@ namespace AtomEngine
 	public:
 
 		void Initialize(HWND hwnd);
-
 		void Bengin();
-
 		void Render(GraphicsContext& Context);
+		void Shutdown();
+
+	public:
 
 		void ShowPerformanceWindow(float deltaTime);
 
-		void Shutdown();
 	};
 }
 
