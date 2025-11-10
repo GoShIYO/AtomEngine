@@ -43,43 +43,18 @@ struct VSOutput
 
 float3 ComputeNormal(VSOutput intput, float2 uv)
 {
+    float3 normalTS = normalTexture.Sample(defaultSampler, uv) * 2.0 - 1.0;
+    float gloss = 128.0;
+    AntiAliasSpecular(normalTS, gloss);
+    
     float3 N = normalize(intput.normal);
     float3 T = normalize(intput.tangent);
     float3 B = normalize(intput.bitangent);
     float3x3 TBN = float3x3(T, B, N);
 
-    float3 normalTS = normalTexture.Sample(defaultSampler, uv) * 2.0 - 1.0;
     normalTS = normalize(normalTS * float3(normalTextureScale, normalTextureScale, 1));
 
     return mul(normalTS, TBN);
-}
-
-float CalcShadowFactor(float4 ShadowCoord)
-{
-    ShadowCoord.xyz /= ShadowCoord.w;
-
-    if (ShadowCoord.x < 0.0 || ShadowCoord.x > 1.0 ||
-        ShadowCoord.y < 0.0 || ShadowCoord.y > 1.0 ||
-        ShadowCoord.z < 0.0 || ShadowCoord.z > 1.0)
-    {
-        return 1.0f;
-    }
-
-    uint width, height;
-    texSunShadow.GetDimensions(width, height);
-    float2 texelSize = 1.0f / float2(width, height);
-
-    float sum = 0.0f;
-    for (int x = -1; x <= 1; ++x)
-    {
-        for (int y = -1; y <= 1; ++y)
-        {
-            float2 offset = float2(x, y) * texelSize;
-            float cmp = texSunShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + offset, ShadowCoord.z);
-            sum += cmp;
-        }
-    }
-    return sum / 9.0f;
 }
 
 // Diffuse IBL
@@ -104,10 +79,6 @@ float3 Specular_IBL(float3 specularAlbedo, float3 V, float3 N, float roughness)
 
 float4 main(VSOutput input) : SV_Target0
 {
-    float gloss = 128.0;
-    float3 normal = input.normal;
-    AntiAliasSpecular(normal, gloss);
-
     #ifdef USE_METALLICROUGHNESS
     float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
     float metallic = metallicRoughnessFactor.x * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).b;
@@ -135,14 +106,15 @@ float4 main(VSOutput input) : SV_Target0
     float3 specularAlbedo = F0 * occlusion;
 
     roughness = saturate(roughness);
+    input.sunShadowCoord.xyz /= input.sunShadowCoord.w;
     //太陽光(平行光源)
     float3 dirLight = ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, roughness, N, V, -SunDirection, SunIntensity, input.sunShadowCoord.xyz, texSunShadow);
 
     //間接光
     //拡散反射
-    float3 diffuseIBL = Diffuse_IBL(diffuseAlbedo,roughness,N,V);
+    float3 diffuseIBL = Diffuse_IBL(diffuseAlbedo, roughness, N, V) * IBLFactor;
     //鏡面反射
-    float3 specularIBL = Specular_IBL(specularAlbedo, V, N, roughness);
+    float3 specularIBL = Specular_IBL(specularAlbedo, V, N, roughness) * IBLFactor;
     
     float3 color = emissive + dirLight + diffuseIBL + specularIBL;
 

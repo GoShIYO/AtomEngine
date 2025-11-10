@@ -16,9 +16,9 @@ public:
 	void Shutdown() override;
 	bool Exit() override;
 private:
-	std::unique_ptr<GameObject> m_GameObject;
-	std::unique_ptr<GameObject> m_GameObject2;
-	TextureRef test;
+	std::vector<std::unique_ptr<GameObject>> mGameObjects;
+
+	TextureRef texture;
 	DescriptorHandle gpuHandle;
 	LightDesc testLight;
 	uint32_t lightID;

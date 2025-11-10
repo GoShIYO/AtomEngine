@@ -2237,7 +2237,7 @@ static void DemoWindowWidgetsQueryingStatuses()
             ImGui::GetItemRectSize().x, ImGui::GetItemRectSize().y
         );
         ImGui::BulletText(
-            "with Hovering Delay or Stationary test:\n"
+            "with Hovering Delay or Stationary texture:\n"
             "IsItemHovered() = %d\n"
             "IsItemHovered(_Stationary) = %d\n"
             "IsItemHovered(_DelayShort) = %d\n"
@@ -4501,7 +4501,7 @@ static void DemoWindowLayout()
                 ImGui::PopStyleColor();
 
             for (int n = 0; n < 50; n++)
-                ImGui::Text("Some test %d", n);
+                ImGui::Text("Some texture %d", n);
             ImGui::EndChild();
             bool child_is_hovered = ImGui::IsItemHovered();
             ImVec2 child_rect_min = ImGui::GetItemRectMin();

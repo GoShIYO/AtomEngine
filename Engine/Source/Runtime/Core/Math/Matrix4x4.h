@@ -961,21 +961,16 @@ namespace AtomEngine
 			return m;
 		}
 
-		Vector3 TransformCoord(const Vector3& v)const
+		Vector3 TransformCoord(const Vector3& v) const
 		{
 			Vector4 temp(v, 1.0f);
 			Vector4 ret = (*this) * temp;
-			if (ret.w == 0.0f)
-			{
-				return Vector3::ZERO;
-			}
-			else
-			{
-				ret /= ret.w;
-				return Vector3(ret.x, ret.y, ret.z);
-			}
 
-			return Vector3::ZERO;
+			if (fabsf(ret.w) < 1e-6f)
+				return Vector3::ZERO;
+
+			float invW = 1.0f / ret.w;
+			return Vector3(ret.x * invW, ret.y * invW, ret.z * invW);
 		}
 
 		static const Matrix4x4 ZERO;

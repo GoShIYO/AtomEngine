@@ -27,7 +27,7 @@ namespace AtomEngine
 		Vector3 Center;
 		Vector3 Bounds;
 	};
-
+	
 	void ForwardRenderingPass::Render(GraphicsContext& gfxContext)
 	{
 		ASSERT(mWorld != nullptr);
@@ -44,6 +44,7 @@ namespace AtomEngine
 		ImGui::DragFloat("SunOrientation", &mSunOrientation, 0.01f);
 		ImGui::DragFloat("SunInclination", &mSunInclination, 0.01f,0.0f,1.0f);
 		ImGui::DragFloat3("SunDirection", mSunDirection.ptr(), 0.01f);
+		ImGui::DragFloat("IBLFactor", &mIBLFactor, 0.01f, 0.0f, 2.0f);
 		ImGui::DragFloat("IBLBias", &mIBLBias, 0.1f, 0.0f, 10.0f);
 		ImGui::DragFloat3("SunCenter", mShadowCenter.ptr(), 0.1f);
 		ImGui::DragFloat3("SunBounds", mShadowBounds.ptr(), 0.1f,0.1f);
@@ -60,6 +61,7 @@ namespace AtomEngine
 		globals.CameraPos = mCamera->GetPosition();
 		globals.SunDirection = mSunDirection;
 		globals.SunIntensity = Vector3(mSunLightIntensity);
+		globals.IBLFactor = mIBLFactor;
 		globals.IBLRange = mSkybox.GetIBLRange();
 		globals.IBLBias = mSkybox.GetIBLBias();
 		globals.ShadowTexelSize[0] = 1.0f / gShadowBuffer.GetWidth();

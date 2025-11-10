@@ -39,7 +39,7 @@ __declspec(align(256)) struct GlobalConstants
 	float3 SunDirection;			// メイン平行光源の方向
 	float pad1;
 	float3 SunIntensity;			// メイン平行光源の強度
-	float pad2;
+	float IBLFactor;				// IBLの強度
 	float IBLRange;					// IBLの範囲
 	float IBLBias;					// IBLのバイアス
 	float ShadowTexelSize[4];

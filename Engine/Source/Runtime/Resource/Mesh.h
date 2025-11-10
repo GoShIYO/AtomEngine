@@ -17,7 +17,7 @@ namespace AtomEngine
 	{
 		kHasSkin		= 1 << 0,
 		kHasMRTexture	= 1 << 1,
-		kAlphaBlend	= 1 << 2,
+		kAlphaBlend		= 1 << 2,
 	};
 
 	struct SubMesh

@@ -70,20 +70,12 @@ namespace AtomEngine
 
 	Matrix4x4 Math::MakeLookAtMatrix(const Vector3& eyePosition, const Vector3& targetPosition, const Vector3& upDir)
 	{
-		Vector3 f = (targetPosition - eyePosition).NormalizedCopy();
-		Vector3 r = upDir.Cross(f).NormalizedCopy();
-		Vector3 u = f.Cross(r);
+		Vector3 zaxis = (targetPosition - eyePosition).NormalizedCopy();
+		Vector3 xaxis = upDir.Cross(zaxis).NormalizedCopy();
+		Vector3 yaxis = zaxis.Cross(xaxis);
+		Vector3 w = { -xaxis.Dot(eyePosition) , -yaxis.Dot(eyePosition) , -zaxis.Dot(eyePosition) };
 
-		Matrix4x4 view = Matrix4x4::IDENTITY;
-
-		view.mat[0][0] = r.x; view.mat[0][1] = r.y; view.mat[0][2] = r.z;
-		view.mat[1][0] = u.x; view.mat[1][1] = u.y; view.mat[1][2] = u.z;
-		view.mat[2][0] = f.x; view.mat[2][1] = f.y; view.mat[2][2] = f.z;
-
-		view.mat[3][0] = -r.Dot(eyePosition);
-		view.mat[3][1] = -u.Dot(eyePosition);
-		view.mat[3][2] = -f.Dot(eyePosition);
-
+		Matrix4x4 view(xaxis,yaxis,zaxis,w);
 		return view;
 	}
 

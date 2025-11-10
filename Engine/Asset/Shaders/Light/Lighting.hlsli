@@ -8,7 +8,7 @@ cbuffer GlobalConstants : register(b1)
     float3 ViewerPos;
     float3 SunDirection;
     float3 SunIntensity;
-    float _pad1;
+    float IBLFactor;
     float IBLRange;
     float IBLBias;
     float4 ShadowTexelSize;
@@ -70,6 +70,23 @@ float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
     return result * result;
 }
 
+//float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
+//{
+//    float2 texelSize = float2(ShadowTexelSize.x, ShadowTexelSize.x);
+
+//    float sum = 0.0f;
+//    for (int x = -1; x <= 1; ++x)
+//    {
+//        for (int y = -1; y <= 1; ++y)
+//        {
+//            float2 offset = float2(x, y) * texelSize;
+//            float cmp = texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + offset, ShadowCoord.z);
+//            sum += cmp;
+//        }
+//    }
+//    return sum / 9.0f;
+//}
+
 float GetShadowConeLight(uint lightIndex, float3 shadowCoord)
 {
     float result = lightShadowArrayTex.SampleCmpLevelZero(
@@ -92,9 +109,9 @@ float3 ApplyLightCommon(
 
     //dot
     float NdotV = saturate(dot(normal, viewDir));
-    float NdotL = saturate(dot(normal, lightDir));
+    float NdotL = saturate(dot(normal, L));
     float NdotH = saturate(dot(normal, H));
-    float LdotH = saturate(dot(lightDir, H));
+    float LdotH = saturate(dot(L, H));
 
     float alpha = roughness * roughness;
     float alphaSqr = alpha * alpha;

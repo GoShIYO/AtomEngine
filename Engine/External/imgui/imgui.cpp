@@ -22050,7 +22050,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
 
         Checkbox("UTF-8 Encoding viewer", &cfg->ShowTextEncodingViewer);
         SameLine();
-        MetricsHelpMarker("You can also call ImGui::DebugTextEncoding() from your code with a given string to test that your UTF-8 encoding settings are correct.");
+        MetricsHelpMarker("You can also call ImGui::DebugTextEncoding() from your code with a given string to texture that your UTF-8 encoding settings are correct.");
         if (cfg->ShowTextEncodingViewer)
         {
             static char buf[64] = "";

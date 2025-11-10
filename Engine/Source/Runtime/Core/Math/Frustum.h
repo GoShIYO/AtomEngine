@@ -76,7 +76,7 @@ namespace AtomEngine
 			result.m_FrustumCorners[i] = xform.rotation * frustum.m_FrustumCorners[i] + xform.transition;
 
 		for (int i = 0; i < 6; ++i)
-			result.m_FrustumPlanes[i] = xform * frustum.m_FrustumPlanes[i];
+			result.m_FrustumPlanes[i] = xform.GetMatrix() * frustum.m_FrustumPlanes[i];
 
 		return result;
 	}

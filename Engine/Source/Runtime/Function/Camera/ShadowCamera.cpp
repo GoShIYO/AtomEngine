@@ -26,8 +26,8 @@ namespace AtomEngine
 		float r = shadowBounds.x * 0.5f;
 		float b = -shadowBounds.y * 0.5f;
 		float t = shadowBounds.y * 0.5f;
-		float n = -shadowBounds.z * 0.5f;
-		float f = shadowBounds.z * 0.5f;
+		float n = 0.0f;
+		float f = shadowBounds.z;
 
 		auto proj = Math::MakeOrthographicProjectionMatrix(l, r, b, t, n, f);
 

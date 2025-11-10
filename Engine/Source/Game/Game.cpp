@@ -16,35 +16,38 @@ void Game::Initialize()
 	{
 		gpuHandle = Renderer::GetTextureHeap().Alloc();
 
-		test = AssetManager::LoadCovertTexture(L"Asset/textures/uvChecker.png");
-		test.CopyGPU(Renderer::GetTextureHeap().GetHeapPointer(), gpuHandle);
+		texture = AssetManager::LoadCovertTexture(L"Asset/textures/uvChecker.png");
+		texture.CopyGPU(Renderer::GetTextureHeap().GetHeapPointer(), gpuHandle);
 
 		DX12Core::gDevice->CopyDescriptorsSimple(1, gpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	}
 
 	auto model = AssetManager::LoadModel(L"Asset/Models/DamagedHelmet/DamagedHelmet.gltf");
-	m_GameObject = std::make_unique<GameObject>(mWorld.CreateGameObject("testObj"));
-	m_GameObject->AddComponent<MaterialComponent>(model);
-	m_GameObject->AddComponent<MeshComponent>(model);
-	m_GameObject->AddComponent<TransformComponent>();
+	auto obj1 = std::make_unique<GameObject>(mWorld.CreateGameObject("DamagedHellmet"));
+	obj1->AddComponent<MaterialComponent>(model);
+	obj1->AddComponent<MeshComponent>(model);
+	obj1->AddComponent<TransformComponent>();
+	obj1->GetComponent< TransformComponent>().SetTranslation({ 0,1.5f,0 });
+	mGameObjects.push_back(std::move(obj1));
 
-	//auto model2 = AssetManager::LoadModel(L"Asset/Models/Sponza/sponza.gltf");
-	//m_GameObject2 = std::make_unique<GameObject>(mWorld.CreateGameObject("testObj2"));
-	//m_GameObject2->AddComponent<MaterialComponent>(model2);
-	//m_GameObject2->AddComponent<MeshComponent>(model2);
-	//m_GameObject2->AddComponent<TransformComponent>();
+	auto model2 = AssetManager::LoadModel(L"Asset/Models/Sponza/sponza.gltf");
+	auto obj2 = std::make_unique<GameObject>(mWorld.CreateGameObject("Sponza"));
+	obj2->AddComponent<MaterialComponent>(model2);
+	obj2->AddComponent<MeshComponent>(model2);
+	obj2->AddComponent<TransformComponent>();
+	mGameObjects.push_back(std::move(obj2));
 
-	testLight.color = Color(1, 0.5f, 0.5f, 1);
-	testLight.direction = Vector3(0, -1, 0);
-	testLight.innerAngle = Radian(0.0f);
-	testLight.outerAngle = Radian(Degree(40.0f));
-	testLight.radius = 5.0f;
-	testLight.type = LightType::SpotShadow;
-	testLight.shadowMatrix = Matrix4x4::IDENTITY;
-	testLight.position = Vector3(0, 0, 0);
-
-	lightID = LightManager::AddLight(testLight);
+	//testLight.color = Color(1, 0.5f, 0.5f, 1);
+	//testLight.direction = Vector3(0, -1, 0);
+	//testLight.innerAngle = Radian(0.0f);
+	//testLight.outerAngle = Radian(Degree(40.0f));
+	//testLight.radius = 5.0f;
+	//testLight.type = LightType::SpotShadow;
+	//testLight.shadowMatrix = Matrix4x4::IDENTITY;
+	//testLight.position = Vector3(0, 0, 0);
+	//
+	//lightID = LightManager::AddLight(testLight);
 }
 
 void Game::Update(float deltaTime)
@@ -52,65 +55,76 @@ void Game::Update(float deltaTime)
 	gContext.imgui->ShowPerformanceWindow(deltaTime);
 	m_DebugCamera->Update(deltaTime);
 
-	static Vector3 pos;
-	static Quaternion rot = Quaternion::IDENTITY;
-	static Vector3 scale = { 1,1,1 };
-	ImGui::DragFloat3("Position", pos.ptr(), 0.1f);
-	ImGui::DragFloat4("Rotation", rot.ptr(), 0.1f);
-	ImGui::DragFloat3("Scale", scale.ptr(), 0.1f);
-	auto& transform = m_GameObject->GetComponent<TransformComponent>();
-
-	transform.SetTranslation(pos);
-	transform.SetRotation(rot);
-	transform.SetScale(scale);
-
-	static Vector3 pos2;
-	static Quaternion rot2 = Quaternion::IDENTITY;
-	static Vector3 scale2 = { 1,1,1 };
-	ImGui::DragFloat3("Position2", pos2.ptr(), 0.1f);
-	ImGui::DragFloat4("Rotation2", rot2.ptr(), 0.1f);
-	ImGui::DragFloat3("Scale2", scale2.ptr(), 0.1f);
-	if (m_GameObject2)
+	ImGui::Begin("Objects");
+	int index = 0;
+	auto view = mWorld.View<TransformComponent, MaterialComponent,NameComponent>();
+	for (auto entity : view)
 	{
-		auto& transform2 = m_GameObject2->GetComponent<TransformComponent>();
+		auto& transform = view.get<TransformComponent>(entity);
+		auto& material = view.get<MaterialComponent>(entity);
+		auto& name = view.get<NameComponent>(entity);
 
-		transform2.SetTranslation(pos2);
-		transform2.SetRotation(rot2);
-		transform2.SetScale(scale2);
-	}
+		if (ImGui::CollapsingHeader(name.value.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(index);
 
-	ImGui::Begin("Materials");
-	auto& material = m_GameObject->GetComponent<MaterialComponent>();
-	for (uint32_t i = 0; i < material.mMaterials.size(); i++)
-	{
-		auto& mat = material.mMaterials[i];
-		ImGui::PushID(i);
-		ImGui::ColorEdit3("Base Color##A", mat.mBaseColor.ptr());
-		ImGui::ColorEdit3("Emissive##A", &mat.mEmissive.x);
-		ImGui::DragFloat("Metallic##A", &mat.mMetallic, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat("Roughness##A", &mat.mRoughness, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat("NormalScale##A", &mat.mNormalScale, 0.01f, 0.0f, 10.0f);
-		ImGui::PopID();
-		ImGui::Separator();
+			if (ImGui::TreeNode("Transform"))
+			{
+				auto& position = transform.GetTranslation();
+				auto& rotation = transform.GetRotation();
+				auto& scale = transform.GetScale();
+
+				ImGui::DragFloat3("Position##A", position.ptr(), 0.01f);
+				ImGui::DragFloat4("Rotation##A", rotation.ptr(), 0.01f);
+				ImGui::DragFloat3("Scale##A", scale.ptr(), 0.01f);
+				rotation.Normalize();
+
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("Materials"))
+			{
+				for (int matIndex = 0; matIndex < material.mMaterials.size(); matIndex++)
+				{
+					auto& mat = material.mMaterials[matIndex];
+					std::string matLabel = "Material " + std::to_string(matIndex);
+					if (ImGui::TreeNode(matLabel.c_str()))
+					{
+						ImGui::PushID(matIndex++);
+
+						ImGui::ColorEdit3("Base Color##A", mat.mBaseColor.ptr());
+						ImGui::ColorEdit3("Emissive##A", &mat.mEmissive.x);
+						ImGui::DragFloat("Metallic##A", &mat.mMetallic, 0.01f, 0.0f, 1.0f);
+						ImGui::DragFloat("Roughness##A", &mat.mRoughness, 0.01f, 0.0f, 1.0f);
+						ImGui::DragFloat("Normal Scale##A", &mat.mNormalScale, 0.01f, 0.0f, 10.0f);
+
+						ImGui::PopID();
+						ImGui::TreePop();
+					}
+				}
+				ImGui::TreePop();
+			}
+			index++;
+			ImGui::PopID();
+		}
 	}
 	ImGui::End();
 
-
-	ImGui::Begin("Lights");
-	bool changed = false;
-	changed |= ImGui::ColorEdit3("Color", testLight.color.ptr());
-	changed |= ImGui::DragFloat3("Direction", testLight.direction.ptr());
-	changed |= ImGui::DragFloat("InnerAngle", &testLight.innerAngle, 0.1f, 0.0f);
-	changed |= ImGui::DragFloat("OuterAngle", &testLight.outerAngle, 0.1f, 0.0f);
-	changed |= ImGui::DragFloat("Radius", &testLight.radius, 0.1f, 0.0f);
-	changed |= ImGui::DragFloat3("Position", &testLight.position.x, 0.1f);
-	testLight.direction.Normalize();
-	ImGui::End();
-
-	if (changed)
-	{
-		LightManager::UpdateLight(lightID, testLight);
-	}
+	//ImGui::Begin("Lights");
+	//bool changed = false;
+	//changed |= ImGui::ColorEdit3("Color", testLight.color.ptr());
+	//changed |= ImGui::DragFloat3("Direction", testLight.direction.ptr());
+	//changed |= ImGui::DragFloat("InnerAngle", &testLight.innerAngle, 0.1f, 0.0f);
+	//changed |= ImGui::DragFloat("OuterAngle", &testLight.outerAngle, 0.1f, 0.0f);
+	//changed |= ImGui::DragFloat("Radius", &testLight.radius, 0.1f, 0.0f);
+	//changed |= ImGui::DragFloat3("Position", &testLight.position.x, 0.1f);
+	//testLight.direction.Normalize();
+	//ImGui::End();
+	//
+	//if (changed)
+	//{
+	//	LightManager::UpdateLight(lightID, testLight);
+	//}
 }
 
 void Game::Render()
@@ -121,9 +135,10 @@ void Game::Render()
 
 void Game::Shutdown()
 {
-	m_GameObject->Destroy();
-	if (m_GameObject2)
-		m_GameObject2->Destroy();
+	for (auto& object : mGameObjects)
+	{
+		object->Destroy();
+	}
 }
 
 bool Game::Exit()

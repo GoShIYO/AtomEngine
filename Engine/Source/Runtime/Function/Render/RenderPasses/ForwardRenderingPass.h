@@ -17,13 +17,14 @@ namespace AtomEngine
 		SkyboxRenderer mSkybox;
 		ShadowCamera mShadowCamera;
 
-		float mSunLightIntensity = 4.0f;
+		float mSunLightIntensity = 1.0f;
 		Vector3 mSunDirection = { 0,-1,0 };
 		float mSunOrientation = -0.5f;
 		float mSunInclination = 0.75f;
-		Vector3 mShadowCenter = { 0.0f,5,0.0f };
-		Vector3 mShadowBounds = { 15, 20, 20 };
+		Vector3 mShadowCenter = { 0.0f,10.0f,0.0f };
+		Vector3 mShadowBounds = { 25, 20, 20 };
 		float mIBLBias = 2.0f;
+		float mIBLFactor = 0.5f;
 	private:
 		void RenderObjects(RenderQueue& queue);
 	};
