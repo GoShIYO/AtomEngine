@@ -15,9 +15,14 @@ namespace AtomEngine
 
         GameObject CreateGameObject(const std::string& name = "");
         void DestroyGameObject(Entity entity);
-        GameObject FindByName(const std::string& name);
-        GameObject FindByTag(const std::string& tag);
-        GameObject FindByGUID(uint64_t guid);
+
+        //名前でエンティティを探す
+        Entity FindByName(const std::string& name);
+        //タグでエンティティを探す
+        std::vector<Entity> FindByTag(const std::string& tag);
+        //GUIDでエンティティを探す
+        Entity FindByGUID(uint64_t guid);
+
         template<typename T, typename... Args>
         T& AddComponent(Entity e, Args&&... args)
         {
@@ -62,10 +67,6 @@ namespace AtomEngine
             std::type_index type;
         };
 
-        void OnComponentAdded(const ComponentAddedEvent& e);
-
-        void OnComponentRemoved(const ComponentRemovedEvent& e);
-
         void SetOnComponentAdded(ComponentCallback cb) { mOnComponentAdded = std::move(cb); }
 
         void SetOnComponentRemoved(ComponentCallback cb) { mOnComponentRemoved = std::move(cb); }
@@ -74,6 +75,9 @@ namespace AtomEngine
 
         entt::registry& GetRegistry() { return mRegistry; }
 
+        void SetTag(Entity entity, const std::string& tag);
+        void SetName(Entity entity, const std::string& name);
+        void SetGUID(Entity entity, uint64_t guid);
     private:
         entt::registry mRegistry;
         entt::dispatcher mDispatcher;
@@ -84,6 +88,13 @@ namespace AtomEngine
 
         ComponentCallback mOnComponentAdded = nullptr;
         ComponentCallback mOnComponentRemoved = nullptr;
+
+    private:
+
+        void OnComponentAdded(const ComponentAddedEvent& e);
+
+        void OnComponentRemoved(const ComponentRemovedEvent& e);
+        
     };
 }
 

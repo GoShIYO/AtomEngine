@@ -235,10 +235,10 @@ namespace AtomEngine
 			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> sourceTextures(numBindTextures);
 
 			uint32_t texIndex = 0;
-			
+
 			if (mask & kMetallicRoughness)
 			{
-				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures,matIdx);
+				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kBaseColor, DefaultTextures, matIdx);
 				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kMetallicRoughness, DefaultTextures, matIdx);
 				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kNormal, DefaultTextures, matIdx);
 				sourceTextures[texIndex++] = ResolveTextureSRV(material, model, TextureSlot::kOcclusion, DefaultTextures, matIdx);
@@ -276,7 +276,7 @@ namespace AtomEngine
 						if (hasMRTextures[subMesh.materialIndex])
 							mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_MRWorkFlow_Skin;
 						else mesh.pso = (uint16_t)PSOIndex::kPSO_Transparent_Skin;
-						
+
 					}
 					else
 					{
@@ -372,7 +372,7 @@ namespace AtomEngine
 			);
 		}
 
-		std::map<uint32_t,std::vector<MaterialTexture>> textures;
+		std::map<uint32_t, std::vector<MaterialTexture>> textures;
 		for (uint32_t m = 0; m < modelData.materials.size(); ++m)
 		{
 			for (uint32_t t = 0; t < modelData.materials[m].textures.size(); ++t)
@@ -396,8 +396,8 @@ namespace AtomEngine
 			//{
 			//	MaterialConstants materialCB;
 			//	materialCB.baseColorFactor = modelData.materials[i].baseColorFactor;
-            //    materialCB.emissiveFactor = modelData.materials[i].emissiveFactor;
-            //    materialCB.metallicFactor = modelData.materials[i].metallicFactor;
+			//    materialCB.emissiveFactor = modelData.materials[i].emissiveFactor;
+			//    materialCB.metallicFactor = modelData.materials[i].metallicFactor;
 			//	materialCB.roughnessFactor = modelData.materials[i].roughnessFactor;
 			//
 			//	memcpy(materialCBV, &materialCB, sizeof(MaterialConstants));
@@ -415,7 +415,7 @@ namespace AtomEngine
 
 		if (!modelData.skeleton.joints.empty())
 		{
-			
+
 			/*model->mJointIBMs.resize(modelData.skeleton.joints.size());
 			for (size_t i = 0; i < modelData.skeleton.joints.size(); ++i)
 			{
@@ -430,7 +430,7 @@ namespace AtomEngine
 				}
 			}*/
 			model->mJointIBMs = std::move(modelData.jointIBMs);
-            model->mJointIndices = std::move(modelData.jointIndices);
+			model->mJointIndices = std::move(modelData.jointIndices);
 		}
 
 		sModelDataCache[modelName] = model;

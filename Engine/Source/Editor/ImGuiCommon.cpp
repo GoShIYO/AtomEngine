@@ -3,10 +3,6 @@
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Core/CommandListManager.h"
 
-#pragma comment(lib, "d3d12.lib") 
-#pragma comment(lib, "dxgi.lib") 
-#pragma comment(lib, "dxguid.lib")
-
 namespace AtomEngine
 {
 	void ImGuiCommon::Initialize(HWND hwnd)
@@ -21,6 +17,7 @@ namespace AtomEngine
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+		io.ConfigFlags |= ImGuiConfigFlags_IsSRGB;
 
 		// セットImGuiスタイル
 		ImGui::StyleColorsDark();

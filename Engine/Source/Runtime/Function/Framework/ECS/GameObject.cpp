@@ -27,10 +27,7 @@ namespace AtomEngine
 
     void GameObject::SetName(const std::string& name)
     {
-        if (HasComponent<NameComponent>())
-            GetComponent<NameComponent>().value = name;
-        else
-            AddComponent<NameComponent>(name);
+       mWorld->SetName(mHandle, name);
     }
 
     std::string GameObject::GetTag()
@@ -42,9 +39,6 @@ namespace AtomEngine
 
     void GameObject::SetTag(const std::string& tag)
     {
-        if (HasComponent<TagComponent>())
-            GetComponent<TagComponent>().tag = tag;
-        else
-            AddComponent<TagComponent>(tag);
+        mWorld->SetTag(mHandle, tag);
     }
 }

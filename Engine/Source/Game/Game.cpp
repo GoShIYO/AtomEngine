@@ -39,12 +39,13 @@ void Game::Update(float deltaTime)
 
 	ImGui::Begin("Objects");
 	int index = 0;
-	auto view = mWorld.View<TransformComponent, MaterialComponent,NameComponent>();
+	auto view = mWorld.View<TransformComponent, MaterialComponent,NameComponent,MeshComponent>();
 	for (auto entity : view)
 	{
 		auto& transform = view.get<TransformComponent>(entity);
 		auto& material = view.get<MaterialComponent>(entity);
 		auto& name = view.get<NameComponent>(entity);
+		auto& mesh = view.get<MeshComponent>(entity);
 
 		if (ImGui::CollapsingHeader(name.value.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -62,6 +63,18 @@ void Game::Update(float deltaTime)
 				rotation.Normalize();
 
 				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("Mesh"))
+			{
+				auto& transform = mesh.GetTransform();
+
+				ImGui::DragFloat3("Position##A", transform.transition.ptr(), 0.01f);
+				ImGui::DragFloat4("Rotation##A", transform.rotation.ptr(), 0.01f);
+				ImGui::DragFloat3("Scale##A", transform.scale.ptr(), 0.01f);
+				transform.rotation.Normalize();
+
+                ImGui::TreePop();
 			}
 
 			if (ImGui::TreeNode("Materials"))

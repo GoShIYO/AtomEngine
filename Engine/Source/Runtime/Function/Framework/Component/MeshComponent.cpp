@@ -58,7 +58,7 @@ namespace AtomEngine
 
 		size_t stackIdx = 0;
 		Matrix4x4 matrixStack[kMaxStackDepth];
-		Matrix4x4 ParentMatrix = transform.GetMatrix();
+		Matrix4x4 ParentMatrix = transform.GetMatrix() * mModelTransform.GetMatrix();
 
 		MeshConstants* cb = (MeshConstants*)mMeshConstantsCPU.Map();
 
@@ -136,7 +136,7 @@ namespace AtomEngine
 
 		size_t stackIdx = 0;
 		Matrix4x4 matrixStack[kMaxStackDepth];
-		Matrix4x4 ParentMatrix = transform.GetMatrix();
+		Matrix4x4 ParentMatrix = transform.GetMatrix() * mModelTransform.GetMatrix();
 
 		MeshConstants* cb = (MeshConstants*)mMeshConstantsCPU.Map();
 		MaterialConstants* mc = (MaterialConstants*)mMaterialConstantsCPU.Map();

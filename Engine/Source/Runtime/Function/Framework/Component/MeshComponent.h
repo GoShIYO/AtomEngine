@@ -20,10 +20,7 @@ namespace AtomEngine
 		void Update(GraphicsContext& gfxContext, const TransformComponent& transform, const MaterialComponent& material, float deltaTime);
 		void Render(RenderQueue& sorter);
 
-
-		Vector3& GetTranslation() {return mModelTransform.transition;}
-		Quaternion& GetRotation() {return mModelTransform.rotation;}
-		Vector3& GetScale() {return mModelTransform.scale;}
+		Transform& GetTransform() { return mModelTransform; }
 
 		void UpdateAnimation(float deltaTime);
 	private:

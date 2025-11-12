@@ -169,9 +169,6 @@
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
       <Filter>Engine\Platform\DirectX12</Filter>
     </ClCompile>
-    <ClCompile Include="External\imgui\GraphEditor.cpp">
-      <Filter>Engine\Platform\DirectX12</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.cpp">
       <Filter>Engine\Platform\DirectX12</Filter>
     </ClCompile>
@@ -180,42 +177,6 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Framework\ECS\GUID.cpp">
       <Filter>Engine\Function\FrameWork\ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\ImCurveEdit.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\ImGradient.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_demo.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_draw.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_impl_dx12.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_impl_win32.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_tables.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\imgui_widgets.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Editor\ImGuiCommon.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\ImGuizmo.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="External\imgui\ImSequencer.cpp">
-      <Filter>Engine\Core\External\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.cpp">
       <Filter>Engine\Function\Render\RenderPass</Filter>
@@ -307,9 +268,18 @@
     <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp">
       <Filter>Engine\Function\Render</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Resource\GeometryGenerator.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Render\Primitive.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\MaterialComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Framework\Component\MaterialComponent.cpp">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Resource\GeometryGenerator.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\Primitive.cpp">
+      <Filter>Engine\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Editor\ImGuiCommon.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Runtime\Core\Math\Math.h">
@@ -441,9 +411,6 @@
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h">
       <Filter>Engine\Platform\DirectX12</Filter>
     </ClInclude>
-    <ClInclude Include="External\imgui\GraphEditor.h">
-      <Filter>Engine\Platform\DirectX12</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\GraphicsCommon.h">
       <Filter>Engine\Platform\DirectX12</Filter>
     </ClInclude>
@@ -455,48 +422,6 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Core\Utility\Hash.h">
       <Filter>Engine\Core\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imconfig.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\ImCurveEdit.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\ImGradient.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui_impl_dx12.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui_impl_win32.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imgui_internal.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\ImGuiCommon.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\ImGuizmo.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\ImSequencer.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imstb_rectpack.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imstb_textedit.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\imstb_truetype.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="External\imgui\ImZoomSlider.h">
-      <Filter>Engine\Core\External\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h">
       <Filter>Engine\Platform\DirectX12</Filter>
@@ -609,9 +534,18 @@
     <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h">
       <Filter>Engine\Function\Render</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Resource\GeometryGenerator.h" />
-    <ClInclude Include="Source\Runtime\Function\Render\Primitive.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\MaterialComponent.h" />
+    <ClInclude Include="Source\Runtime\Function\Framework\Component\MaterialComponent.h">
+      <Filter>Engine\Function\FrameWork\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Resource\GeometryGenerator.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Primitive.h">
+      <Filter>Engine\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Editor\ImGuiCommon.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">
@@ -690,9 +624,6 @@
     </Filter>
     <Filter Include="Engine\Core\External">
       <UniqueIdentifier>{938a555a-38e2-4c8e-afb6-ffe7d02942cb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Core\External\ImGui">
-      <UniqueIdentifier>{c71cbbdb-678c-49c3-aca2-e858298753a4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Function\Render\RenderPass">
       <UniqueIdentifier>{bbc599c4-2cca-43d1-9e3f-287a963588eb}</UniqueIdentifier>
