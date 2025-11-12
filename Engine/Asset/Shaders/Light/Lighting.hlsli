@@ -189,8 +189,8 @@ float3 ApplyPointLight(
 float3 ApplyConeLight(
     float3 diffuseColor, // Diffuse albedo
     float3 specularColor, // Specular albedo
-    float specularMask, // Where is it shiny or dingy?
     float roughness,
+    float3 normal,
     float3 viewDir, // World-space vector from eye to point
     float3 worldPos, // World-space fragment position
     float3 lightPos, // World-space light position
@@ -217,8 +217,8 @@ float3 ApplyConeLight(
     return (coneFalloff * distanceFalloff) * ApplyLightCommon(
         diffuseColor,
         specularColor,
-        specularMask,
         roughness,
+        normal,
         viewDir,
         lightDir,
         lightColor
@@ -228,8 +228,8 @@ float3 ApplyConeLight(
 float3 ApplyConeShadowedLight(
     float3 diffuseColor, // Diffuse albedo
     float3 specularColor, // Specular albedo
-    float specularMask, // Where is it shiny or dingy?
-    float roughness, // Specular power
+    float roughness, // roughness
+    float3 normal,
     float3 viewDir, // World-space vector from eye to point
     float3 worldPos, // World-space fragment position
     float3 lightPos, // World-space light position
@@ -249,8 +249,8 @@ float3 ApplyConeShadowedLight(
     return shadow * ApplyConeLight(
         diffuseColor,
         specularColor,
-        specularMask,
         roughness,
+        normal,
         viewDir,
         worldPos,
         lightPos,

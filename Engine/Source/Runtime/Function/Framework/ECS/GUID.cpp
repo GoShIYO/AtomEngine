@@ -2,5 +2,5 @@
 
 namespace AtomEngine
 {
-	std::atomic<uint64_t> GUID::sCounter{ 0 };
+	std::atomic<uint64_t> ObjectGUID::sCounter{ 0 };
 }

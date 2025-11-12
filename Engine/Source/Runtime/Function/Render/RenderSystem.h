@@ -1,7 +1,6 @@
 #pragma once
 #include "Runtime/Platform/DirectX12/Core/DescriptorHeap.h"
 #include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
-#include "Runtime/Resource/TextureRef.h"
 #include "Runtime/Function/Camera/CameraBase.h"
 #include "Runtime/Function/Framework/ECS/World.h"
 

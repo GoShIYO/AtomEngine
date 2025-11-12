@@ -20,6 +20,8 @@ namespace AtomEngine
 		Quaternion& GetRotation() { return mTransform.rotation; }
 		Vector3& GetScale() { return mTransform.scale; }
 
+		void SetParent(Transform* parent){ mTransform.parent = parent;}
+
 	public:
 		Transform mTransform;
 	};

@@ -17,7 +17,7 @@ namespace AtomEngine
         void DestroyGameObject(Entity entity);
         GameObject FindByName(const std::string& name);
         GameObject FindByTag(const std::string& tag);
-
+        GameObject FindByGUID(uint64_t guid);
         template<typename T, typename... Args>
         T& AddComponent(Entity e, Args&&... args)
         {
@@ -80,6 +80,7 @@ namespace AtomEngine
 
         std::unordered_map<std::string, Entity> mNameLookup;
         std::unordered_multimap<std::string, Entity> mTagLookup;
+        std::unordered_map<uint64_t, Entity> mGUIDLookup;
 
         ComponentCallback mOnComponentAdded = nullptr;
         ComponentCallback mOnComponentRemoved = nullptr;

@@ -170,7 +170,9 @@ namespace AtomEngine
 
 		for (uint32_t matIdx = 0; matIdx < numMaterials; ++matIdx)
 		{
-			auto& mataTextures = textures.find(matIdx)->second;
+			auto it = textures.find(matIdx);
+			if (it == textures.end())continue;
+			auto& mataTextures = it->second;
 			const uint32_t numTextures = (uint32_t)mataTextures.size();
 
 			auto& modelTextures = model.mTextures[matIdx];

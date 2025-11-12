@@ -319,7 +319,7 @@ namespace AtomEngine
 				material.hasAlphaBlend = true;
 			material.baseColorFactor[3] *= opacity;
 		}
-
+		material.textures.clear();
 		for (auto& entry : textureMap)
 			SetTextures(material,mat,entry.aiType, entry.slot);
 

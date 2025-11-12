@@ -17,37 +17,19 @@ void Game::Initialize()
 		gpuHandle = Renderer::GetTextureHeap().Alloc();
 
 		texture = AssetManager::LoadCovertTexture(L"Asset/textures/uvChecker.png");
-		texture.CopyGPU(Renderer::GetTextureHeap().GetHeapPointer(), gpuHandle);
+		//texture.CopyGPU(Renderer::GetTextureHeap().GetHeapPointer(), gpuHandle);
 
 		DX12Core::gDevice->CopyDescriptorsSimple(1, gpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	}
 
-	auto model = AssetManager::LoadModel(L"Asset/Models/DamagedHelmet/DamagedHelmet.gltf");
-	auto obj1 = std::make_unique<GameObject>(mWorld.CreateGameObject("DamagedHellmet"));
-	obj1->AddComponent<MaterialComponent>(model);
-	obj1->AddComponent<MeshComponent>(model);
-	obj1->AddComponent<TransformComponent>();
-	obj1->GetComponent< TransformComponent>().SetTranslation({ 0,1.5f,0 });
-	mGameObjects.push_back(std::move(obj1));
+	auto model = AssetManager::LoadModel(L"Asset/Models/suzanne/Suzanne.gltf");
+	auto obj = std::make_unique<GameObject>(mWorld.CreateGameObject("DamagedHellmet"));
+	obj->AddComponent<MaterialComponent>(model);
+	obj->AddComponent<MeshComponent>(model);
+	obj->AddComponent<TransformComponent>();
+	mGameObjects.push_back(std::move(obj));
 
-	auto model2 = AssetManager::LoadModel(L"Asset/Models/Sponza/sponza.gltf");
-	auto obj2 = std::make_unique<GameObject>(mWorld.CreateGameObject("Sponza"));
-	obj2->AddComponent<MaterialComponent>(model2);
-	obj2->AddComponent<MeshComponent>(model2);
-	obj2->AddComponent<TransformComponent>();
-	mGameObjects.push_back(std::move(obj2));
-
-	//testLight.color = Color(1, 0.5f, 0.5f, 1);
-	//testLight.direction = Vector3(0, -1, 0);
-	//testLight.innerAngle = Radian(0.0f);
-	//testLight.outerAngle = Radian(Degree(40.0f));
-	//testLight.radius = 5.0f;
-	//testLight.type = LightType::SpotShadow;
-	//testLight.shadowMatrix = Matrix4x4::IDENTITY;
-	//testLight.position = Vector3(0, 0, 0);
-	//
-	//lightID = LightManager::AddLight(testLight);
 }
 
 void Game::Update(float deltaTime)
@@ -109,22 +91,6 @@ void Game::Update(float deltaTime)
 		}
 	}
 	ImGui::End();
-
-	//ImGui::Begin("Lights");
-	//bool changed = false;
-	//changed |= ImGui::ColorEdit3("Color", testLight.color.ptr());
-	//changed |= ImGui::DragFloat3("Direction", testLight.direction.ptr());
-	//changed |= ImGui::DragFloat("InnerAngle", &testLight.innerAngle, 0.1f, 0.0f);
-	//changed |= ImGui::DragFloat("OuterAngle", &testLight.outerAngle, 0.1f, 0.0f);
-	//changed |= ImGui::DragFloat("Radius", &testLight.radius, 0.1f, 0.0f);
-	//changed |= ImGui::DragFloat3("Position", &testLight.position.x, 0.1f);
-	//testLight.direction.Normalize();
-	//ImGui::End();
-	//
-	//if (changed)
-	//{
-	//	LightManager::UpdateLight(lightID, testLight);
-	//}
 }
 
 void Game::Render()

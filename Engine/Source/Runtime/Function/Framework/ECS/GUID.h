@@ -4,16 +4,16 @@
 
 namespace AtomEngine
 {
-    class GUID
+    class ObjectGUID
     {
     public:
         //オブジェクト生成時に自動でGUIDを割り当てる
-        GUID() : mValue(++sCounter) {}
-        explicit GUID(uint64_t value) : mValue(value) {}
+        ObjectGUID() : mValue(++sCounter) {}
+        explicit ObjectGUID(uint64_t value) : mValue(value) {}
         uint64_t Value() const { return mValue; }
 
-        bool operator==(const GUID& other) const { return mValue == other.mValue; }
-        bool operator!=(const GUID& other) const { return !(*this == other); }
+        bool operator==(const ObjectGUID& other) const { return mValue == other.mValue; }
+        bool operator!=(const ObjectGUID& other) const { return !(*this == other); }
 
     private:
         uint64_t mValue;

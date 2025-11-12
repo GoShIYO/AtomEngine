@@ -14,6 +14,7 @@ namespace AtomEngine
 		Vector3 scale{ Vector3::UNIT_SCALE };
 		Quaternion rotation{ Quaternion::IDENTITY };
 
+		Transform* parent = nullptr;
 		Transform() = default;
 
 		Transform(const Vector3& position, const Quaternion& rotation, const Vector3& scale)

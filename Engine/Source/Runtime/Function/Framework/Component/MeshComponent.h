@@ -20,6 +20,11 @@ namespace AtomEngine
 		void Update(GraphicsContext& gfxContext, const TransformComponent& transform, const MaterialComponent& material, float deltaTime);
 		void Render(RenderQueue& sorter);
 
+
+		Vector3& GetTranslation() {return mModelTransform.transition;}
+		Quaternion& GetRotation() {return mModelTransform.rotation;}
+		Vector3& GetScale() {return mModelTransform.scale;}
+
 		void UpdateAnimation(float deltaTime);
 	private:
 		std::shared_ptr<Model> mModel = nullptr;
@@ -29,6 +34,7 @@ namespace AtomEngine
 		UploadBuffer mMaterialConstantsCPU;
 		ByteAddressBuffer mMaterialConstantsGPU;
 
+		Transform mModelTransform;
 		std::vector<GraphNode> mAnimGraph;
 		std::vector<AnimationState> mAnimState;
 

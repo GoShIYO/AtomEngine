@@ -65,6 +65,14 @@ namespace AtomEngine
         return {};
     }
 
+    GameObject World::FindByGUID(uint64_t guid)
+    {
+        auto it = mGUIDLookup.find(guid);
+        if(it != mGUIDLookup.end())
+            return GameObject(it->second, this);
+        return {};
+    }
+
     void World::OnComponentAdded(const ComponentAddedEvent& e) 
     {
         std::string typeName = e.type.name();

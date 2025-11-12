@@ -72,7 +72,7 @@ namespace AtomEngine
 	private:
 		Entity mHandle{ entt::null };
 		World* mWorld = nullptr;
-		GUID mGUID;
+		ObjectGUID mGUID;
 	};
 }
 
