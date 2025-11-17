@@ -66,15 +66,15 @@ namespace AtomEngine
 		// Assumes max resolution of 3840x2160
 		uint32_t lightGridCells = DivideByMultiple(3840, kMinLightGridDim) * DivideByMultiple(2160, kMinLightGridDim);
 		uint32_t lightGridSizeBytes = lightGridCells * (4 + MAX_LIGHTS * 4);
-		gLightGrid.Create(L"m_LightGrid", lightGridSizeBytes, 1);
+		gLightGrid.Create(L"LightGrid", lightGridSizeBytes, 1);
 
 		uint32_t lightGridBitMaskSizeBytes = lightGridCells * 4 * 4;
-		gLightGridBitMask.Create(L"m_LightGridBitMask", lightGridBitMaskSizeBytes, 1);
+		gLightGridBitMask.Create(L"LightGridBitMask", lightGridBitMaskSizeBytes, 1);
 
-		gLightShadowArray.CreateArray(L"m_LightShadowArray", shadowDim, shadowDim, MAX_LIGHTS, DXGI_FORMAT_R16_UNORM);
-		gLightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", shadowDim, shadowDim);
+		gLightShadowArray.CreateArray(L"LightShadowArray", shadowDim, shadowDim, MAX_LIGHTS, DXGI_FORMAT_R16_UNORM);
+		gLightShadowTempBuffer.Create(L"mightShadowTempBuffer", shadowDim, shadowDim);
 
-		gLightBuffer.Create(L"m_LightBuffer", MAX_LIGHTS, sizeof(LightData) - 12);
+		gLightBuffer.Create(L"LightBuffer", MAX_LIGHTS, sizeof(LightData) - 12);
 		gLights.reserve(MAX_LIGHTS);
 	}
 

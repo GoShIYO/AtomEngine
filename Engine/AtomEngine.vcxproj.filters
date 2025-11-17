@@ -58,6 +58,11 @@
     <FxCompile Include="Asset\Shaders\testShader.hlsl">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\PrimitiveVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\PrimitivePS.hlsl" />
+    <FxCompile Include="Asset\Shaders\SpriteVS.hlsl" />
+    <FxCompile Include="Asset\Shaders\SpritePS.hlsl" />
+    <FxCompile Include="Asset\Shaders\BufferCopyPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\main.cpp" />
@@ -247,9 +252,6 @@
     <ClCompile Include="Source\Runtime\Function\Camera\ShadowCamera.cpp">
       <Filter>Engine\Function\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Sprite\SpriteCommon.cpp">
-      <Filter>Engine\Function\FrameWork\Component</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp">
       <Filter>Engine\Resource</Filter>
     </ClCompile>
@@ -280,6 +282,16 @@
     <ClCompile Include="Source\Editor\ImGuiCommon.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Scene\Scene.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Scene\SceneManager.cpp" />
+    <ClCompile Include="Source\Game\Collision\CollisionFunc.cpp" />
+    <ClCompile Include="Source\Game\Collision\BVHNode.cpp" />
+    <ClCompile Include="Source\Game\Scene\GameScene.cpp" />
+    <ClCompile Include="Source\Game\Scene\TitleScene.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\SpriteRenderer.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\OverlayPass.cpp" />
+    <ClCompile Include="Source\Game\System\CollisionSystem.cpp" />
+    <ClCompile Include="Source\Game\System\MoveSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Runtime\Core\Math\Math.h">
@@ -507,9 +519,6 @@
     <ClInclude Include="Source\Runtime\Function\Camera\ShadowCamera.h">
       <Filter>Engine\Function\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Sprite\SpriteCommon.h">
-      <Filter>Engine\Function\FrameWork\Component</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Resource\Skeleton.h">
       <Filter>Engine\Resource</Filter>
     </ClInclude>
@@ -546,6 +555,22 @@
     <ClInclude Include="Source\Editor\ImGuiCommon.h">
       <Filter>Editor</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Scene\Scene.h" />
+    <ClInclude Include="Source\Runtime\Function\Scene\SceneManager.h" />
+    <ClInclude Include="Source\Game\Collision\CollisionFunc.h" />
+    <ClInclude Include="Source\Game\fwd.h" />
+    <ClInclude Include="Source\Game\Component\VelocityComponent.h" />
+    <ClInclude Include="Source\Game\Tag.h" />
+    <ClInclude Include="Source\Game\Collision\CollisionCommon.h" />
+    <ClInclude Include="Source\Game\Component\ColliderComponent.h" />
+    <ClInclude Include="Source\Game\Collision\BVHNode.h" />
+    <ClInclude Include="Source\Game\Scene\GameScene.h" />
+    <ClInclude Include="Source\Game\Scene\TitleScene.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\SpriteRenderer.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\OverlayPass.h" />
+    <ClInclude Include="Source\Game\EasingFunctions.h" />
+    <ClInclude Include="Source\Game\System\CollisionSystem.h" />
+    <ClInclude Include="Source\Game\System\MoveSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">

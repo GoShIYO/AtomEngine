@@ -61,12 +61,19 @@ namespace AtomEngine
     ComputePSO mBrdfLutPSO;
     ColorBuffer BRDF_LUT;
 
+    std::unordered_map<BlendMode, D3D12_BLEND_DESC> gBlendModeTable;
+
     D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID)
     {
         ASSERT(texID < kNumDefaultTextures);
         if(texID == kDefaultBRDFLUT)
             return BRDF_LUT.GetSRV();
         return DefaultTextures[texID].GetSRV();
+    }
+
+    void InitializeSpritePSO()
+    {
+       
     }
 
     void GenerateBRDF_LUT(ComputeContext& Context)
@@ -231,6 +238,15 @@ namespace AtomEngine
         alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
         BlendTraditionalAdditive = alphaBlend;
 
+        //ブレンドなし
+        gBlendModeTable[kBlendNone] = BlendDisable;
+        // 通常αブレンド
+        gBlendModeTable[kBlendNormal] = BlendTraditional;
+        //加算
+        gBlendModeTable[kBlendAlphaAdd] = BlendAdditive;
+        //スクリーン
+        gBlendModeTable[kBlendScreen] = BlendTraditionalAdditive;
+
         DispatchIndirectCommandSignature[0].Dispatch();
         DispatchIndirectCommandSignature.Finalize();
 
@@ -262,7 +278,7 @@ namespace AtomEngine
         GenerateBRDF_LUT(Context);
         Context.Finish(true);
 
-
+        InitializeSpritePSO();
 	}
 
 	void DestroyCommonState(void)

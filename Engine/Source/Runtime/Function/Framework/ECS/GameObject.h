@@ -9,7 +9,6 @@ namespace AtomEngine
 	class GameObject
 	{
 	public:
-		GameObject() = default;
 		GameObject(Entity handle, World* world);
 		~GameObject()= default;
 		operator Entity() const { return mHandle; }
@@ -26,7 +25,7 @@ namespace AtomEngine
 		/// <param name="...args"></param>
 		/// <returns>コンポーネントの参照</returns>
 		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args);
+		void AddComponent(Args&&... args);
 
 		/// <summary>
 		/// コンポーネントを取得する
@@ -44,12 +43,6 @@ namespace AtomEngine
 		template<typename T>
 		T& GetComponent();
 
-		template<typename T, typename... Args>
-		GameObject& Add(Args&&... args) { AddComponent<T>(std::forward<Args>(args)...); return *this; }
-
-		template<typename T>
-		GameObject& Remove() { RemoveComponent<T>(); return *this; }
-
 		/// <summary>
 		/// 指定したコンポーネントを削除する
 		/// </summary>
@@ -61,18 +54,12 @@ namespace AtomEngine
 		std::string GetName();
 		void SetName(const std::string& name);
 
-		std::string GetTag();
-		void SetTag(const std::string& tag);
-
-		uint64_t GetGUID() const { return mGUID.Value(); }
-
 		bool operator==(const GameObject& other) const { return mHandle == other.mHandle; }
 		bool operator!=(const GameObject& other) const { return !(*this == other); }
 
 	private:
 		Entity mHandle{ entt::null };
 		World* mWorld = nullptr;
-		ObjectGUID mGUID;
 	};
 }
 

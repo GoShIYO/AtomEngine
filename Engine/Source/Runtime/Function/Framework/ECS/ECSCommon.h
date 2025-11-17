@@ -11,14 +11,12 @@
 namespace AtomEngine
 {
     using Entity = entt::entity;
-
     struct NameComponent
     {
         std::string value;
     };
-
-    struct TagComponent
+    struct DeathFlag
     {
-        std::string tag;
+        bool isDead = false;
     };
 }

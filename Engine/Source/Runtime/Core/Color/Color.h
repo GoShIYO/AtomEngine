@@ -65,19 +65,19 @@ namespace AtomEngine
 	inline Color Max(const Color& a, const Color& b)
 	{
 		return Color(
-			std::max(a.r, b.r),
-			std::max(a.g, b.g),
-			std::max(a.b, b.b),
-			std::max(a.a, b.a)
+			Math::Max(a.r, b.r),
+			Math::Max(a.g, b.g),
+			Math::Max(a.b, b.b),
+			Math::Max(a.a, b.a)
 		);
 	}
 	inline Color Min(const Color& a, const Color& b)
 	{
 		return Color(
-			std::min(a.r, b.r),
-			std::min(a.g, b.g),
-			std::min(a.b, b.b),
-			std::min(a.a, b.a)
+			Math::Min(a.r, b.r),
+			Math::Min(a.g, b.g),
+			Math::Min(a.b, b.b),
+			Math::Min(a.a, b.a)
 		);
 	}
 	inline Color Clamp(const Color& color, const Color& min, const Color& max)

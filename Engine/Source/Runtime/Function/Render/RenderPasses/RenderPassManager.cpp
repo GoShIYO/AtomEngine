@@ -1,5 +1,4 @@
 #include "RenderPassManager.h"
-#include "RenderPassManager.h"
 
 namespace AtomEngine
 {

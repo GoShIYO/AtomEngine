@@ -2,6 +2,7 @@
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 #include "Runtime/Function/Render/RenderSystem.h"
 #include "imgui.h"
+#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 
 namespace AtomEngine
 {
@@ -49,6 +50,8 @@ namespace AtomEngine
 
 		mMaterialConstantsCPU.Destroy();
 		mMaterialConstantsGPU.Destroy();
+
+		DX12Core::gCommandManager.IdleGPU();
 	}
 
 	void MeshComponent::Update(GraphicsContext& gfxContext, const TransformComponent& transform, float deltaTime)

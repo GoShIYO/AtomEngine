@@ -65,6 +65,8 @@ namespace AtomEngine
 
 		const Texture* operator->(void) const;
 
+		uint32_t Width() const {return mRef->GetWidth();}
+        uint32_t Height() const {return mRef->GetHeight();}
 	private:
 		ManagedTexture* mRef;
 	};

@@ -7,28 +7,36 @@ namespace AtomEngine
     
     using ComponentCallback = std::function<void(Entity, std::type_index)>;
 
+    struct ComponentAddedEvent
+    {
+        Entity entity;
+        std::type_index type;
+    };
+    struct ComponentRemovedEvent
+    {
+        Entity entity;
+        std::type_index type;
+    };
+
     class World
     {
     public:
         World();
         ~World();
 
-        GameObject CreateGameObject(const std::string& name = "");
+        std::unique_ptr<GameObject> CreateGameObject(const std::string& name = "");
+        GameObject* GetGameObject(Entity entity);
         void DestroyGameObject(Entity entity);
 
         //名前でエンティティを探す
         Entity FindByName(const std::string& name);
-        //タグでエンティティを探す
-        std::vector<Entity> FindByTag(const std::string& tag);
-        //GUIDでエンティティを探す
-        Entity FindByGUID(uint64_t guid);
 
+        //コンポーネントを追加
         template<typename T, typename... Args>
-        T& AddComponent(Entity e, Args&&... args)
+        void AddComponent(Entity e, Args&&... args)
         {
-            auto& component = mRegistry.emplace<T>(e, std::forward<Args>(args)...);
+            mRegistry.emplace<T>(e, std::forward<Args>(args)...);
             mDispatcher.trigger(ComponentAddedEvent{ e, std::type_index(typeid(T)) });
-            return component;
         }
 
         template<typename T>
@@ -51,21 +59,10 @@ namespace AtomEngine
         }
 
         template<typename... Components>
-        decltype(auto) ViewFor(Entity e)
+        decltype(auto) TryGet(Entity e)
         {
             return mRegistry.try_get<Components...>(e);
         }
-
-        struct ComponentAddedEvent
-        {
-            Entity entity;
-            std::type_index type;
-        };
-        struct ComponentRemovedEvent
-        {
-            Entity entity;
-            std::type_index type;
-        };
 
         void SetOnComponentAdded(ComponentCallback cb) { mOnComponentAdded = std::move(cb); }
 
@@ -75,16 +72,14 @@ namespace AtomEngine
 
         entt::registry& GetRegistry() { return mRegistry; }
 
-        void SetTag(Entity entity, const std::string& tag);
         void SetName(Entity entity, const std::string& name);
-        void SetGUID(Entity entity, uint64_t guid);
     private:
         entt::registry mRegistry;
         entt::dispatcher mDispatcher;
 
+        std::unordered_map<Entity, GameObject*> mEntityToObject;
+
         std::unordered_map<std::string, Entity> mNameLookup;
-        std::unordered_multimap<std::string, Entity> mTagLookup;
-        std::unordered_map<uint64_t, Entity> mGUIDLookup;
 
         ComponentCallback mOnComponentAdded = nullptr;
         ComponentCallback mOnComponentRemoved = nullptr;

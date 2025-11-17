@@ -28,7 +28,7 @@ namespace AtomEngine
 #if GAMEINPUT_API_VERSION >= 2
 		device->GetDeviceInfo(&info);
 #else
-		deviceInfo = device->GetDeviceInfo();
+		info = device->GetDeviceInfo();
 #endif
 
 		GameInputKind deviceKind = info->supportedInput;
@@ -84,8 +84,7 @@ namespace AtomEngine
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		if (io.WantCaptureMouse || io.WantCaptureKeyboard)
-			return;
+		bool isImGuiCapture = io.WantCaptureMouse || io.WantCaptureKeyboard;
 
 #pragma region keyboard入力
 		// キーの押す状態を更新
@@ -95,99 +94,101 @@ namespace AtomEngine
 		mPrevMouseState = mMouseState;
 		mPrevGamepadState = mGamepadState;
 		mCursorInput = CursorInput{};
-
-		if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindKeyboard, nullptr, &mReading)))
+		if (!isImGuiCapture)
 		{
-			// 押すキーの数
-			const uint32_t count = mReading->GetKeyCount();
-			if (count > 0)
+			if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindKeyboard, nullptr, &mReading)))
 			{
-				GameInputKeyState keyboardState[16];
-
-				// 押すキー状態
-				if (mReading->GetKeyState(_countof(keyboardState), keyboardState))
+				// 押すキーの数
+				const uint32_t count = mReading->GetKeyCount();
+				if (count > 0)
 				{
-					for (uint32_t i = 0; i < count; i++)
+					GameInputKeyState keyboardState[16];
+
+					// 押すキー状態
+					if (mReading->GetKeyState(_countof(keyboardState), keyboardState))
 					{
-						uint8_t virtualKey = keyboardState[i].virtualKey;
-						mkeys[virtualKey] = true;
+						for (uint32_t i = 0; i < count; i++)
+						{
+							uint8_t virtualKey = keyboardState[i].virtualKey;
+							mkeys[virtualKey] = true;
+						}
 					}
+					mDeviceType = InputDeviceType::Keyboard;
 				}
-				mDeviceType = InputDeviceType::Keyboard;
 			}
-		}
 #pragma endregion
 
 #pragma region マウス入力
-		if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindMouse, nullptr, &mReading)))
-		{
-			static int64_t lastDeltaX = 0;
-			static int64_t lastDeltaY = 0;
-			static int64_t lastDeltaWheel = 0;
-			static GameInputMouseState lastState;
-
-			if (mReading->GetMouseState(&mMouseState))
+			if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindMouse, nullptr, &mReading)))
 			{
-				int64_t deltaX = mMouseState.positionX - lastState.positionX;
-				int64_t deltaY = mMouseState.positionY - lastState.positionY;
-				int64_t deltaWheel = mMouseState.wheelY - lastState.wheelY;
+				static int64_t lastDeltaX = 0;
+				static int64_t lastDeltaY = 0;
+				static int64_t lastDeltaWheel = 0;
+				static GameInputMouseState lastState;
 
-				lastDeltaX = deltaX ? deltaX : lastDeltaX;
-				lastDeltaY = deltaY ? deltaY : lastDeltaY;
-				lastDeltaWheel = deltaWheel ? deltaWheel : static_cast<int>(lastDeltaWheel);
+				if (mReading->GetMouseState(&mMouseState))
+				{
+					int64_t deltaX = mMouseState.positionX - lastState.positionX;
+					int64_t deltaY = mMouseState.positionY - lastState.positionY;
+					int64_t deltaWheel = mMouseState.wheelY - lastState.wheelY;
 
-				lastState = mMouseState;
+					lastDeltaX = deltaX ? deltaX : lastDeltaX;
+					lastDeltaY = deltaY ? deltaY : lastDeltaY;
+					lastDeltaWheel = deltaWheel ? deltaWheel : static_cast<int>(lastDeltaWheel);
 
-				if (!mCursorInput.CursorInputSwitch)
-					mCursorInput.CursorInputSwitch = mMouseState.buttons & GameInputMouseRightButton;
+					lastState = mMouseState;
 
-				if (mCursorInput.CursorInputRotation == 0)
-					mCursorInput.CursorInputRotation = static_cast<int>(deltaX);
+					if (!mCursorInput.CursorInputSwitch)
+						mCursorInput.CursorInputSwitch = mMouseState.buttons & GameInputMouseRightButton;
+
+					if (mCursorInput.CursorInputRotation == 0)
+						mCursorInput.CursorInputRotation = static_cast<int>(deltaX);
+				}
 			}
-		}
 #pragma endregion
 
 #pragma region GamePad
 
-		if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindGamepad, nullptr, &mReading)))
-		{
-			if (mReading->GetGamepadState(&mGamepadState))
+			if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindGamepad, nullptr, &mReading)))
 			{
-				if (mGamepadState.buttons != 0 ||
-					std::abs(mGamepadState.leftThumbstickX) > 0.1f ||
-					std::abs(mGamepadState.leftThumbstickY) > 0.1f ||
-					std::abs(mGamepadState.rightThumbstickX) > 0.1f ||
-					std::abs(mGamepadState.rightThumbstickY) > 0.1f)
+				if (mReading->GetGamepadState(&mGamepadState))
 				{
-					mDeviceType = InputDeviceType::Gamepad;
+					if (mGamepadState.buttons != 0 ||
+						std::abs(mGamepadState.leftThumbstickX) > 0.1f ||
+						std::abs(mGamepadState.leftThumbstickY) > 0.1f ||
+						std::abs(mGamepadState.rightThumbstickX) > 0.1f ||
+						std::abs(mGamepadState.rightThumbstickY) > 0.1f)
+					{
+						mDeviceType = InputDeviceType::Gamepad;
+					}
+
+					static int rotationMultiplier = 10;
+					mCursorInput.CursorInputAxisX = mGamepadState.leftThumbstickX;
+					mCursorInput.CursorInputAxisY = mGamepadState.leftThumbstickY;
+					mCursorInput.CursorInputRotation = static_cast<int>(mGamepadState.rightThumbstickX * rotationMultiplier);
+
+					// スティックとトリガーの値をメンバ変数に保存
+					mSticks.leftTrigger = mGamepadState.leftTrigger;
+					mSticks.rightTrigger = mGamepadState.rightTrigger;
+					mSticks.leftStickX = mGamepadState.leftThumbstickX;
+					mSticks.leftStickY = mGamepadState.leftThumbstickY;
+					mSticks.rightStickX = mGamepadState.rightThumbstickX;
+					mSticks.rightStickY = mGamepadState.rightThumbstickY;
 				}
-
-				static int rotationMultiplier = 10;
-				mCursorInput.CursorInputAxisX = mGamepadState.leftThumbstickX;
-				mCursorInput.CursorInputAxisY = mGamepadState.leftThumbstickY;
-				mCursorInput.CursorInputRotation = static_cast<int>(mGamepadState.rightThumbstickX * rotationMultiplier);
-
-				// スティックとトリガーの値をメンバ変数に保存
-				mSticks.leftTrigger = mGamepadState.leftTrigger;
-				mSticks.rightTrigger = mGamepadState.rightTrigger;
-				mSticks.leftStickX = mGamepadState.leftThumbstickX;
-				mSticks.leftStickY = mGamepadState.leftThumbstickY;
-				mSticks.rightStickX = mGamepadState.rightThumbstickX;
-				mSticks.rightStickY = mGamepadState.rightThumbstickY;
+				else
+				{
+					// 読み取りに失敗した場合、現在の状態をクリア
+					mGamepadState = {};
+				}
 			}
 			else
 			{
 				// 読み取りに失敗した場合、現在の状態をクリア
 				mGamepadState = {};
 			}
-		}
-		else
-		{
-			// 読み取りに失敗した場合、現在の状態をクリア
-			mGamepadState = {};
-		}
 
 #pragma endregion
+		}
 
 		mLastCursorInput = mCursorInput;
 	}

@@ -4,10 +4,10 @@
 namespace AtomEngine
 {
 	template<typename T, typename... Args>
-	inline T& GameObject::AddComponent(Args&&... args)
+	inline void GameObject::AddComponent(Args&&... args)
 	{
 		assert(IsValid());
-		return mWorld->AddComponent<T>(mHandle, std::forward<Args>(args)...);
+		mWorld->AddComponent<T>(mHandle, std::forward<Args>(args)...);
 	}
 
 	template<typename T>

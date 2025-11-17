@@ -362,7 +362,7 @@ namespace AtomEngine
 	{
 		//この非常に短いコマンドリストは 1 つの API 呼び出しのみを発行し、同期されるため、バッファの内容をすぐに読み取ることができます。
 		ReadbackBuffer TempBuffer;
-		CommandContext& Context = CommandContext::Begin(L"Copy texture to memory");
+		CommandContext& Context = CommandContext::Begin(L"Copy uvCheckerTex to memory");
 		uint32_t RowPitch = Context.ReadbackTexture(TempBuffer, *this);
 		Context.Finish(true);
 

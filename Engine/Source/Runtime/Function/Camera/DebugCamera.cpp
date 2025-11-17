@@ -24,10 +24,7 @@ namespace AtomEngine
 		}
 		else if (mMode == CameraMode::Orbit && mPrevMode == CameraMode::Fly)
 		{
-			// Fly -> Orbit
-			// 1. 从当前相机姿态计算 forward 方向
 			Vector3 forward = mCurrentRot * Vector3::FORWARD;
-
 			Vector3 newTarget = mCurrentPos + forward * mRadius;
 			mTarget = VInterpTo(mTarget, newTarget, deltaTime, 10.0f);
 
@@ -83,11 +80,11 @@ namespace AtomEngine
 			mPrevMouseWheel = wheel;
 
 			Vector3 eye;
-			eye.x = mTarget.x + mRadius * cosf(mPitch) * sinf(mYaw);
-			eye.y = mTarget.y + mRadius * sinf(mPitch);
-			eye.z = mTarget.z + mRadius * cosf(mPitch) * cosf(mYaw);
+			eye.x = mTarget.x + mRadius * cos(mPitch) * sin(mYaw);
+			eye.y = mTarget.y + mRadius * sin(mPitch);
+			eye.z = mTarget.z - mRadius * cos(mPitch) * cos(mYaw);
 			
-			Quaternion newRot = Quaternion::LookRotation((mTarget - eye).NormalizedCopy(), Vector3::UP);
+			Quaternion newRot = Quaternion::LookRotation(mTarget - eye, Vector3::UP);
 			if (Quaternion::Dot(newRot, mTargetRot) < 0.0f)
 				newRot = -newRot;
             mTargetRot = newRot;

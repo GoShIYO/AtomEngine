@@ -48,44 +48,42 @@ float3 ApplyAmbientLight(
     return ao * diffuse * lightColor;
 }
 
-float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
-{
-    const float Dilation = 2.0;
-    float d1 = Dilation * ShadowTexelSize.x * 0.125;
-    float d2 = Dilation * ShadowTexelSize.x * 0.875;
-    float d3 = Dilation * ShadowTexelSize.x * 0.625;
-    float d4 = Dilation * ShadowTexelSize.x * 0.375;
-    float result = (
-        2.0 * texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy, ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
-        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
-        ) / 10.0;
-    
-    return result * result;
-}
-
 //float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
 //{
-//    float2 texelSize = float2(ShadowTexelSize.x, ShadowTexelSize.x);
-
-//    float sum = 0.0f;
-//    for (int x = -1; x <= 1; ++x)
-//    {
-//        for (int y = -1; y <= 1; ++y)
-//        {
-//            float2 offset = float2(x, y) * texelSize;
-//            float cmp = texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + offset, ShadowCoord.z);
-//            sum += cmp;
-//        }
-//    }
-//    return sum / 9.0f;
+//    const float Dilation = 2.0;
+//    float d1 = Dilation * ShadowTexelSize.x * 0.125;
+//    float d2 = Dilation * ShadowTexelSize.x * 0.875;
+//    float d3 = Dilation * ShadowTexelSize.x * 0.625;
+//    float d4 = Dilation * ShadowTexelSize.x * 0.375;
+//    float result = (
+//        2.0 * texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy, ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
+//        texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
+//        ) / 10.0;
+    
+//    return result * result;
 //}
+
+float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
+{
+    float sum = 0.0f;
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float2 offset = float2(x, y) * ShadowTexelSize.x;
+            float cmp = texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + offset, ShadowCoord.z);
+            sum += cmp;
+        }
+    }
+    return sum / 9.0f;
+}
 
 float GetShadowConeLight(uint lightIndex, float3 shadowCoord)
 {

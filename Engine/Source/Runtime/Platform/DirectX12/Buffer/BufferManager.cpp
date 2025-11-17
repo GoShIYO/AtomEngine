@@ -7,6 +7,7 @@ namespace AtomEngine
 	ColorBuffer gSceneColorBuffer;
 	ColorBuffer gSceneNormalBuffer;
 	ColorBuffer gPostEffectsBuffer;
+	ColorBuffer gOverlayBuffer;
 
 	ShadowBuffer gShadowBuffer;
 
@@ -23,6 +24,8 @@ namespace AtomEngine
 
 		gSceneDepthBuffer.Create(L"Scene Depth Buffer", bufferWidth, bufferHeight, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
+		gOverlayBuffer.Create(L"UI Overlay", DX12Core::gBackBufferWidth, DX12Core::gBackBufferHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+
 		gShadowBuffer.Create(L"Shadow Map", 2048, 2048);
 
 		gSSAOFullScreen.Create(L"SSAO Full Screen", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
@@ -34,6 +37,7 @@ namespace AtomEngine
         gSceneColorBuffer.Destroy();
         gSceneNormalBuffer.Destroy();
         gPostEffectsBuffer.Destroy();
+		gOverlayBuffer.Destroy();
 
 		gSceneDepthBuffer.Destroy();
 
@@ -45,6 +49,7 @@ namespace AtomEngine
 	}
 	void OnResize(uint32_t Width, uint32_t Height)
 	{
+		gOverlayBuffer.Create(L"UI Overlay", DX12Core::gBackBufferWidth, DX12Core::gBackBufferHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	}
 }

@@ -1,4 +1,6 @@
 #include "RenderSystem.h"
+#include "Primitive.h"
+#include "SpriteRenderer.h"
 
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
@@ -227,6 +229,8 @@ namespace AtomEngine
 
 		SSAOFullScreenID = gSSAOFullScreen.GetVersionID();
 		ShadowBufferID = gShadowBuffer.GetVersionID();
+		Primitive::Initialize();
+		SpriteRenderer::Initialize();
 		InitializeRenderPasses();
 	}
 
@@ -234,7 +238,7 @@ namespace AtomEngine
 	{
 		mRenderPassManager = RenderPassManager::GetInstance();
 		mRenderPassManager->RegisterRenderPass(std::make_unique<ForwardRenderingPass>());
-
+		mRenderPassManager->RegisterRenderPass(std::make_unique<OverlayPass>());
 
 		mRenderPassManager->SetUpRenderPass();
 	}
@@ -251,6 +255,7 @@ namespace AtomEngine
 			auto& mesh = view.get<MeshComponent>(entity);
 			auto& material = view.get<MaterialComponent>(entity);
 			auto& transform = view.get<TransformComponent>(entity);
+			if (!mesh.IsRender())continue;
             mesh.Update(gfxContext,transform, material,deltaTime);
 		}
 		gfxContext.Finish();
@@ -306,7 +311,7 @@ namespace AtomEngine
 		mRenderPassManager->SetRenderTarget(&gSceneColorBuffer, &gSceneDepthBuffer);
 		mRenderPassManager->SetViewportAndScissor(mViewport, mScissor);
 		mRenderPassManager->RenderAll(gfxContext);
-
+		Primitive::Render(gfxContext);
 		gfxContext.Finish();
 	}
 
@@ -315,6 +320,8 @@ namespace AtomEngine
 		gTextureHeap.Destroy();
 		mRenderPassManager->Shutdown();
 		LightManager::Shutdown();
+		Primitive::Shutdown();
+		SpriteRenderer::Shutdown();
 	}
 
 	const GraphicsPSO& Renderer::GetPSO(uint16_t psoFlags)

@@ -27,7 +27,7 @@ namespace AtomEngine
 		Vector3 Center;
 		Vector3 Bounds;
 	};
-	
+
 	void ForwardRenderingPass::Render(GraphicsContext& gfxContext)
 	{
 		ASSERT(mWorld != nullptr);
@@ -42,12 +42,13 @@ namespace AtomEngine
 		ImGui::Begin("Forward Rendering");
 		ImGui::DragFloat("SunLightIntensity", &mSunLightIntensity, 0.01f, 0.0f, 1000.0f);
 		ImGui::DragFloat("SunOrientation", &mSunOrientation, 0.01f);
-		ImGui::DragFloat("SunInclination", &mSunInclination, 0.01f,0.0f,1.0f);
+		ImGui::DragFloat("SunInclination", &mSunInclination, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat3("SunDirection", mSunDirection.ptr(), 0.01f);
 		ImGui::DragFloat("IBLFactor", &mIBLFactor, 0.01f, 0.0f, 2.0f);
 		ImGui::DragFloat("IBLBias", &mIBLBias, 0.1f, 0.0f, 10.0f);
 		ImGui::DragFloat3("SunCenter", mShadowCenter.ptr(), 0.1f);
-		ImGui::DragFloat3("SunBounds", mShadowBounds.ptr(), 0.1f,0.1f);
+		ImGui::DragFloat3("SunBounds", mShadowBounds.ptr(), 0.1f, 0.1f);
+		ImGui::Checkbox("EnableIBL", &mEnableIBL);
 		ImGui::End();
 
 		mSunDirection.Normalize();
@@ -96,7 +97,7 @@ namespace AtomEngine
 			shadowSorter.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
 		}
 
-        LightManager::FillLightGrid(gfxContext,*mCamera);
+		LightManager::FillLightGrid(gfxContext, *mCamera);
 
 		gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		gfxContext.ClearColor(gSceneColorBuffer);
@@ -105,14 +106,15 @@ namespace AtomEngine
 			gfxContext.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV_DepthReadOnly());
 			gfxContext.SetViewportAndScissor(viewport, scissor);
 
-			mSkybox.Render(gfxContext, mCamera, viewport, scissor);
+			if (mEnableIBL)
+				mSkybox.Render(gfxContext, mCamera, viewport, scissor);
 
 			queue.RenderMeshes(RenderQueue::kOpaque, gfxContext, globals);
 		}
 
 		queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
 	}
-	
+
 	void ForwardRenderingPass::RenderObjects(RenderQueue& queue)
 	{
 		auto view = mWorld->GetRegistry().view<MeshComponent>();

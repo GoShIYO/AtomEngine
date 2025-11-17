@@ -25,6 +25,8 @@ namespace AtomEngine
 		Vector3 mShadowBounds = { 25, 20, 20 };
 		float mIBLBias = 2.0f;
 		float mIBLFactor = 0.5f;
+		bool mEnableIBL = false;
+
 	private:
 		void RenderObjects(RenderQueue& queue);
 	};

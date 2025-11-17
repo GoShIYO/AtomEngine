@@ -3,6 +3,7 @@
 #include "DepthBuffer.h"
 #include "ShadowBuffer.h"
 #include "GpuBuffer.h"
+#include "UploadBuffer.h"
 
 namespace AtomEngine
 {
@@ -10,7 +11,7 @@ namespace AtomEngine
     extern ColorBuffer gSceneColorBuffer;  // R11G11B10_FLOAT
     extern ColorBuffer gSceneNormalBuffer; // R16G16B16A16_FLOAT
     extern ColorBuffer gPostEffectsBuffer; // R32_UINT (to support Read-Modify-Write with a UAV)
-
+    extern ColorBuffer gOverlayBuffer;
     extern ShadowBuffer gShadowBuffer;
 
     extern ColorBuffer gSSAOFullScreen;

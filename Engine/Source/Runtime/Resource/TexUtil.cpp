@@ -32,7 +32,7 @@ namespace AtomEngine
 
 		if (!ddsFileExists || (srcFileExists && ddsLastWriteTime < srcLastWriteTime))
 		{
-			Printf("[Info]DDS texture %ws missing or older than source. Rebuilding.\n", RemoveBasePath(originalFile).c_str());
+			Printf("[Info]DDS uvCheckerTex %ws missing or older than source. Rebuilding.\n", RemoveBasePath(originalFile).c_str());
 			ConvertToDDS(originalFile, flags);
 		}
 	}
@@ -71,7 +71,7 @@ namespace AtomEngine
 			HRESULT hr = LoadFromDDSFile(filePath.c_str(), DDS_FLAGS_NONE, &info, *image);
 			if (FAILED(hr))
 			{
-				Printf("Could not load texture \"%ws\" (DDS: %08X).\n", filePath.c_str(), hr);
+				Printf("Could not load uvCheckerTex \"%ws\" (DDS: %08X).\n", filePath.c_str(), hr);
 				return false;
 			}
 		}
@@ -80,7 +80,7 @@ namespace AtomEngine
 			HRESULT hr = LoadFromTGAFile(filePath.c_str(), &info, *image);
 			if (FAILED(hr))
 			{
-				Printf("Could not load texture \"%ws\" (TGA: %08X).\n", filePath.c_str(), hr);
+				Printf("Could not load uvCheckerTex \"%ws\" (TGA: %08X).\n", filePath.c_str(), hr);
 				return false;
 			}
 		}
@@ -90,7 +90,7 @@ namespace AtomEngine
 			HRESULT hr = LoadFromHDRFile(filePath.c_str(), &info, *image);
 			if (FAILED(hr))
 			{
-				Printf("Could not load texture \"%ws\" (HDR: %08X).\n", filePath.c_str(), hr);
+				Printf("Could not load uvCheckerTex \"%ws\" (HDR: %08X).\n", filePath.c_str(), hr);
 				return false;
 			}
 		}
@@ -103,7 +103,7 @@ namespace AtomEngine
 			HRESULT hr = LoadFromWICFile(filePath.c_str(), wicFlags, &info, *image);
 			if (FAILED(hr))
 			{
-				Printf("Could not load texture \"%ws\" (WIC: %08X).\n", filePath.c_str(), hr);
+				Printf("Could not load uvCheckerTex \"%ws\" (WIC: %08X).\n", filePath.c_str(), hr);
 				return false;
 			}
 		}
@@ -237,7 +237,7 @@ namespace AtomEngine
 		HRESULT hr = SaveToDDSFile(image->GetImages(), image->GetImageCount(), image->GetMetadata(), DDS_FLAGS_NONE, wDest.c_str());
 		if (FAILED(hr))
 		{
-			Printf("Could not write texture to file \"%ws\" (%08X).\n", wDest.c_str(), hr);
+			Printf("Could not write uvCheckerTex to file \"%ws\" (%08X).\n", wDest.c_str(), hr);
 			return false;
 		}
 

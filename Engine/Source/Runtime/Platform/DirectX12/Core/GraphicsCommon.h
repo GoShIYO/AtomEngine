@@ -71,6 +71,17 @@ namespace AtomEngine
     };
     D3D12_CPU_DESCRIPTOR_HANDLE GetDefaultTexture(eDefaultTexture texID);
 
+    enum BlendMode
+    {
+        kBlendNone,
+        kBlendNormal,
+        kBlendAlphaAdd,
+        kBlendScreen,
+
+        kNumBlendModes,
+    };
+    extern std::unordered_map<BlendMode, D3D12_BLEND_DESC> gBlendModeTable;
+
     extern RootSignature gCommonRS;
 
 }

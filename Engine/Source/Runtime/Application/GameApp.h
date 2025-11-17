@@ -11,6 +11,7 @@
 #include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
 #include "Runtime/Platform/DirectX12/Pipline/RootSignature.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
+#include "Runtime/Function/Scene/SceneManager.h"
 
 using namespace AtomEngine;
 
@@ -24,9 +25,14 @@ public:
 	virtual void Render() = 0;
 	virtual void Shutdown() = 0;
 	virtual bool Exit();
-	World& GetWorld() {return mWorld;}
-    Camera& GetCamera() {return mCamera;}
+	World& GetWorld() 
+	{
+		return mSceneManager.GetCurrentScene()->GetWorld();
+	}
+    Camera& GetCamera() 
+	{
+        return mSceneManager.GetCurrentScene()->GetCamera();
+	}
 protected:
-	World mWorld;
-	Camera mCamera;
+	SceneManager mSceneManager;
 };

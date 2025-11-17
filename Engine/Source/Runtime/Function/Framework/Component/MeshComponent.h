@@ -23,7 +23,11 @@ namespace AtomEngine
 		Transform& GetTransform() { return mModelTransform; }
 
 		void UpdateAnimation(float deltaTime);
+
+		bool IsRender() const { return mIsRender; }
+		void SetIsRender(bool isRender) { mIsRender = isRender; }
 	private:
+		bool mIsRender = true;
 		std::shared_ptr<Model> mModel = nullptr;
 		UploadBuffer mMeshConstantsCPU;
 		ByteAddressBuffer mMeshConstantsGPU;

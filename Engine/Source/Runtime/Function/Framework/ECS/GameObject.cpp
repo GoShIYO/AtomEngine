@@ -4,7 +4,7 @@
 namespace AtomEngine
 {
     GameObject::GameObject(Entity handle, World* world)
-        : mHandle(handle), mWorld(world), mGUID(ObjectGUID())
+        : mHandle(handle), mWorld(world)
     {
     }
 
@@ -30,15 +30,4 @@ namespace AtomEngine
        mWorld->SetName(mHandle, name);
     }
 
-    std::string GameObject::GetTag()
-    {
-        if (HasComponent<TagComponent>())
-            return GetComponent<TagComponent>().tag;
-        return {};
-    }
-
-    void GameObject::SetTag(const std::string& tag)
-    {
-        mWorld->SetTag(mHandle, tag);
-    }
 }

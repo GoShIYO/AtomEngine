@@ -21,6 +21,8 @@ namespace AtomEngine
 {
 	namespace DX12Core
 	{
+		void CompositeOverlays(GraphicsContext& Context);
+
 		ComPtr<ID3D12Device> gDevice = nullptr;
 		CommandListManager gCommandManager;
 		ContextManager gContextManager;
@@ -56,6 +58,7 @@ namespace AtomEngine
 		RootSignature sPresentRS;
 		GraphicsPSO PresentPS(L"Core: PresentSDR");
 		GraphicsPSO SharpeningUpsamplePS(L"Image Scaling: Sharpen Upsample PSO");
+		GraphicsPSO BlendUIPSO(L"Core: BlendUI");
 
 		float sharpeningSpread = 1.0f;
 		float sharpeningRotation = 45.0f;
@@ -231,6 +234,22 @@ namespace AtomEngine
 				SharpeningUpsamplePS.SetPixelShader(sharpeningUpsamplePSBlob.Get());
 				SharpeningUpsamplePS.SetRenderTargetFormat(gBackBufferFormat, DXGI_FORMAT_UNKNOWN);
 				SharpeningUpsamplePS.Finalize();
+			}
+
+			//BlendUI
+			{
+				auto uiBlendPS = ShaderCompiler::CompileBlob(L"BufferCopyPS.hlsl", L"ps_6_2");
+				BlendUIPSO.SetRootSignature(sPresentRS);
+				BlendUIPSO.SetRasterizerState(RasterizerTwoSided);
+				BlendUIPSO.SetBlendState(BlendPreMultiplied);
+				BlendUIPSO.SetDepthStencilState(DepthStateDisabled);
+				BlendUIPSO.SetSampleMask(0xFFFFFFFF);
+				BlendUIPSO.SetInputLayout(0, nullptr);
+				BlendUIPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+				BlendUIPSO.SetVertexShader(FullScreenQuadBlob.Get());
+				BlendUIPSO.SetPixelShader(uiBlendPS.Get());
+				BlendUIPSO.SetRenderTargetFormat(gBackBufferFormat, DXGI_FORMAT_UNKNOWN);
+				BlendUIPSO.Finalize();
 			}
 		}
 
@@ -443,6 +462,15 @@ namespace AtomEngine
 				(GetModuleHandleA("WinPIX.dll") != nullptr);
 		}
 
+		void DX12Core::CompositeOverlays(GraphicsContext& Context)
+		{
+			Context.SetRootSignature(sPresentRS);
+			Context.TransitionResource(gOverlayBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			Context.SetDynamicDescriptor(0, 0, gOverlayBuffer.GetSRV());
+			Context.SetPipelineState(BlendUIPSO);
+			Context.Draw(3);
+		}
+
 		void DX12Core::Present()
 		{
 			GraphicsContext& Context = GraphicsContext::Begin(L"Present");
@@ -467,6 +495,7 @@ namespace AtomEngine
 				Context.Draw(3);
 
 			}
+			CompositeOverlays(Context);
 
 			//ImGui Present
 			gContext.imgui->Render(Context);

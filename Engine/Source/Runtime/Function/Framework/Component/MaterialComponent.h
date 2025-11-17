@@ -3,9 +3,8 @@
 
 namespace AtomEngine
 {
-	class MaterialComponent
+	struct MaterialComponent
 	{
-	public:
 		MaterialComponent(const std::shared_ptr<Model>model = nullptr);
 
 

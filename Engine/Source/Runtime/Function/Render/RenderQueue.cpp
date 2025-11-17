@@ -112,7 +112,7 @@ namespace AtomEngine
 
 		globals.ViewProjMatrix = mCamera->GetViewProjMatrix();
 		globals.CameraPos = mCamera->GetPosition();
-
+		
 		context.SetDynamicConstantBufferView(kCommonCBV, sizeof(GlobalConstants), &globals);
 
 		if (mBatchType == kShadows)

@@ -1,6 +1,8 @@
 #pragma once
 #include "Runtime/Core/Math/MathInclude.h"
 #include "Runtime/Core/Math/Frustum.h"
+#include <functional>
+
 
 namespace AtomEngine
 {
@@ -8,10 +10,15 @@ namespace AtomEngine
 	{
 	public:
 
+		//許せサスケ
+		Vector3 lookDir = { 0,0,1 };
+		Transform mCameraToWorld;
+
+
 		void Update();
 		
 		void SetLookAt(const Vector3& eye, const Vector3& lookAt, const Vector3& up);
-		void SetLookDirection(const Vector3& forward, const Vector3& up);
+		void SetLookDirection(const Vector3& forward, const Vector3& up = Vector3{0.0f,1.0f,0.0f});
 		void SetRotation(const Quaternion& basisRotation);
 		void SetRotation(const Vector3& rotation);
 		void SetPosition(const Vector3& worldPos);
@@ -21,8 +28,8 @@ namespace AtomEngine
 		const Vector3 GetUpVec() const { return mBasis.GetY(); }
 		const Vector3 GetForwardVec() const { return mBasis.GetZ(); }
 
-		const Quaternion GetRotation() const { return mCameraToWorld.rotation; }
-		const Vector3 GetPosition() const { return mCameraToWorld.transition; }
+		const Quaternion& GetRotation() const { return mCameraToWorld.rotation; }
+		const Vector3& GetPosition() const { return mCameraToWorld.transition; }
 
 		// さまざまな行列とフラスタを読み取るためのアクセサ
 		const Matrix4x4& GetViewMatrix() const { return mViewMatrix; }
@@ -35,7 +42,7 @@ namespace AtomEngine
 	protected:
 		void SetProjMatrix(const Matrix4x4& ProjMat) { mProjMatrix = ProjMat; }
 
-		Transform mCameraToWorld;
+		//Transform mCameraToWorld;
 
 		Matrix4x4 mBasis;
 
@@ -50,12 +57,23 @@ namespace AtomEngine
 
 		Frustum mFrustumVS;		// ビュー空間の視錐台
 		Frustum mFrustumWS;		// ワールド空間の視錐台
+
+
 	};
 
 	class Camera : public CameraBase
 	{
 	public:
+
+		//InGameで使用します。許せサスケ
+		static inline AtomEngine::Vector3 cur_positionOffSet = { 0.0f,5.0f,-3.0f};
+
+
 		Camera();
+
+		void MainCameraUpdate(float deltaTime_, int cur_ingameMode_,float actionCnt_);
+		void Init(Vector3 const startPos_);
+
 
 		void SetPerspectiveMatrix(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip);
 		void SetFOV(float verticalFovInRadians) { m_VerticalFOV = verticalFovInRadians; UpdateProjMatrix(); }
@@ -70,14 +88,36 @@ namespace AtomEngine
 
 	private:
 
+		enum Mode
+		{
+			kMoveForward,
+			kCurve,
+
+			kCount
+		};
+
+		struct MoveForward
+		{
+			void operator()(Transform* cameraTrans_,float deltaTime_, float actionCnt_);
+			float moveSpeed = 0.5f;
+
+		};
+
+		void SetMatchedMode(int ingameMode_);
+		void CameraAction();
 		void UpdateProjMatrix(void);
 
+
+		//[CameraActions]
+		std::unordered_map<Mode, std::function<void(Transform* cameraTrans_, float deltaTime_, float actionCnt_)>> cameraActions;
 		float m_VerticalFOV;
 		float m_AspectRatio;
 		float m_NearClip;
 		float m_FarClip;
 		bool m_ReverseZ;
 		bool m_InfiniteZ;
+		Mode cur_mode = kMoveForward;
+
 	};
 }
 

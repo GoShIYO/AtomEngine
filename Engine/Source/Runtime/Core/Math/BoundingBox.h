@@ -3,7 +3,8 @@
 #include "Vector4.h"
 #include "Matrix4x4.h"
 #include "Transform.h"
-
+#undef min
+#undef max
 #include <numeric>
 
 namespace AtomEngine
