@@ -30,6 +30,7 @@ void Game::Initialize()
 	obj->AddComponent<TransformComponent>();
 	mGameObjects.push_back(std::move(obj));
 
+
 }
 
 void Game::Update(float deltaTime)

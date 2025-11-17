@@ -6,6 +6,11 @@ namespace AtomEngine
 	class TransformComponent
 	{
 	public:
+		TransformComponent(const Vector3& position, const Quaternion& rotation = Quaternion::IDENTITY, const Vector3& scale = { 1,1,1 })
+			: mTransform(position, rotation, scale)
+		{
+		}
+		TransformComponent() = default;
 		~TransformComponent() = default;
 
 		const Matrix4x4 GetMatrix() const { return mTransform.GetMatrix(); }
@@ -20,7 +25,7 @@ namespace AtomEngine
 		Quaternion& GetRotation() { return mTransform.rotation; }
 		Vector3& GetScale() { return mTransform.scale; }
 
-		void SetParent(Transform* parent){ mTransform.parent = parent;}
+		void SetParent(Transform* parent) { mTransform.parent = parent; }
 
 	public:
 		Transform mTransform;
