@@ -172,7 +172,11 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Function\Render\GridRenderer.h" />
+    <ClInclude Include="Source\Runtime\Function\Camera\GamePadCamera.h" />
+    <ClInclude Include="Source\Game\System\PlayerSystem.h" />
     <ClInclude Include="Source\Game\EasingFunctions.h" />
+    <ClInclude Include="Source\Game\Voxel\ogt_vox.h" />
     <ClInclude Include="Source\Game\System\CollisionSystem.h" />
     <ClInclude Include="Source\Game\System\MoveSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\OverlayPass.h" />
@@ -275,10 +279,15 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Framework\ECS\World.h" />
     <ClInclude Include="Source\Game\Scene\TitleScene.h" />
     <ClInclude Include="Source\Runtime\Function\Render\SpriteRenderer.h" />
+    <ClInclude Include="Source\Game\Voxel\VoxelWorld.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Function\Render\GridRenderer.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Camera\GamePadCamera.cpp" />
+    <ClCompile Include="Source\Game\System\PlayerSystem.cpp" />
     <ClCompile Include="Source\Game\System\CollisionSystem.cpp" />
     <ClCompile Include="Source\Game\System\MoveSystem.cpp" />
+    <ClCompile Include="Source\Game\Voxel\VoxelWorld.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\OverlayPass.cpp" />
     <ClCompile Include="Source\Game\Scene\GameScene.cpp" />
     <ClCompile Include="Source\Game\Collision\BVHNode.cpp" />
@@ -571,6 +580,22 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Asset\Shaders\DepthViewVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\GridPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\GridVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>

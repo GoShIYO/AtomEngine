@@ -11,16 +11,18 @@ namespace AtomEngine
 	ForwardRenderingPass::ForwardRenderingPass()
 	{
 		mSkybox.Initialize();
-		mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kEnvHDR.dds");
-		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kBrdf.dds");
+		//mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kEnvHDR.dds");
+		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KBrdf.dds");
 		mSkybox.SetIBLTextures(
-			L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kDiffuseHDR.dds",
-			L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kSpecularHDR.dds");
+			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KDiffuseHDR.dds",
+			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KSpecularHDR.dds");
+		mGrid.Initialize();
 	}
 
 	ForwardRenderingPass::~ForwardRenderingPass()
 	{
 		mSkybox.Shutdown();
+		mGrid.Shutdown();
 	}
 	struct ShadowParams
 	{
@@ -53,7 +55,7 @@ namespace AtomEngine
 
 		mSunDirection.Normalize();
 		mShadowCamera.UpdateMatrix(mSunDirection, mShadowCenter, mShadowBounds,
-			(uint32_t)gShadowBuffer.GetWidth(), (uint32_t)gShadowBuffer.GetHeight(), 16);
+			(uint32_t)gShadowBuffer.GetWidth(), (uint32_t)gShadowBuffer.GetHeight(), 24);
 		mSkybox.SetIBLBias(mIBLBias);
 
 		GlobalConstants globals;
@@ -113,6 +115,8 @@ namespace AtomEngine
 		}
 
 		queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
+		mGrid.Render(gfxContext, mCamera, viewport, scissor);
+
 	}
 
 	void ForwardRenderingPass::RenderObjects(RenderQueue& queue)

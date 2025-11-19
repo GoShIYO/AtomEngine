@@ -63,6 +63,8 @@
     <FxCompile Include="Asset\Shaders\SpriteVS.hlsl" />
     <FxCompile Include="Asset\Shaders\SpritePS.hlsl" />
     <FxCompile Include="Asset\Shaders\BufferCopyPS.hlsl" />
+    <FxCompile Include="Asset\Shaders\GridPS.hlsl" />
+    <FxCompile Include="Asset\Shaders\GridVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\main.cpp" />
@@ -292,6 +294,10 @@
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\OverlayPass.cpp" />
     <ClCompile Include="Source\Game\System\CollisionSystem.cpp" />
     <ClCompile Include="Source\Game\System\MoveSystem.cpp" />
+    <ClCompile Include="Source\Game\Voxel\VoxelWorld.cpp" />
+    <ClCompile Include="Source\Game\System\PlayerSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Camera\GamePadCamera.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\GridRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Runtime\Core\Math\Math.h">
@@ -571,6 +577,11 @@
     <ClInclude Include="Source\Game\EasingFunctions.h" />
     <ClInclude Include="Source\Game\System\CollisionSystem.h" />
     <ClInclude Include="Source\Game\System\MoveSystem.h" />
+    <ClInclude Include="Source\Game\Voxel\VoxelWorld.h" />
+    <ClInclude Include="Source\Game\Voxel\ogt_vox.h" />
+    <ClInclude Include="Source\Game\System\PlayerSystem.h" />
+    <ClInclude Include="Source\Runtime\Function\Camera\GamePadCamera.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\GridRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">

@@ -13,6 +13,9 @@ namespace AtomEngine
 
         static void ApplyMomentum(float& oldValue, float& newValue, float deltaTime);
 
+        Vector3 VInterpTo(const Vector3& current, const Vector3& target, float dt, float speed);
+        Quaternion QInterpTo(const Quaternion& current, const Quaternion& target, float dt, float speed);
+
     protected:
         Camera& mTargetCamera;
         Input* mInput;

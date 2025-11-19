@@ -2,6 +2,7 @@
 #include "Runtime/Core/LogSystem/LogSystem.h"
 #include "Runtime/Function/Render/WindowManager.h"
 #include "Runtime/Function/Input/Input.h"
+#include "Runtime/Core/Math/Random.h"
 
 namespace AtomEngine
 {
@@ -20,6 +21,8 @@ namespace AtomEngine
 
 		input = Input::GetInstance();
 		input->Initialize();
+
+		Random::Initialize();
 	}
 
 	void GlobalContext::Shutdown()

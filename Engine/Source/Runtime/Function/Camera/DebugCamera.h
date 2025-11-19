@@ -25,9 +25,6 @@ namespace AtomEngine
         void UpdateMovement(float dt);
         void UpdateRotation(float dx, float dy);
 
-        Vector3 VInterpTo(const Vector3& current, const Vector3& target, float dt, float speed);
-        Quaternion QInterpTo(const Quaternion& current, const Quaternion& target, float dt, float speed);
-
     private:
         enum class CameraMode
         {

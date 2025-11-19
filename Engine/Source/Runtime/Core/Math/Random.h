@@ -1,3 +1,4 @@
+#pragma once
 #include <random>
 #include <vector>
 #include <numeric>
@@ -5,30 +6,28 @@
 /*
 example:
 	// 1 から 100 の範囲で整数を生成
-	int random_int = RandomGenerator::uniform(1, 10);
+	int random_int = Random::uniform(1, 10);
 
 	// -10.5 から 10.5 の範囲で浮動小数を生成
-	float random_float = RandomGenerator::uniform(-10.5f, 10.5f);
+	float random_float = Random::uniform(-10.5f, 10.5f);
 
 	// 25%確率で true または false を返します。
-	bool result = RandomGenerator::bernoulli(0.25f);
+	bool result = Random::bernoulli(0.25f);
 
 	// 50.0 から 10 の範囲で正規乱数を生成
-	float normal_val = RandomGenerator::normal(50.f, 10.f);
+	float normal_val = Random::normal(50.f, 10.f);
 
 	// 0.0 から 1.0 の範囲で 5 個の double をコンテナに格納
 	std::vector<double> random_doubles(5);
-	RandomGenerator::fill<std::uniform_real_distribution<double>>(random_doubles, 0.0, 1.0);
+	Random::fill<std::uniform_real_distribution<double>>(random_doubles, 0.0, 1.0);
 */
 namespace AtomEngine
 {
-	using RandomGenEngine = std::mt19937;
-
-	class RandomGenerator
+	class Random
 	{
 	private:
 
-		static RandomGenEngine randomEngine;
+		static std::mt19937 randomEngine;
 
 	public:
 		static void Initialize(unsigned int seed = std::random_device()())

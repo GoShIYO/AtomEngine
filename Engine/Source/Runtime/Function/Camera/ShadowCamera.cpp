@@ -22,16 +22,18 @@ namespace AtomEngine
 
 		SetPosition(center);
 
-		float l = -shadowBounds.x * 0.5f;
-		float r = shadowBounds.x * 0.5f;
-		float b = -shadowBounds.y * 0.5f;
-		float t = shadowBounds.y * 0.5f;
-		float n = 0.0f;
-		float f = shadowBounds.z;
+		//float l = -shadowBounds.x * 0.5f;
+		//float r = shadowBounds.x * 0.5f;
+		//float b = -shadowBounds.y * 0.5f;
+		//float t = shadowBounds.y * 0.5f;
+		//float n = 0.0f;
+		//float f = shadowBounds.z;
+		//
+		//auto proj = Math::MakeOrthographicProjectionMatrix(l, r, b, t, n, f);
 
-		auto proj = Math::MakeOrthographicProjectionMatrix(l, r, b, t, n, f);
+		//SetProjMatrix(proj);
 
-		SetProjMatrix(proj);
+		SetProjMatrix(Matrix4x4::MakeScale(Vector3(2.0f, 2.0f, 1.0f) * RcpDimensions));
 
 		Update();
 

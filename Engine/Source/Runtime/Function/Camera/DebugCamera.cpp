@@ -1,5 +1,6 @@
 #include "DebugCamera.h"
 #include "Runtime/Function/Input/Input.h"
+#include "GamePadCamera.h"
 
 namespace AtomEngine
 {
@@ -14,6 +15,15 @@ namespace AtomEngine
 		mTargetPos = mCurrentPos;
 		mCurrentRot = camera.GetRotation();
 		mTargetRot = mCurrentRot;
+
+		Vector3 toEye = mCurrentPos - mTarget;
+		mRadius = toEye.Length();
+
+		if (mRadius > 0.0001f)
+		{
+			mYaw = atan2f(toEye.x, toEye.z);
+			mPitch = asinf(toEye.y / mRadius);
+		}
 	}
 
 	void DebugCamera::Update(float deltaTime)
@@ -82,7 +92,7 @@ namespace AtomEngine
 			Vector3 eye;
 			eye.x = mTarget.x + mRadius * cos(mPitch) * sin(mYaw);
 			eye.y = mTarget.y + mRadius * sin(mPitch);
-			eye.z = mTarget.z - mRadius * cos(mPitch) * cos(mYaw);
+			eye.z = mTarget.z + mRadius * cos(mPitch) * cos(mYaw);
 			
 			Quaternion newRot = Quaternion::LookRotation(mTarget - eye, Vector3::UP);
 			if (Quaternion::Dot(newRot, mTargetRot) < 0.0f)
@@ -162,24 +172,5 @@ namespace AtomEngine
 		Quaternion qYaw = Quaternion::GetQuaternionFromAngleAxis(Radian(mYaw), Vector3::UP);
 		Quaternion qPitch = Quaternion::GetQuaternionFromAngleAxis(Radian(mPitch), Vector3::RIGHT);
 		mTargetRot = qPitch * qYaw;
-	}
-
-	Vector3 DebugCamera::VInterpTo(const Vector3& current, const Vector3& target, float dt, float speed)
-	{
-		if (speed <= 0.0f) return target;
-
-		Vector3 delta = target - current;
-		float dist = delta.Length();
-
-		if (dist < 0.0001f) return target;
-
-		float move = dist * std::clamp(dt * speed, 0.0f, 1.0f);
-		return current + delta.NormalizedCopy() * move;
-	}
-	Quaternion DebugCamera::QInterpTo(const Quaternion& current, const Quaternion& target, float dt, float speed)
-	{
-		if (speed <= 0.0f) return target;
-		float alpha = std::clamp(dt * speed, 0.0f, 1.0f);
-		return Quaternion::Slerp(current, target, alpha);
 	}
 }

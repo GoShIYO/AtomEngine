@@ -2,6 +2,6 @@
 
 namespace AtomEngine
 {
-    RandomGenEngine RandomGenerator::randomEngine;
+    std::mt19937 Random::randomEngine;
 
 }
