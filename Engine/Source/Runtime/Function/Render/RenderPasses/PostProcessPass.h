@@ -2,6 +2,8 @@
 #include "RenderPass.h"
 #include "Runtime/Function/Render/Particle/ParticleSystem.h"
 
+#include "../GridRenderer.h"
+
 namespace AtomEngine
 {
 	class PostProcessPass : public RenderPass
@@ -14,6 +16,7 @@ namespace AtomEngine
 
 	private:
 		std::unique_ptr<ParticleSystem> mParticleSystem;
+		std::unique_ptr<GridRenderer> mGridRenderer;
 
 	};
 }

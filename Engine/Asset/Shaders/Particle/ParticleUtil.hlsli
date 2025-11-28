@@ -13,7 +13,7 @@
         "borderColor = STATIC_BORDER_COLOR_TRANSPARENT_BLACK," \
         "filter = FILTER_MIN_MAG_LINEAR_MIP_POINT)" \
 
-#define MAX_PARTICLE 0x4000
+#define MAX_PARTICLE 0x8000
 
 struct VSOutput
 {

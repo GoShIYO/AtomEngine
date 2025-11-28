@@ -20,14 +20,11 @@ namespace AtomEngine
 			L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kSpecularHDR.dds");
 		mGpuHandle = Renderer::GetTextureHeap().Alloc();
 		DX12Core::gDevice->CopyDescriptorsSimple(1, mGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-		mGrid.Initialize();
 	}
 
 	ForwardRenderingPass::~ForwardRenderingPass()
 	{
 		mSkybox.Shutdown();
-		mGrid.Shutdown();
 	}
 
 	struct ShadowParams
@@ -130,10 +127,9 @@ namespace AtomEngine
 				mSkybox.Render(gfxContext, mCamera, viewport, scissor);
 
 			queue.RenderMeshes(RenderQueue::kOpaque, gfxContext, globals);
-		}
 
+		}
 		queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
-		mGrid.Render(gfxContext, mCamera, viewport, scissor);
 	}
 
 	void ForwardRenderingPass::RenderObjects(RenderQueue& queue)

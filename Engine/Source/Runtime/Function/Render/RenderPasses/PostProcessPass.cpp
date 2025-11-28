@@ -6,6 +6,9 @@ namespace AtomEngine
 	{
 		mParticleSystem.reset(new ParticleSystem());
 		mParticleSystem->Initialize();
+
+		mGridRenderer.reset(new GridRenderer());
+		mGridRenderer->Initialize();
 	}
 
 	void PostProcessPass::Update(GraphicsContext& Context, float deltaTime)
@@ -16,6 +19,7 @@ namespace AtomEngine
 	void PostProcessPass::Render(GraphicsContext& gfxContext)
 	{
 		mParticleSystem->Render(gfxContext, *mCamera);
+		mGridRenderer->Render(gfxContext, mCamera, *mRTV, *mDSV, mViewport, mScissor);
 	}
 }
 

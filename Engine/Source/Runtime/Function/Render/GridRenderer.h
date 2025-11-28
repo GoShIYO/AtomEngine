@@ -10,9 +10,13 @@ namespace AtomEngine
 	public:
 		GridRenderer();
 		void Initialize();
-		void Shutdown();
 
-		void Render(GraphicsContext& context, const Camera* camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor);
+		void Render(GraphicsContext& context,
+			const Camera* camera,
+			ColorBuffer& colorBuffer,
+            DepthBuffer& depthBuffer,
+			const D3D12_VIEWPORT& viewport, 
+			const D3D12_RECT& scissor);
 
 	private:
 

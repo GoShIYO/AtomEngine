@@ -18,29 +18,10 @@ GameScene::GameScene(std::string_view name, SceneManager& manager)
 bool GameScene::Initialize()
 {
 	mCamera.SetPosition({ 0.0f, 35.0f, -35.0f });
-	mGamePadCamera.reset(new GamePadCamera(mCamera));
 	mDebugCamera.reset(new DebugCamera(mCamera));
 	
 	//システム初期化
 	InitSystems();
-
-	auto model = AssetManager::LoadModel(L"Asset/Models/Sponza/sponza.gltf");
-	auto obj = mWorld.CreateGameObject("stage");
-	obj->AddComponent<MaterialComponent>(model);
-	obj->AddComponent<MeshComponent>(model);
-	obj->AddComponent<TransformComponent>(Vector3::ZERO, Quaternion::IDENTITY,Vector3(20,20,20));
-	AddGameObject(std::move(obj));
-
-	auto playerModel = AssetManager::LoadModel(L"Asset/Models/player/player.obj");
-	auto player = mWorld.CreateGameObject("player");
-	player->AddComponent<MaterialComponent>(playerModel);
-	player->AddComponent<MeshComponent>(playerModel);
-	player->AddComponent<TransformComponent>(Vector3(-5,5,-5),Quaternion::IDENTITY,Vector3(1.0f,1.0f,1.0f));
-	player->AddComponent<Body>(Vector3(0.5f,0.5f,0.5f),Vector3::ZERO);
-	player->AddComponent<PlayerTag>();
-	AddGameObject(std::move(player));
-
-	mVoxelWorld.Load("Asset/Voxel/test.vox");
 
 	return Scene::Initialize();
 }
@@ -49,26 +30,10 @@ void GameScene::Update(float deltaTime)
 {
 	gContext.imgui->ShowPerformanceWindow(deltaTime);
 	//カメラ更新
-	if(!useDebug)
-	mGamePadCamera->Update(deltaTime);
-	else mDebugCamera->Update(deltaTime);
+	mDebugCamera->Update(deltaTime);
 
-	//mMoveSystem->Update(mWorld, deltaTime);
-	mPlayerSystem->Update(mWorld,mCamera, deltaTime);
-
-	auto view = mWorld.View<TransformComponent, Body>();
-	bool flag = false;
-	for (auto entity : view)
-	{
-		auto& trans = view.get<TransformComponent>(entity);
-		auto& body = view.get<Body>(entity);
-		
-		flag = MoveAndResolveVoxelCollisions(mVoxelWorld, body, trans.transition, deltaTime);
-	}
-	ImGui::Checkbox("flag", &flag);
 
 	ImGuiHandleObjects();
-	//mCollisionSystem->Update();
 	DestroyGameObject();
 }
 
@@ -93,18 +58,11 @@ void GameScene::DestroyGameObject()
 
 void GameScene::InitSystems()
 {
-	mPlayerSystem.reset(new PlayerSystem);
-	mMoveSystem.reset(new MoveSystem);
-	//mCollisionSystem.reset(new CollisionSystem(mWorld));
+
 }
 
 void GameScene::Render()
 {
-	//ImGui::Begin("Primitive");
-	//ImGui::DragFloat3("box", &testBoxTrans.transition.x, 0.01f);
-	//static int segment = 16;
-	//ImGui::DragInt("Segment", &segment, 1, 3, 128);
-	//ImGui::End();
 	//Primitive::DrawLine(Vector3(0, 0, 0), Vector3(1, 1, 1), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawCube(Vector3(0, 0, 0), Vector3(1, 1, 1), testBoxTrans.GetMatrix(), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawSphere(Vector3(0, 0, 0), 1, Color::Green, mCamera.GetViewProjMatrix(),uint32_t(segment), uint32_t(segment));
@@ -126,7 +84,6 @@ bool GameScene::Exit()
 
 void GameScene::ImGuiHandleObjects()
 {
-	ImGui::Checkbox("use Debug", &useDebug);
 	ImGui::Begin("Objects");
 	int index = 0;
 	auto view = mWorld.View<TransformComponent, NameComponent>();
@@ -179,28 +136,4 @@ void GameScene::ImGuiHandleObjects()
 		}
 	}
 	ImGui::End();
-
-	//ImGui::Begin("Sprite");
-	//auto& worldTrans = uvChecker->GetWorldTransform();
-	//auto& uvTrans = uvChecker->GetUVTransform();
-	//ImGui::Separator();
-	//ImGui::ColorEdit4("Color", spDesc.color.ptr());
-	//ImGui::DragFloat2("Pivot", &spDesc.pivot.x, 0.01f, 0.0f, 1.0f);
-	//ImGui::DragFloat2("World Position", worldTrans.transition.ptr(), 0.01f);
- //   ImGui::DragFloat2("World Scale", worldTrans.scale.ptr(), 0.01f);
- //   ImGui::DragFloat3("World Rotation", worldTrans.rotation.ptr(), 0.01f);
- //   ImGui::DragFloat2("UV Transform", uvTrans.transition.ptr(), 0.01f);
-	//ImGui::DragFloat2("UV Scale", uvTrans.scale.ptr(), 0.01f);
- //   ImGui::DragFloat3("UV Rotation", uvTrans.rotation.ptr(), 0.01f);
-
-	//if(ImGui::Button("uvCheker"))
-	//{
-	//	uvChecker->SetTexture(uvCheckerTex);
-	//}
-	//if (ImGui::Button("checkBoard"))
-	//{
- //       uvChecker->SetTexture(checkBoard);
-	//}
-	//ImGui::End();
-	//uvChecker->SetDesc(spDesc);
 }

@@ -20,5 +20,5 @@ namespace AtomEngine
 		float frequencyTime;
 		uint32_t emit;
 	};
-	constexpr uint32_t kMaxParticles = 0x4000;
+	constexpr uint32_t kMaxParticles = 0x8000;
 }

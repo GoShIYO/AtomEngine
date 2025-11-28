@@ -41,12 +41,12 @@ namespace AtomEngine
 
 	}
 
-	void GridRenderer::Shutdown()
-	{
-
-	}
-
-	void GridRenderer::Render(GraphicsContext& context, const Camera* camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor)
+	void GridRenderer::Render(GraphicsContext& context, 
+		const Camera* camera,
+		ColorBuffer& colorBuffer,
+		DepthBuffer& depthBuffer,
+		const D3D12_VIEWPORT& viewport, 
+		const D3D12_RECT& scissor)
 	{
 		__declspec(align(16)) struct GridVSCB
 		{
@@ -78,15 +78,16 @@ namespace AtomEngine
         gridPSCB.minorLineColor = minorLineColor.ToVector3();
 
 
+		context.TransitionResource(colorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+		context.TransitionResource(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+
 		context.SetRootSignature(mGridRootSig);
 		context.SetPipelineState(mGridPSO);
+		context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		context.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		context.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-		context.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV());
+		context.SetRenderTarget(colorBuffer.GetRTV(), depthBuffer.GetDSV());
 		context.SetViewportAndScissor(viewport, scissor);
 
-		context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		context.SetDynamicConstantBufferView(0, sizeof(gridVSCB), &gridVSCB);
 		context.SetDynamicConstantBufferView(1, sizeof(gridPSCB), &gridPSCB);
 
