@@ -23,7 +23,7 @@ namespace AtomEngine
 	{
 		void CompositeOverlays(GraphicsContext& Context);
 
-		ComPtr<ID3D12Device> gDevice = nullptr;
+		ComPtr<ID3D12Device5> gDevice = nullptr;
 		CommandListManager gCommandManager;
 		ContextManager gContextManager;
 
@@ -314,7 +314,7 @@ namespace AtomEngine
 			for (size_t i = 0; i < _countof(featureLevels); i++)
 			{
 				// 採用したアダプターでデバイスを生成
-				HRESULT hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(&gDevice));
+				HRESULT hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(gDevice.GetAddressOf()));
 				if (SUCCEEDED(hr))
 				{
 					Log("feature levels is:%s", featureLevelStrings[i]);

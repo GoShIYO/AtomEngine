@@ -39,6 +39,8 @@ namespace AtomEngine
         void DispatchIndirect(GpuBuffer& ArgumentBuffer, uint64_t ArgumentBufferOffset = 0);
         void ExecuteIndirect(CommandSignature& CommandSig, GpuBuffer& ArgumentBuffer, uint64_t ArgumentStartOffset = 0,
             uint32_t MaxCommands = 1, GpuBuffer* CommandCounterBuffer = nullptr, uint64_t CounterOffset = 0);
+        void DispatchRays(D3D12_DISPATCH_RAYS_DESC& rayDesc);
+        void BuildRaytracingAccelerationStructure(D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC desc);
     };
 
     inline void ComputeContext::SetRootSignature(const RootSignature& RootSig)
@@ -186,6 +188,16 @@ namespace AtomEngine
         mCommandList->ExecuteIndirect(CommandSig.GetSignature(), MaxCommands,
             ArgumentBuffer.GetResource(), ArgumentStartOffset,
             CommandCounterBuffer == nullptr ? nullptr : CommandCounterBuffer->GetResource(), CounterOffset);
+    }
+
+    inline void ComputeContext::DispatchRays(D3D12_DISPATCH_RAYS_DESC& rayDesc)
+    {
+        mCommandList->DispatchRays(&rayDesc);
+    }
+
+    inline void ComputeContext::BuildRaytracingAccelerationStructure(D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC desc)
+    {
+        mCommandList->BuildRaytracingAccelerationStructure(&desc, 0, nullptr);
     }
 
     inline void ComputeContext::DispatchIndirect(GpuBuffer& ArgumentBuffer, uint64_t ArgumentBufferOffset)

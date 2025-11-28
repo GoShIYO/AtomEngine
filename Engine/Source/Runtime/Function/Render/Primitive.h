@@ -34,10 +34,9 @@ namespace AtomEngine
 		/// </summary>
 		/// <param name="center">中心座標</param>
 		/// <param name="size">サイズ</param>
-		/// <param name="transform">変換行列</param>
 		/// <param name="color">色</param>
 		/// <param name="viewProj">カメラ行列</param>
-		static void DrawCube(const Vector3& center, const Vector3& size, const Matrix4x4& transform,
+		static void DrawCube(const Vector3& center, const Vector3& size,
 			const Color& color, const Matrix4x4& viewProj);
 
 		/// <summary>

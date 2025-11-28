@@ -20,15 +20,7 @@ bool GameScene::Initialize()
 	mCamera.SetPosition({ 0.0f, 35.0f, -35.0f });
 	mGamePadCamera.reset(new GamePadCamera(mCamera));
 	mDebugCamera.reset(new DebugCamera(mCamera));
-	//test
-	{
-		mGpuHandle = Renderer::GetTextureHeap().Alloc();
-
-		uvCheckerTex = AssetManager::LoadCovertTexture(L"Asset/textures/uvChecker.png");
-		checkBoard = AssetManager::LoadCovertTexture(L"Asset/Models/ExTaskModels/checkerBoard.png");
-		//texture.CopyGPU(Renderer::GetTextureHeap().GetHeapPointer(), gpuHandle);
-		DX12Core::gDevice->CopyDescriptorsSimple(1, mGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	}
+	
 	//システム初期化
 	InitSystems();
 
@@ -49,8 +41,6 @@ bool GameScene::Initialize()
 	AddGameObject(std::move(player));
 
 	mVoxelWorld.Load("Asset/Voxel/test.vox");
-
-	uvChecker.reset(new Sprite(uvCheckerTex));
 
 	return Scene::Initialize();
 }
@@ -110,8 +100,6 @@ void GameScene::InitSystems()
 
 void GameScene::Render()
 {
-	//uvChecker->Render();
-	ImGui::Image((ImTextureID)mGpuHandle.GetGpuPtr(), ImVec2(512, 512));
 	//ImGui::Begin("Primitive");
 	//ImGui::DragFloat3("box", &testBoxTrans.transition.x, 0.01f);
 	//static int segment = 16;

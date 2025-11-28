@@ -4,6 +4,8 @@
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 #include "Runtime/Function/Light/LightManager.h"
 #include "Runtime/Function/Render/RenderSystem.h"
+#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+#include "Game/Tag.h"
 #include "imgui.h"
 
 namespace AtomEngine
@@ -12,10 +14,13 @@ namespace AtomEngine
 	{
 		mSkybox.Initialize();
 		//mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kEnvHDR.dds");
-		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KBrdf.dds");
+		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kBrdf.dds");
 		mSkybox.SetIBLTextures(
-			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KDiffuseHDR.dds",
-			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KSpecularHDR.dds");
+			L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kDiffuseHDR.dds",
+			L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kSpecularHDR.dds");
+		mGpuHandle = Renderer::GetTextureHeap().Alloc();
+		DX12Core::gDevice->CopyDescriptorsSimple(1, mGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
 		mGrid.Initialize();
 	}
 
@@ -24,6 +29,7 @@ namespace AtomEngine
 		mSkybox.Shutdown();
 		mGrid.Shutdown();
 	}
+
 	struct ShadowParams
 	{
 		Vector3 Center;
@@ -53,9 +59,21 @@ namespace AtomEngine
 		ImGui::Checkbox("EnableIBL", &mEnableIBL);
 		ImGui::End();
 
+		ImGui::Begin("Shadow Srv");
+		ImGui::Image((ImTextureID)mGpuHandle.GetGpuPtr(), ImVec2(512, 512));
+		ImGui::End();
+
 		mSunDirection.Normalize();
-		mShadowCamera.UpdateMatrix(mSunDirection, mShadowCenter, mShadowBounds,
-			(uint32_t)gShadowBuffer.GetWidth(), (uint32_t)gShadowBuffer.GetHeight(), 24);
+
+		Vector3 cameraPos = mCamera->GetPosition();
+		mShadowCamera.UpdateMatrix(
+			mSunDirection,
+			mShadowCenter,
+			mShadowBounds,
+			(uint32_t)gShadowBuffer.GetWidth(),
+			(uint32_t)gShadowBuffer.GetHeight(),
+			16
+		);
 		mSkybox.SetIBLBias(mIBLBias);
 
 		GlobalConstants globals;
@@ -116,7 +134,6 @@ namespace AtomEngine
 
 		queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
 		mGrid.Render(gfxContext, mCamera, viewport, scissor);
-
 	}
 
 	void ForwardRenderingPass::RenderObjects(RenderQueue& queue)
@@ -126,6 +143,7 @@ namespace AtomEngine
 		for (auto entity : view)
 		{
 			auto& mesh = view.get<MeshComponent>(entity);
+			if (!mesh.IsRender())continue;
 			mesh.Render(queue);
 		}
 	}

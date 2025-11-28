@@ -17,6 +17,7 @@
 #include "Runtime/Function/Framework/Component/MeshComponent.h"
 #include "Runtime/Function/Render/RenderPasses/RenderPassManager.h"
 #include "Runtime/Function/Render/RenderPasses/RenderPassesInclude.h"
+#include "imgui.h"
 
 namespace AtomEngine
 {
@@ -57,17 +58,17 @@ namespace AtomEngine
 		DXGI_FORMAT ColorFormat = gSceneColorBuffer.GetFormat();
 		DXGI_FORMAT DepthFormat = gSceneDepthBuffer.GetFormat();
 
-		D3D12_INPUT_ELEMENT_DESC posOnlyInput[] =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		};
+		//D3D12_INPUT_ELEMENT_DESC posOnlyInput[] =
+		//{
+		//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//};
 
-		D3D12_INPUT_ELEMENT_DESC posOnlySkinInput[] =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "WEIGHT",   0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
-			{ "INDEX",   0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
-		};
+		//D3D12_INPUT_ELEMENT_DESC posOnlySkinInput[] =
+		//{
+		//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//	{ "WEIGHT",   0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+		//	{ "INDEX",   0, DXGI_FORMAT_R32G32B32A32_UINT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+		//};
 
 		D3D12_INPUT_ELEMENT_DESC defaultInput[] =
 		{
@@ -169,7 +170,7 @@ namespace AtomEngine
 		depthOnlyPSO.SetRasterizerState(RasterizerDefaultCw);
 		depthOnlyPSO.SetBlendState(BlendDisable);
 		depthOnlyPSO.SetDepthStencilState(DepthStateReadWrite);
-		depthOnlyPSO.SetInputLayout(_countof(posOnlyInput), posOnlyInput);
+		depthOnlyPSO.SetInputLayout(_countof(defaultInput), defaultInput);
 		depthOnlyPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 		depthOnlyPSO.SetRenderTargetFormats(0, nullptr, DepthFormat);
 		depthOnlyPSO.SetVertexShader(depthOnlyVS.Get());
@@ -180,7 +181,7 @@ namespace AtomEngine
 		auto shadowSkinVS = ShaderCompiler::CompileBlob(L"DepthOnlySkinVS.hlsl", L"vs_6_2");
 		GraphicsPSO SkinDepthOnlyPSO(L"depthOnly Skin PSO");
 		SkinDepthOnlyPSO = depthOnlyPSO;
-		SkinDepthOnlyPSO.SetInputLayout(_countof(posOnlySkinInput), posOnlySkinInput);
+		SkinDepthOnlyPSO.SetInputLayout(_countof(skinInput), skinInput);
 		SkinDepthOnlyPSO.SetVertexShader(shadowSkinVS.Get());
 		SkinDepthOnlyPSO.Finalize();
 		gPSOs.push_back(SkinDepthOnlyPSO);
@@ -238,6 +239,7 @@ namespace AtomEngine
 	{
 		mRenderPassManager = RenderPassManager::GetInstance();
 		mRenderPassManager->RegisterRenderPass(std::make_unique<ForwardRenderingPass>());
+		mRenderPassManager->RegisterRenderPass(std::make_unique<PostProcessPass>());
 		mRenderPassManager->RegisterRenderPass(std::make_unique<OverlayPass>());
 
 		mRenderPassManager->SetUpRenderPass();
@@ -258,6 +260,9 @@ namespace AtomEngine
 			if (!mesh.IsRender())continue;
             mesh.Update(gfxContext,transform, material,deltaTime);
 		}
+		//描画パスを更新
+		mRenderPassManager->Update(gfxContext,deltaTime);
+
 		gfxContext.Finish();
 
 		mViewport.Width = (float)gSceneColorBuffer.GetWidth();

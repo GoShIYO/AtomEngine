@@ -24,7 +24,10 @@ StructuredBuffer<Joint> Joints : register(t20);
 struct VSInput
 {
     float3 position : POSITION;
-    
+    float2 texcoord : TEXCOORD0;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITTANGENT;
 #ifdef ENABLE_SKINNING
     float4 jointWeights : WEIGHT;
     uint4 jointIndices : INDEX;

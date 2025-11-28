@@ -20,6 +20,14 @@ namespace AtomEngine
 			mCurrentPasses.push_back(pass.get());
 	}
 
+	void RenderPassManager::Update(GraphicsContext& context, float deltaTime)
+	{
+        for (auto* pass : mCurrentPasses)
+        {
+            pass->Update(context, deltaTime);
+        }
+	}
+
 	void RenderPassManager::RenderAll(GraphicsContext& context)
 	{
 		for (auto* pass : mCurrentPasses)

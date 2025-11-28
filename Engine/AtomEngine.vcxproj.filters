@@ -298,6 +298,8 @@
     <ClCompile Include="Source\Game\System\PlayerSystem.cpp" />
     <ClCompile Include="Source\Runtime\Function\Camera\GamePadCamera.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\GridRenderer.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\PostProcessPass.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Runtime\Core\Math\Math.h">
@@ -582,6 +584,10 @@
     <ClInclude Include="Source\Game\System\PlayerSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\GamePadCamera.h" />
     <ClInclude Include="Source\Runtime\Function\Render\GridRenderer.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\PostProcessPass.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\Particle.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">

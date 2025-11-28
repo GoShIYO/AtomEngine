@@ -115,9 +115,9 @@ namespace AtomEngine
 		switch (msg)
 		{
 		case WM_SIZE:
-			mWindowWidth = (UINT)(UINT64)lParam & 0xFFFF;
-			mWindowHeight = (UINT)(UINT64)lParam >> 16;
-			OnResize(mWindowWidth, mWindowHeight);
+			//mWindowWidth = (UINT)(UINT64)lParam & 0xFFFF;
+			//mWindowHeight = (UINT)(UINT64)lParam >> 16;
+			//OnResize(mWindowWidth, mWindowHeight);
 			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);

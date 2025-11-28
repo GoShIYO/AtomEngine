@@ -16,8 +16,6 @@ namespace AtomEngine
 
 		SpriteRenderer::Render(UiContext);
 
-		UiContext.SetRenderTarget(gOverlayBuffer.GetRTV());
-		UiContext.SetViewportAndScissor(0, 0, gOverlayBuffer.GetWidth(), gOverlayBuffer.GetHeight());
 		UiContext.Finish();
 
 	}

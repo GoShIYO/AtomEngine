@@ -29,12 +29,6 @@ private:
 
 	VoxelWorld mVoxelWorld;
 
-	SpriteDesc spDesc;
-
-	Transform testBoxTrans;
-	TextureRef uvCheckerTex;
-	TextureRef checkBoard;
-	DescriptorHandle mGpuHandle;
 	std::unique_ptr<GamePadCamera> mGamePadCamera;
 	std::unique_ptr<DebugCamera> mDebugCamera;
 	bool useDebug = false;

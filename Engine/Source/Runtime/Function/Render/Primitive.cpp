@@ -34,7 +34,7 @@ namespace AtomEngine
 
 		sPSO.SetRootSignature(sRootSig);
 		sPSO.SetRasterizerState(RasterizerTwoSided);
-		sPSO.SetBlendState(BlendAdditive);
+		sPSO.SetBlendState(BlendTraditional);
 		sPSO.SetDepthStencilState(DepthStateReadOnly);
 		sPSO.SetInputLayout(_countof(layout), layout);
 		sPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE);
@@ -55,20 +55,18 @@ namespace AtomEngine
 		AddLineInternal(a, b, color);
 		sViewProj = viewProj;
 	}
-	void Primitive::DrawCube(const Vector3& center, const Vector3& size, const Matrix4x4& transform,
+	void Primitive::DrawCube(const Vector3& center, const Vector3& size,
 		const Color& color, const Matrix4x4& viewProj)
 	{
 		Vector3 h = size * 0.5f;
 
 		Vector3 p[8] =
 		{
-			{ -h.x, -h.y, -h.z }, { h.x, -h.y, -h.z },
-			{ h.x,  h.y, -h.z }, { -h.x,  h.y, -h.z },
-			{ -h.x, -h.y,  h.z }, { h.x, -h.y,  h.z },
-			{ h.x,  h.y,  h.z }, { -h.x,  h.y,  h.z },
+			{ center.x - h.x,  center.y - h.y,  center.z - h.z }, { center.x + h.x, center.y - h.y, center.z - h.z },
+			{ center.x + h.x,  center.y + h.y,  center.z - h.z }, { center.x - h.x, center.y + h.y, center.z - h.z },
+			{ center.x - h.x,  center.y - h.y,  center.z + h.z }, { center.x + h.x, center.y - h.y, center.z + h.z },
+			{ center.x + h.x,  center.y + h.y,  center.z + h.z }, { center.x - h.x, center.y + h.y, center.z + h.z },
 		};
-
-		for (auto& v : p) v = Math::Transform(v, transform);
 
 		constexpr uint16_t edges[][2] =
 		{

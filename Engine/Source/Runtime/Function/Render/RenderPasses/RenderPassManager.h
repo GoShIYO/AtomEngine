@@ -11,6 +11,7 @@ namespace AtomEngine
         void RegisterRenderPass(std::unique_ptr<RenderPass> pass);
         void SetUpRenderPass();
 
+        void Update(GraphicsContext& context,float deltaTime);
         void RenderAll(GraphicsContext& context);
 
         void SetRenderTarget(ColorBuffer* rtv, DepthBuffer* dsv);

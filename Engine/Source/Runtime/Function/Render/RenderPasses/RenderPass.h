@@ -10,6 +10,7 @@ namespace AtomEngine
     public:
         virtual ~RenderPass() = default;
 
+        virtual void Update(GraphicsContext& Context, float deltaTime) {};
         virtual void Render(GraphicsContext& gfxContext) = 0;
 
         void SetRenderTarget(ColorBuffer* rtv, DepthBuffer* dsv) { mRTV = rtv; mDSV = dsv; }

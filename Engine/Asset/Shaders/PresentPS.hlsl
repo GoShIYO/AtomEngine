@@ -16,8 +16,7 @@ float4 main(float4 position : SV_Position) : SV_Target0
 {
     //TODO:post effect §À“∆Ñ”§π§Î
     float3 hdrColor = ColorTex[int2(position.xy)];
-    float3 mapped = TM_Stanard(hdrColor);
-    float3 sdrColor = ApplySRGBCurve(mapped);
+    float3 sdrColor = TM_Stanard(hdrColor);
     
-    return float4(sdrColor, 1.0f);
+    return float4(ApplySRGBCurve(sdrColor), 1.0f);
 }
