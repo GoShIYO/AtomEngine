@@ -243,9 +243,9 @@ namespace AtomEngine
         // 通常αブレンド
         gBlendModeTable[kBlendNormal] = BlendTraditional;
         //加算
-        gBlendModeTable[kBlendAlphaAdd] = BlendAdditive;
+        gBlendModeTable[kBlendAlphaAdd] = BlendTraditionalAdditive;
         //スクリーン
-        gBlendModeTable[kBlendScreen] = BlendTraditionalAdditive;
+        gBlendModeTable[kBlendScreen] = BlendAdditive;
 
         DispatchIndirectCommandSignature[0].Dispatch();
         DispatchIndirectCommandSignature.Finalize();

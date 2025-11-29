@@ -1,7 +1,6 @@
 #pragma once
 #include "RenderPass.h"
 #include "Runtime/Function/Camera/ShadowCamera.h"
-#include "Runtime/Function/Render/Particle/ParticleSystem.h"
 
 #include "../SkyboxRenderer.h"
 #include "../GridRenderer.h"
@@ -18,7 +17,6 @@ namespace AtomEngine
 
 	private:
 		SkyboxRenderer mSkybox;
-		GridRenderer mGrid;
 		ShadowCamera mShadowCamera;
 
 		float mSunLightIntensity = 1.0f;

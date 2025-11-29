@@ -22,14 +22,6 @@ public:
 private:
 	std::unordered_map<Entity, std::unique_ptr<GameObject>> mGameObjects;
 
-	std::unique_ptr<MoveSystem> mMoveSystem;
-	//std::unique_ptr<CollisionSystem> mCollisionSystem;
-	std::unique_ptr<Sprite> uvChecker;
-	std::unique_ptr<PlayerSystem> mPlayerSystem;
-
-	VoxelWorld mVoxelWorld;
-
-	std::unique_ptr<GamePadCamera> mGamePadCamera;
 	std::unique_ptr<DebugCamera> mDebugCamera;
 	bool useDebug = false;
 private:

@@ -11,36 +11,55 @@
 
 #include "../Tag.h"
 
+#include "Runtime/Function/Render/Particle/ParticleSystem.h"
+#include "Runtime/Function/Render/Particle/ParticleEditor.h"
+
 GameScene::GameScene(std::string_view name, SceneManager& manager)
  : Scene(name,manager){
 }
 
 bool GameScene::Initialize()
 {
-	mCamera.SetPosition({ 0.0f, 35.0f, -35.0f });
-	mGamePadCamera.reset(new GamePadCamera(mCamera));
+	mCamera.SetPosition({ 0.0f, 35.0f, -50.0f });
 	mDebugCamera.reset(new DebugCamera(mCamera));
 	
 	//システム初期化
 	InitSystems();
 
-	auto model = AssetManager::LoadModel(L"Asset/Models/Sponza/sponza.gltf");
-	auto obj = mWorld.CreateGameObject("stage");
-	obj->AddComponent<MaterialComponent>(model);
-	obj->AddComponent<MeshComponent>(model);
-	obj->AddComponent<TransformComponent>(Vector3::ZERO, Quaternion::IDENTITY,Vector3(20,20,20));
-	AddGameObject(std::move(obj));
+	ParticleProperty props;
+	props.MinStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	props.MaxStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	props.MinEndColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	props.MaxEndColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	auto playerModel = AssetManager::LoadModel(L"Asset/Models/player/player.obj");
-	auto player = mWorld.CreateGameObject("player");
-	player->AddComponent<MaterialComponent>(playerModel);
-	player->AddComponent<MeshComponent>(playerModel);
-	player->AddComponent<TransformComponent>(Vector3(-5,5,-5),Quaternion::IDENTITY,Vector3(1.0f,1.0f,1.0f));
-	player->AddComponent<Body>(Vector3(0.5f,0.5f,0.5f),Vector3::ZERO);
-	player->AddComponent<PlayerTag>();
-	AddGameObject(std::move(player));
+	props.TotalActiveLifetime = 0.0f;
+	props.LifeMinMax = float2(1.0f, 3.0f);
 
-	mVoxelWorld.Load("Asset/Voxel/test.vox");
+	props.Size = Vector4(0.5f, 1.5f, 0.5f, 1.5f);
+
+	props.Velocity = Vector4(20.0f, 50.0f, 50.0f, 90.0f);
+
+	props.MassMinMax = Vector2(4.5f, 15.0f);
+
+	props.EmitProperties.Gravity = Vector3(0.0f, -9.8f, 0.0f);
+	props.EmitProperties.FloorHeight = -0.5f;
+	props.EmitProperties.EmitPosW = Vector3(0, 0, 0);
+	props.EmitProperties.LastEmitPosW = Vector3(0, 0, 0);
+	props.EmitProperties.MaxParticles = 1000;
+
+	props.EmitRate = 64;
+
+	props.Spread = float3(20.0f, 50.0f, 0.1f);
+
+	props.TexturePath = L"Asset/Textures/circle2.png";
+
+	ParticleSystem::CreateParticle(props);
+
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/bubbles.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/fireworks.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/smoke_ring.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/sparks.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/wavering.json");
 
 	return Scene::Initialize();
 }
@@ -49,26 +68,10 @@ void GameScene::Update(float deltaTime)
 {
 	gContext.imgui->ShowPerformanceWindow(deltaTime);
 	//カメラ更新
-	if(!useDebug)
-	mGamePadCamera->Update(deltaTime);
-	else mDebugCamera->Update(deltaTime);
+	mDebugCamera->Update(deltaTime);
 
-	//mMoveSystem->Update(mWorld, deltaTime);
-	mPlayerSystem->Update(mWorld,mCamera, deltaTime);
-
-	auto view = mWorld.View<TransformComponent, Body>();
-	bool flag = false;
-	for (auto entity : view)
-	{
-		auto& trans = view.get<TransformComponent>(entity);
-		auto& body = view.get<Body>(entity);
-		
-		flag = MoveAndResolveVoxelCollisions(mVoxelWorld, body, trans.transition, deltaTime);
-	}
-	ImGui::Checkbox("flag", &flag);
 
 	ImGuiHandleObjects();
-	//mCollisionSystem->Update();
 	DestroyGameObject();
 }
 
@@ -93,18 +96,12 @@ void GameScene::DestroyGameObject()
 
 void GameScene::InitSystems()
 {
-	mPlayerSystem.reset(new PlayerSystem);
-	mMoveSystem.reset(new MoveSystem);
-	//mCollisionSystem.reset(new CollisionSystem(mWorld));
+
 }
 
 void GameScene::Render()
 {
-	//ImGui::Begin("Primitive");
-	//ImGui::DragFloat3("box", &testBoxTrans.transition.x, 0.01f);
-	//static int segment = 16;
-	//ImGui::DragInt("Segment", &segment, 1, 3, 128);
-	//ImGui::End();
+	ParticleEditor::Get().Render();
 	//Primitive::DrawLine(Vector3(0, 0, 0), Vector3(1, 1, 1), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawCube(Vector3(0, 0, 0), Vector3(1, 1, 1), testBoxTrans.GetMatrix(), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawSphere(Vector3(0, 0, 0), 1, Color::Green, mCamera.GetViewProjMatrix(),uint32_t(segment), uint32_t(segment));
@@ -126,7 +123,6 @@ bool GameScene::Exit()
 
 void GameScene::ImGuiHandleObjects()
 {
-	ImGui::Checkbox("use Debug", &useDebug);
 	ImGui::Begin("Objects");
 	int index = 0;
 	auto view = mWorld.View<TransformComponent, NameComponent>();
@@ -179,28 +175,4 @@ void GameScene::ImGuiHandleObjects()
 		}
 	}
 	ImGui::End();
-
-	//ImGui::Begin("Sprite");
-	//auto& worldTrans = uvChecker->GetWorldTransform();
-	//auto& uvTrans = uvChecker->GetUVTransform();
-	//ImGui::Separator();
-	//ImGui::ColorEdit4("Color", spDesc.color.ptr());
-	//ImGui::DragFloat2("Pivot", &spDesc.pivot.x, 0.01f, 0.0f, 1.0f);
-	//ImGui::DragFloat2("World Position", worldTrans.transition.ptr(), 0.01f);
- //   ImGui::DragFloat2("World Scale", worldTrans.scale.ptr(), 0.01f);
- //   ImGui::DragFloat3("World Rotation", worldTrans.rotation.ptr(), 0.01f);
- //   ImGui::DragFloat2("UV Transform", uvTrans.transition.ptr(), 0.01f);
-	//ImGui::DragFloat2("UV Scale", uvTrans.scale.ptr(), 0.01f);
- //   ImGui::DragFloat3("UV Rotation", uvTrans.rotation.ptr(), 0.01f);
-
-	//if(ImGui::Button("uvCheker"))
-	//{
-	//	uvChecker->SetTexture(uvCheckerTex);
-	//}
-	//if (ImGui::Button("checkBoard"))
-	//{
- //       uvChecker->SetTexture(checkBoard);
-	//}
-	//ImGui::End();
-	//uvChecker->SetDesc(spDesc);
 }

@@ -1,53 +1,60 @@
 #pragma once
 #include "Particle.h"
-#include "Runtime/Resource/TextureRef.h"
 #include "Runtime/Function/Camera/CameraBase.h"
 #include "Runtime/Platform/DirectX12/Context/ComputeContext.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
-
+#include <map>
 namespace AtomEngine
 {
 	class ParticleSystem
 	{
+		friend class Particle;
 	public:
 
-		void Initialize();
+		static void Initialize();
 
-		void Update(ComputeContext& Context,float deltaTime);
+		static void Update(ComputeContext& Context, float deltaTime);
 
-		void Render(GraphicsContext& gfxContext,const Camera& camera);
+		static void Render(GraphicsContext& gfxContext, const Camera& camera, ColorBuffer& ColorTarget, DepthBuffer& DepthTarget);
 
-		void Shutdown();
+		static void Shutdown();
+
+		static uint32_t CreateParticle(ParticleProperty& props);
+		static void ResetParticle(uint32_t particleId);
+		static float GetCurrentLife(uint32_t particleId);
+		static void SetBlendMode(BlendMode mode) { sBlendMode = mode; }
 	private:
-		RootSignature mParticleSig;
+		static RootSignature mParticleSig;
+		static std::vector<GraphicsPSO> mParticlePSOs;
+		static StructuredBuffer sParticleBuffer;
+		static DescriptorHandle sParticleGpuHandle;
 
-		ComputePSO mParticleInitCS;
-		ComputePSO mParticleUpdateCS;
-		ComputePSO mEmitterCS;
-		ComputePSO mParticleFreeListCS;
-		ComputePSO mParticleFreeListIndexCS;
+		static ComputePSO sParticleEmitCS;
+		static ComputePSO sParticleUpdateCS;
+		static ComputePSO sParticleDispatchIndirectArgsCS;
+		static ComputePSO sParticleFinalDispatchIndirectArgsCS;
 
-		std::vector<GraphicsPSO> mParticlePSOs;
+		static IndirectArgsBuffer sDrawIndirectArgs;
+		static IndirectArgsBuffer sDispatchIndirectArgs;
+		static IndirectArgsBuffer sFinalDispatchIndirectArgs;
+
+		static std::vector<std::unique_ptr<Particle>> sParticlePool;
+		static std::vector<Particle*> sParticlesActive;
+		static BlendMode sBlendMode;
+		static PrewView sPrewView;
 		
-		StructuredBuffer mParticleBuffer;
-		StructuredBuffer mParticleFreeList;
-		StructuredBuffer mParticleFreeListIndex;
+		static DescriptorHeap sTextureArrayHeap;
+		static std::vector < std::pair<DescriptorHandle, TextureRef>> sTextures;
+		static std::map<std::wstring, uint32_t> sTextureArrayLookup;
+		static bool sInitComplete;
 
-		IndirectArgsBuffer mDrawIndirectArgs;
-
-		std::vector<ParticleVertex>mVerteices;
-		
-		std::vector<std::unique_ptr<Particle>> mParticlePool;
-		std::vector<Particle*> mParticlesActive;
-
-		TextureRef tex;
-
-		BlendMode mBlendMode = BlendMode::kBlendAlphaAdd;
-
-		float mEmitTimer = 0.0f;
-		EmitterConstants mEmitter;
-		PrewView mPrewView;
+	private:
+		static void SetFinalBuffers(ComputeContext& CompContext);
+		static uint32_t GetTextureIndex(const std::wstring& name);
+	public:
+		static std::vector<Particle*>& GetParticles(void) {return sParticlesActive;}
+		static uint32_t CreateParticleFromFile(const std::string& utf8Path);
+		static bool ParseParticlePropertyFromJson(const std::string & text, ParticleProperty& out);
 	};
 }
-
 

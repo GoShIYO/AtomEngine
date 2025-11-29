@@ -4,18 +4,25 @@ namespace AtomEngine
 {
 	PostProcessPass::PostProcessPass()
 	{
-		mParticleSystem.reset(new ParticleSystem());
-		mParticleSystem->Initialize();
+		ParticleSystem::Initialize();
+		mGridRenderer.reset(new GridRenderer());
+		mGridRenderer->Initialize();
+	}
+
+	PostProcessPass::~PostProcessPass()
+	{
+        ParticleSystem::Shutdown();
 	}
 
 	void PostProcessPass::Update(GraphicsContext& Context, float deltaTime)
 	{
-		mParticleSystem->Update(Context.GetComputeContext(), deltaTime);
+		ParticleSystem::Update(Context.GetComputeContext(), deltaTime);
 	}
 
 	void PostProcessPass::Render(GraphicsContext& gfxContext)
 	{
-		mParticleSystem->Render(gfxContext, *mCamera);
+		ParticleSystem::Render(gfxContext, *mCamera,*mRTV,*mDSV);
+		mGridRenderer->Render(gfxContext, mCamera, *mRTV, *mDSV, mViewport, mScissor);
 	}
 }
 

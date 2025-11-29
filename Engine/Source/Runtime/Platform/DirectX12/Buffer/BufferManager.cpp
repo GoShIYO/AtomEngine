@@ -16,7 +16,7 @@ namespace AtomEngine
 
 	void InitializeBuffers(uint32_t bufferWidth, uint32_t bufferHeight)
 	{
-		gSceneColorBuffer.SetClearColor({ 0.192f,0.302f,0.471f,1.0f });
+		gSceneColorBuffer.SetClearColor(0x000000ff);
 		gSceneColorBuffer.Create(L"Main Color Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
 
 		gSceneNormalBuffer.Create(L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);

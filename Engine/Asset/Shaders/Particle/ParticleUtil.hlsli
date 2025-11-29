@@ -13,23 +13,23 @@
         "borderColor = STATIC_BORDER_COLOR_TRANSPARENT_BLACK," \
         "filter = FILTER_MIN_MAG_LINEAR_MIP_POINT)" \
 
-#define MAX_PARTICLE 0x4000
+#define MAX_PARTICLE 0x8000
 
+static float PI = 3.14159265358979323846f;
 struct VSOutput
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD0;
     float4 color : COLOR;
+    uint TexID : TEXCOORD1;
 };
 
-struct Particle
+struct ParticleVertex
 {
-    float3 position;
-    float3 scale;
-    float lifeTime;
-    float3 velocity;
-    float currentTime;
     float4 color;
+    float3 position;
+    uint textureId;
+    float3 scale;
 };
 
 cbuffer WorldContants : register(b0)
