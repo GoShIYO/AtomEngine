@@ -20,14 +20,13 @@ GameScene::GameScene(std::string_view name, SceneManager& manager)
 
 bool GameScene::Initialize()
 {
-	mCamera.SetPosition({ 0.0f, 35.0f, -35.0f });
+	mCamera.SetPosition({ 0.0f, 35.0f, -50.0f });
 	mDebugCamera.reset(new DebugCamera(mCamera));
 	
 	//システム初期化
 	InitSystems();
 
 	ParticleProperty props;
-
 	props.MinStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	props.MaxStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	props.MinEndColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -36,9 +35,9 @@ bool GameScene::Initialize()
 	props.TotalActiveLifetime = 0.0f;
 	props.LifeMinMax = float2(1.0f, 3.0f);
 
-	props.Size = Vector4(4.0f, 4, 4.0f, 4);
+	props.Size = Vector4(0.5f, 1.5f, 0.5f, 1.5f);
 
-	props.Velocity = Vector4(20.0f, 200.0f, 50.0f, 180.0f);
+	props.Velocity = Vector4(20.0f, 50.0f, 50.0f, 90.0f);
 
 	props.MassMinMax = Vector2(4.5f, 15.0f);
 
@@ -52,9 +51,15 @@ bool GameScene::Initialize()
 
 	props.Spread = float3(20.0f, 50.0f, 0.1f);
 
-	props.TexturePath = L"Asset/Textures/bubbles.png";
+	props.TexturePath = L"Asset/Textures/circle2.png";
 
 	ParticleSystem::CreateParticle(props);
+
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/bubbles.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/fireworks.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/smoke_ring.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/sparks.json");
+	ParticleSystem::CreateParticleFromFile("Asset/Particles/wavering.json");
 
 	return Scene::Initialize();
 }

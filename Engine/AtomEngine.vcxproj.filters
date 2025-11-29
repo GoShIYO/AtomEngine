@@ -618,6 +618,11 @@
     </None>
     <None Include="Asset\Shaders\Particle\ParticleUpdateCommon.hlsli" />
     <None Include="Asset\Shaders\Particle\ParticleFinalDispatchIndirectArgsCS.hlsli" />
+    <None Include="Asset\Particles\fireworks.json" />
+    <None Include="Asset\Particles\bubbles.json" />
+    <None Include="Asset\Particles\smoke_ring.json" />
+    <None Include="Asset\Particles\sparks.json" />
+    <None Include="Asset\Particles\wavering.json" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Editor">

@@ -3,7 +3,7 @@
 #include "Runtime/Function/Camera/CameraBase.h"
 #include "Runtime/Platform/DirectX12/Context/ComputeContext.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
-
+#include <map>
 namespace AtomEngine
 {
 	class ParticleSystem
@@ -22,12 +22,12 @@ namespace AtomEngine
 		static uint32_t CreateParticle(ParticleProperty& props);
 		static void ResetParticle(uint32_t particleId);
 		static float GetCurrentLife(uint32_t particleId);
-		static void RegisterTexture(uint32_t particleId, const TextureRef& texture);
 		static void SetBlendMode(BlendMode mode) { sBlendMode = mode; }
 	private:
 		static RootSignature mParticleSig;
 		static std::vector<GraphicsPSO> mParticlePSOs;
 		static StructuredBuffer sParticleBuffer;
+		static DescriptorHandle sParticleGpuHandle;
 
 		static ComputePSO sParticleEmitCS;
 		static ComputePSO sParticleUpdateCS;
@@ -42,13 +42,19 @@ namespace AtomEngine
 		static std::vector<Particle*> sParticlesActive;
 		static BlendMode sBlendMode;
 		static PrewView sPrewView;
-
+		
+		static DescriptorHeap sTextureArrayHeap;
+		static std::vector < std::pair<DescriptorHandle, TextureRef>> sTextures;
+		static std::map<std::wstring, uint32_t> sTextureArrayLookup;
 		static bool sInitComplete;
 
 	private:
 		static void SetFinalBuffers(ComputeContext& CompContext);
+		static uint32_t GetTextureIndex(const std::wstring& name);
 	public:
 		static std::vector<Particle*>& GetParticles(void) {return sParticlesActive;}
+		static uint32_t CreateParticleFromFile(const std::string& utf8Path);
+		static bool ParseParticlePropertyFromJson(const std::string & text, ParticleProperty& out);
 	};
 }
 

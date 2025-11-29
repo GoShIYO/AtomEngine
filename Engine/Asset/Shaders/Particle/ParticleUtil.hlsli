@@ -21,12 +21,14 @@ struct VSOutput
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD0;
     float4 color : COLOR;
+    uint TexID : TEXCOORD1;
 };
 
 struct ParticleVertex
 {
     float4 color;
     float3 position;
+    uint textureId;
     float3 scale;
 };
 

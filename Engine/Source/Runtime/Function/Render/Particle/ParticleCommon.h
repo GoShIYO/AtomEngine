@@ -50,7 +50,7 @@ namespace AtomEngine
 		Vector3 EmitUpW = { 0.0,1.0,0.0 };
 		uint32_t MaxParticles = 500;
 		Vector3 Gravity = { 0,-5,0 };
-		float pad0;
+		uint32_t TextureID;
 		Vector3 EmissiveColor;
 		float pad1;
 	};
@@ -86,7 +86,7 @@ namespace AtomEngine
 			Size = Vector4(0.07f, 0.7f, 0.8f, 0.8f); // (Start size min, Start size max, End size min, End size max) 		
 			Spread = Vector3(0.5f, 1.5f, 0.1f);
 			TexturePath = L"Asset/Textures/circle2.dds";
-			TotalActiveLifetime = 20.0;
+			TotalActiveLifetime = 0;
 			Velocity = Vector4(0.5, 3.0, -0.5, 3.0); // (X velocity min, X velocity max, Y velocity min, Y velocity max)
 		};
 	};

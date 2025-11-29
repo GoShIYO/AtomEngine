@@ -4,13 +4,23 @@
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
 #include "Runtime/Resource/AssetManager.h"
+#include "Runtime/Core/Utility/Utility.h"
+#include "Runtime/Resource/AssetManager.h"
+
 #include "imgui.h"
+#include <json.hpp>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
 
 namespace AtomEngine
 {
+	using json = nlohmann::json;
+
 	RootSignature ParticleSystem::mParticleSig;
 	std::vector<GraphicsPSO> ParticleSystem::mParticlePSOs;
 	StructuredBuffer ParticleSystem::sParticleBuffer;
+	DescriptorHandle ParticleSystem::sParticleGpuHandle;
 
 	ComputePSO ParticleSystem::sParticleEmitCS;
 	ComputePSO ParticleSystem::sParticleUpdateCS;
@@ -26,6 +36,10 @@ namespace AtomEngine
 	BlendMode ParticleSystem::sBlendMode = BlendMode::kBlendAlphaAdd;
 	PrewView ParticleSystem::sPrewView;
 
+	std::vector<std::pair<DescriptorHandle, TextureRef>> ParticleSystem::sTextures;
+	std::map<std::wstring, uint32_t> ParticleSystem::sTextureArrayLookup;
+	DescriptorHeap ParticleSystem::sTextureArrayHeap;
+
 	bool ParticleSystem::sInitComplete = false;
 
 	struct InputVertex
@@ -38,12 +52,14 @@ namespace AtomEngine
 		D3D12_SAMPLER_DESC SamplerBilinearBorderDesc = SamplerPointBorderDesc;
 		SamplerBilinearBorderDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
 
-		mParticleSig.Reset(4, 1);
+		mParticleSig.Reset(5, 1);
 		mParticleSig.InitStaticSampler(0, SamplerPointBorderDesc);
 		mParticleSig[0].InitAsConstantBuffer(0);
 		mParticleSig[1].InitAsConstantBuffer(1);
 		mParticleSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
 		mParticleSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 10);
+		mParticleSig[4].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 32, D3D12_SHADER_VISIBILITY_PIXEL, 1);
+
 		mParticleSig.Finalize(L"Particle RootSig", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		D3D12_INPUT_ELEMENT_DESC inputLayout[] =
@@ -58,10 +74,8 @@ namespace AtomEngine
 		auto vsBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticleVS.hlsl", L"vs_6_2");
 		auto psBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticlePS.hlsl", L"ps_6_2");
 
-		// 修正: DispatchIndirect 引数を書き込むシェーダーは正しいファイルをコンパイルする
 		auto particleEmitBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticleEmitCS.hlsl", L"cs_6_2");
 		auto particleUpdateBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticleUpdateCS.hlsl", L"cs_6_2");
-		// ここを正しいファイルに変更（以前は誤って Final 用を 2 回コンパイルしていた）
 		auto particleDispatchIndirectArgs = ShaderCompiler::CompileBlob(L"/Particle/ParticleDispatchIndirectArgs.hlsl", L"cs_6_2");
 		auto particleFinalDispatchIndirectArgs = ShaderCompiler::CompileBlob(L"/Particle/ParticleFinalDispatchIndirectArgsCS.hlsli", L"cs_6_2");
 		// PSO
@@ -105,6 +119,14 @@ namespace AtomEngine
 		__declspec(align(16)) UINT InitialDispatchIndirectArgs[6] = { 0, 1, 1, 0, 1, 1 };
 		sFinalDispatchIndirectArgs.Create(L"ParticleEffectManager FinalDispatchIndirectArgs", 1, sizeof(D3D12_DISPATCH_ARGUMENTS), InitialDispatchIndirectArgs);
 
+		sTextureArrayHeap.Create(L"ParticleSystem TextureArrayHeap", D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 32);
+
+		sParticleGpuHandle = sTextureArrayHeap.Alloc();
+		uint32_t count = 1;
+		uint32_t source[] = { 1 };
+		D3D12_CPU_DESCRIPTOR_HANDLE sourceTex[] = { sParticleBuffer.GetSRV() };
+		DX12Core::gDevice->CopyDescriptors(1, &sParticleGpuHandle, 
+			&count, count, sourceTex, source, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		sInitComplete = true;
 	}
@@ -180,13 +202,12 @@ namespace AtomEngine
 			{{0.5f,0.5f,0.0f},{1.0f,0.0f}}
 		};
 		gfxContext.SetDynamicVB(0, _countof(verteices), sizeof(InputVertex), verteices);
+		ID3D12DescriptorHeap* heaps[] = { sTextureArrayHeap.GetHeapPointer() };
+		gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, *heaps);
 
 		gfxContext.SetDynamicConstantBufferView(0, sizeof(sPrewView), &sPrewView);
-		gfxContext.SetDynamicDescriptor(3, 0, sParticleBuffer.GetSRV());
-		for (uint32_t i = 0; i < sParticlesActive.size(); ++i)
-		{
-			sParticlesActive[i]->Render(gfxContext);
-		}
+		gfxContext.SetDescriptorTable(3, sParticleGpuHandle);
+		gfxContext.SetDescriptorTable(4, sTextureArrayHeap.GetHeapPointer()->GetGPUDescriptorHandleForHeapStart());
 
 		gfxContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		gfxContext.TransitionResource(ColorTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -201,6 +222,7 @@ namespace AtomEngine
 	{
 		sParticlePool.clear();
 		sParticlesActive.clear();
+		sTextureArrayHeap.Destroy();
 		sParticleBuffer.Destroy();
 		sDrawIndirectArgs.Destroy();
 		sDispatchIndirectArgs.Destroy();
@@ -211,6 +233,9 @@ namespace AtomEngine
 	{
 		if (!sInitComplete)
 			return 0xffffffff;
+
+		props.EmitProperties.TextureID = GetTextureIndex(props.TexturePath);
+
 
 		static std::mutex s_InstantiateNewEffectMutex;
 		s_InstantiateNewEffectMutex.lock();
@@ -240,14 +265,6 @@ namespace AtomEngine
 		return sParticlesActive[particleId]->GetElapsedTime();
 	}
 
-	void ParticleSystem::RegisterTexture(uint32_t particleId, const TextureRef& texture)
-	{
-		if (!sInitComplete || sParticlesActive.size() == 0 || particleId >= sParticlesActive.size())
-			return;
-
-        sParticlesActive[particleId]->SetTexture(texture);
-	}
-
 	void ParticleSystem::SetFinalBuffers(ComputeContext& CompContext)
 	{
 		CompContext.SetPipelineState(sParticleFinalDispatchIndirectArgsCS);
@@ -261,4 +278,109 @@ namespace AtomEngine
 		CompContext.Dispatch(1, 1, 1);
 	}
 
+	uint32_t ParticleSystem::GetTextureIndex(const std::wstring& name)
+	{
+		if (sTextureArrayLookup.contains(name))
+		{
+			return sTextureArrayLookup[name];
+		}
+
+		auto handle = sTextureArrayHeap.Alloc();
+
+		TextureRef texture = AssetManager::LoadCovertTexture(name, kMagenta2D, true);
+		texture.CopyGPU(sTextureArrayHeap.GetHeapPointer(), handle);
+		sTextures.push_back(std::make_pair(handle, texture));
+		uint32_t index = sTextureArrayHeap.GetOffsetOfHandle(handle);
+		sTextureArrayLookup[name] = index;
+
+		return index;
+	}
+
+	static Vector4 json_to_vec4_local(const json& j)
+	{
+		Vector4 v;
+		if (j.is_array() && j.size() >= 4) { v.x = j[0].get<float>(); v.y = j[1].get<float>(); v.z = j[2].get<float>(); v.w = j[3].get<float>(); }
+		return v;
+	}
+	static Vector3 json_to_vec3_local(const json& j)
+	{
+		Vector3 v;
+		if (j.is_array() && j.size() >= 3) { v.x = j[0].get<float>(); v.y = j[1].get<float>(); v.z = j[2].get<float>(); }
+		return v;
+	}
+	static Vector2 json_to_vec2_local(const json& j)
+	{
+		Vector2 v;
+		if (j.is_array() && j.size() >= 2) { v.x = j[0].get<float>(); v.y = j[1].get<float>(); }
+		return v;
+	}
+
+	bool ParticleSystem::ParseParticlePropertyFromJson(const std::string& text, ParticleProperty& out)
+	{
+		try
+		{
+			auto j = json::parse(text);
+
+			if (j.contains("MinStartColor")) out.MinStartColor = json_to_vec4_local(j["MinStartColor"]);
+			if (j.contains("MaxStartColor")) out.MaxStartColor = json_to_vec4_local(j["MaxStartColor"]);
+			if (j.contains("MinEndColor")) out.MinEndColor = json_to_vec4_local(j["MinEndColor"]);
+			if (j.contains("MaxEndColor")) out.MaxEndColor = json_to_vec4_local(j["MaxEndColor"]);
+
+			if (j.contains("Velocity")) out.Velocity = json_to_vec4_local(j["Velocity"]);
+			if (j.contains("Size")) out.Size = json_to_vec4_local(j["Size"]);
+			if (j.contains("Spread")) out.Spread = json_to_vec3_local(j["Spread"]);
+			if (j.contains("EmitRate")) out.EmitRate = j["EmitRate"].get<float>();
+			if (j.contains("LifeMinMax")) out.LifeMinMax = json_to_vec2_local(j["LifeMinMax"]);
+			if (j.contains("MassMinMax")) out.MassMinMax = json_to_vec2_local(j["MassMinMax"]);
+			if (j.contains("TotalActiveLifetime")) out.TotalActiveLifetime = j["TotalActiveLifetime"].get<float>();
+
+			if (j.contains("EmitProperties"))
+			{
+				auto e = j["EmitProperties"];
+				if (e.contains("LastEmitPosW")) out.EmitProperties.LastEmitPosW = json_to_vec3_local(e["LastEmitPosW"]);
+				if (e.contains("EmitSpeed")) out.EmitProperties.EmitSpeed = e["EmitSpeed"].get<float>();
+				if (e.contains("EmitPosW")) out.EmitProperties.EmitPosW = json_to_vec3_local(e["EmitPosW"]);
+				if (e.contains("FloorHeight")) out.EmitProperties.FloorHeight = e["FloorHeight"].get<float>();
+				if (e.contains("EmitDirW")) out.EmitProperties.EmitDirW = json_to_vec3_local(e["EmitDirW"]);
+				if (e.contains("Restitution")) out.EmitProperties.Restitution = e["Restitution"].get<float>();
+				if (e.contains("EmitRightW")) out.EmitProperties.EmitRightW = json_to_vec3_local(e["EmitRightW"]);
+				if (e.contains("EmitterVelocitySensitivity")) out.EmitProperties.EmitterVelocitySensitivity = e["EmitterVelocitySensitivity"].get<float>();
+				if (e.contains("EmitUpW")) out.EmitProperties.EmitUpW = json_to_vec3_local(e["EmitUpW"]);
+				if (e.contains("MaxParticles")) out.EmitProperties.MaxParticles = e["MaxParticles"].get<uint32_t>();
+				if (e.contains("Gravity")) out.EmitProperties.Gravity = json_to_vec3_local(e["Gravity"]);
+				if (e.contains("EmissiveColor")) out.EmitProperties.EmissiveColor = json_to_vec3_local(e["EmissiveColor"]);
+			}
+
+			if (j.contains("TexturePath"))
+				out.TexturePath = UTF8ToWString(j["TexturePath"].get<std::string>());
+
+			return true;
+		}
+		catch (...)
+		{
+			return false;
+		}
+	}
+
+	uint32_t ParticleSystem::CreateParticleFromFile(const std::string& utf8Path)
+	{
+		try
+		{
+			std::ifstream ifs(utf8Path, std::ios::binary);
+			if (!ifs) return 0xffffffff;
+			std::ostringstream ss;
+			ss << ifs.rdbuf();
+			auto content = ss.str();
+			ifs.close();
+
+			ParticleProperty props;
+			if (!ParseParticlePropertyFromJson(content, props)) return 0xffffffff;
+
+			return CreateParticle(props);
+		}
+		catch (...)
+		{
+			return 0xffffffff;
+		}
+	}
 }

@@ -3,6 +3,7 @@
 #include "Runtime/Function/Render/Particle/ParticleSystem.h"
 #include <string>
 #include <vector>
+#include "Runtime/Platform/DirectX12/Core/GraphicsCommon.h"
 
 namespace AtomEngine
 {
@@ -36,6 +37,7 @@ namespace AtomEngine
 
 		// デバッグ用に GPU から読み取ったパーティクル（UI 表示）
 		std::vector<ParticleVertex> mDebugParticles;
+		BlendMode mBlendMode = BlendMode::kBlendAlphaAdd;
 
 		// UI ヘルパ
 		void DrawEmitterUI(EmitterProperty& e);

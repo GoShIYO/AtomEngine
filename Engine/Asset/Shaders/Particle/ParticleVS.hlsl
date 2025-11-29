@@ -23,6 +23,7 @@ VSOutput main(VSInput input, uint instanceID : SV_InstanceID)
     output.position = mul(float4(input.pos, 1.0f), mul(worldMat, ViewProj));
 	output.texcoord = input.texcoord;
 	output.color = particle.color;
+    output.TexID = particle.textureId;
 	
 	return output;
 }

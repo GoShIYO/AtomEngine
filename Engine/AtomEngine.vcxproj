@@ -839,6 +839,11 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Asset\Particles\bubbles.json" />
+    <None Include="Asset\Particles\fireworks.json" />
+    <None Include="Asset\Particles\smoke_ring.json" />
+    <None Include="Asset\Particles\sparks.json" />
+    <None Include="Asset\Particles\wavering.json" />
     <None Include="Asset\Shaders\Common.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

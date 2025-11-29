@@ -42,6 +42,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     instance.position = ParticleState.Position;
     instance.scale = float3(ParticleState.Size, ParticleState.Size, ParticleState.Size);
     instance.color = ParticleState.Color;
-
+    instance.textureId = EmitProperties.TextureID;
+    
     gVertexBuffer[gVertexBuffer.IncrementCounter()] = instance;
 }

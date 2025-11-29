@@ -19,7 +19,6 @@ namespace AtomEngine
 		mStateBuffers[0].Destroy();
 		mStateBuffers[1].Destroy();
 		mDispatchIndirectArgs.Destroy();
-		mTexture = nullptr;
 	}
 
 	// ランタイムでプロパティを更新
@@ -62,7 +61,6 @@ namespace AtomEngine
 	void Particle::Initialize()
 	{
 		mOriginalProperty = mProperty;
-		mTexture = AssetManager::LoadCovertTexture(mProperty.TexturePath);
 
 		ParticleEmitData* pSpawnData = new ParticleEmitData[mProperty.EmitProperties.MaxParticles];
 		for (UINT i = 0; i < mProperty.EmitProperties.MaxParticles; i++)
@@ -151,11 +149,6 @@ namespace AtomEngine
 		mCurrentStateBuffer = target;
 	}
 
-	void Particle::Render(GraphicsContext& gfxContext)
-	{
-		gfxContext.SetDynamicDescriptor(3, 1, mTexture.GetSRV());
-	}
-	void Particle::SetTexture(const TextureRef& Texture) { mTexture = Texture; }
 	void Particle::Reset()
 	{
 		mProperty = mOriginalProperty;

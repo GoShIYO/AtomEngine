@@ -12,6 +12,7 @@ struct EmitterProperty
     float3 EmitUpW;
     uint MaxParticles;
     float3 Gravity;
+    uint TextureID;
     float3 EmissiveColor;
 };
 

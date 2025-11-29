@@ -8,22 +8,12 @@
 
 namespace AtomEngine
 {
-	struct ParticleGPU
-	{
-		Vector3 position;
-		Vector3 scale;
-		float lifeTime;
-		Vector3 velocity;
-		float currentTime;
-		Color color;
-		uint32_t flags;
-	};
-
 	struct ParticleVertex
 	{
-		Vector4 color;
-		Vector3 position;
-		Vector3 scale;
+		Vector4 Color;
+		Vector3 Position;
+		uint32_t TextureID;
+		Vector3 Scale;
 	};
 
 	class Particle
@@ -33,10 +23,8 @@ namespace AtomEngine
 		~Particle();
 		void Initialize();
 		void Update(ComputeContext& CompContext, float deltaTime);
-		void Render(GraphicsContext& gfxContext);
 		float GetLifetime() const { return mProperty.TotalActiveLifetime; }
 		float GetElapsedTime() const { return mElapsedTime; }
-		void SetTexture(const TextureRef& Texture);
 		void Reset();
 		// ランタイム編集用 API
 		ParticleProperty& GetProperty();
@@ -51,8 +39,6 @@ namespace AtomEngine
 		ParticleProperty mProperty;
 		ParticleProperty mOriginalProperty;
 		float mElapsedTime;
-
-		TextureRef mTexture;
 
 	};
 }

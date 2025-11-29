@@ -92,6 +92,37 @@ namespace AtomEngine
 
 		ImGui::Separator();
 
+		{
+			const char* names[] = { "Normal", "Add", "None", "Screen" };
+			auto BlendModeToIndex = [](BlendMode b)->int {
+				switch (b)
+				{
+				case BlendMode::kBlendNormal: return 0;
+				case BlendMode::kBlendAlphaAdd: return 1;
+				case BlendMode::kBlendNone: return 2;
+				case BlendMode::kBlendScreen: return 3;
+				default: return 1;
+				}
+			};
+			auto IndexToBlendMode = [](int idx)->BlendMode {
+				switch (idx)
+				{
+				case 0: return BlendMode::kBlendNormal;
+				case 1: return BlendMode::kBlendAlphaAdd;
+				case 2: return BlendMode::kBlendNone;
+				case 3: return BlendMode::kBlendScreen;
+				default: return BlendMode::kBlendAlphaAdd;
+				}
+			};
+
+			int curIndex = BlendModeToIndex(mBlendMode);
+			if (ImGui::Combo("Blend Mode", &curIndex, names, IM_ARRAYSIZE(names)))
+			{
+				mBlendMode = IndexToBlendMode(curIndex);
+				ParticleSystem::SetBlendMode(mBlendMode);
+			}
+		}
+
 		if (ImGui::Button("Spawn Particle (create new)"))
 		{
 			ParticleSystem::CreateParticle(mCurrent);
@@ -134,6 +165,115 @@ namespace AtomEngine
 			ImGui::Text("Load failed. Check path/format.");
 			if (ImGui::Button("OK")) ImGui::CloseCurrentPopup();
 			ImGui::EndPopup();
+		}
+
+		ImGui::Separator();
+
+		if (ImGui::CollapsingHeader("ActiveParticles", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			auto& particles = ParticleSystem::GetParticles();
+
+			int i = 0;
+			for (auto& particle : particles)
+			{
+				ImGui::PushID(i);
+
+				if (!particle)
+				{
+					ImGui::Text("Emitter %d: <null>", i);
+					ImGui::PopID();
+					++i;
+					continue;
+				}
+
+				ParticleProperty& prop = particle->GetProperty();
+				bool dirty = false;
+
+				if (ImGui::TreeNode(("Emitter " + std::to_string(i)).c_str()))
+				{
+					// Colors & Size
+					ImGui::Text("Colors & Size");
+					dirty |= ImGui::ColorEdit4("MinStartColor", &prop.MinStartColor.x);
+					dirty |= ImGui::ColorEdit4("MaxStartColor", &prop.MaxStartColor.x);
+					dirty |= ImGui::ColorEdit4("MinEndColor", &prop.MinEndColor.x);
+					dirty |= ImGui::ColorEdit4("MaxEndColor", &prop.MaxEndColor.x);
+					dirty |= ImGui::DragFloat4("Size", &prop.Size.x, 0.1f, 0.0f, 1000.0f);
+
+					ImGui::Separator();
+
+					// Velocity / Spread / Life / Mass / EmitRate
+					ImGui::Text("Other");
+					dirty |= ImGui::DragFloat4("Velocity(xMin,xMax,yMin,yMax)", &prop.Velocity.x, 0.1f);
+					dirty |= ImGui::DragFloat3("Spread", &prop.Spread.x, 0.1f);
+					dirty |= ImGui::DragFloat("EmitRate", &prop.EmitRate, 0.1f, 0.0f, 1e6f);
+					dirty |= ImGui::DragFloat2("LifeMinMax", &prop.LifeMinMax.x, 0.01f, 0.0f, 1e6f);
+					dirty |= ImGui::DragFloat2("MassMinMax", &prop.MassMinMax.x, 0.01f, 0.0f, 1e6f);
+					dirty |= ImGui::DragFloat("TotalActiveLifetime", &prop.TotalActiveLifetime, 0.01f, -1e6f, 1e6f);
+
+					ImGui::Separator();
+
+					// Emitter sub-properties
+					if (ImGui::TreeNode("EmitterProperty"))
+					{
+						auto& e = prop.EmitProperties;
+						dirty |= ImGui::DragFloat3("EmitPosW", &e.EmitPosW.x, 0.01f);
+						dirty |= ImGui::DragFloat3("EmitDirW", &e.EmitDirW.x, 0.01f);
+						dirty |= ImGui::DragFloat3("EmitRightW", &e.EmitRightW.x, 0.01f);
+						dirty |= ImGui::DragFloat3("EmitUpW", &e.EmitUpW.x, 0.01f);
+						dirty |= ImGui::DragFloat3("Gravity", &e.Gravity.x, 0.01f);
+						dirty |= ImGui::DragFloat("EmitSpeed", &e.EmitSpeed, 0.01f);
+						dirty |= ImGui::DragFloat("EmitterVelocitySensitivity", &e.EmitterVelocitySensitivity, 0.01f);
+						dirty |= ImGui::DragFloat("FloorHeight", &e.FloorHeight, 0.01f);
+						{
+							int tmpMax = (int)e.MaxParticles;
+							if (ImGui::DragInt("MaxParticles", &tmpMax, 1.0f, 1, 0x8000000))
+							{
+								e.MaxParticles = (uint32_t)tmpMax;
+								dirty = true;
+							}
+						}
+						ImGui::TreePop();
+					}
+
+					// Texture path editable
+					{
+						std::string cur = WStringToUTF8(prop.TexturePath);
+						char buf[260];
+						std::memcpy(buf, cur.c_str(), std::min<size_t>(cur.size() + 1, sizeof(buf)));
+						buf[sizeof(buf) - 1] = 0;
+						if (ImGui::InputText("Texture Path", buf, sizeof(buf)))
+						{
+							prop.TexturePath = UTF8ToWString(buf);
+							dirty = true;
+						}
+					}
+
+					ImGui::Separator();
+
+					if (ImGui::Button("Apply Edited To Particle"))
+					{
+						particle->SetProperty(prop);
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Map Editor -> Particle"))
+					{
+						particle->SetProperty(mCurrent);
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Load Particle -> Editor"))
+					{
+						mCurrent = particle->GetProperty();
+					}
+
+					if (dirty)
+						particle->SetProperty(prop);
+
+					ImGui::TreePop();
+				}
+
+				ImGui::PopID();
+				++i;
+			}
 		}
 
 		ImGui::End();
