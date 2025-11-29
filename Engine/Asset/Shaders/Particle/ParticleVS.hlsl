@@ -1,6 +1,6 @@
 #include"ParticleUtil.hlsli"
 
-StructuredBuffer<Particle> gParticles : register(t0);
+StructuredBuffer<ParticleVertex> gParticles : register(t0);
 
 struct VSInput
 {
@@ -12,7 +12,7 @@ VSOutput main(VSInput input, uint instanceID : SV_InstanceID)
 {
 	VSOutput output;
 	
-	Particle particle = gParticles[instanceID];
+	ParticleVertex particle = gParticles[instanceID];
     float4x4 worldMat = billboardMat;
 	
 	worldMat[0] *= particle.scale.x;

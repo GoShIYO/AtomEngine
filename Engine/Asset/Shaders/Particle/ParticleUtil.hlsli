@@ -15,6 +15,7 @@
 
 #define MAX_PARTICLE 0x8000
 
+static float PI = 3.14159265358979323846f;
 struct VSOutput
 {
     float4 position : SV_POSITION;
@@ -22,14 +23,11 @@ struct VSOutput
     float4 color : COLOR;
 };
 
-struct Particle
+struct ParticleVertex
 {
+    float4 color;
     float3 position;
     float3 scale;
-    float lifeTime;
-    float3 velocity;
-    float currentTime;
-    float4 color;
 };
 
 cbuffer WorldContants : register(b0)

@@ -1,51 +1,54 @@
 #include "ParticleSystem.h"
+#include "Runtime/Platform/DirectX12/Buffer/ReadbackBuffer.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
 #include "Runtime/Resource/AssetManager.h"
 #include "imgui.h"
-#include "ParticleConfig.h"
-#include <cmath>
 
 namespace AtomEngine
 {
-	void ParticleSystem::LoadPresetsFromJson(const std::string& relativePath)
+	RootSignature ParticleSystem::mParticleSig;
+	std::vector<GraphicsPSO> ParticleSystem::mParticlePSOs;
+	StructuredBuffer ParticleSystem::sParticleBuffer;
+
+	ComputePSO ParticleSystem::sParticleEmitCS;
+	ComputePSO ParticleSystem::sParticleUpdateCS;
+	ComputePSO ParticleSystem::sParticleDispatchIndirectArgsCS;
+	ComputePSO ParticleSystem::sParticleFinalDispatchIndirectArgsCS;
+
+	IndirectArgsBuffer ParticleSystem::sDrawIndirectArgs;
+	IndirectArgsBuffer ParticleSystem::sDispatchIndirectArgs;
+	IndirectArgsBuffer ParticleSystem::sFinalDispatchIndirectArgs;
+
+	std::vector<std::unique_ptr<Particle>> ParticleSystem::sParticlePool;
+	std::vector<Particle*> ParticleSystem::sParticlesActive;
+	BlendMode ParticleSystem::sBlendMode = BlendMode::kBlendAlphaAdd;
+	PrewView ParticleSystem::sPrewView;
+
+	bool ParticleSystem::sInitComplete = false;
+
+	struct InputVertex
 	{
-		mPresets = LoadParticlePresetsFromJson(relativePath);
-		if (!mPresets.empty())
-		{
-			mSelectedPresetIndex = 0;
-			auto& p = mPresets[0];
-			mBlendMode = p.blend;
-			tex = AssetManager::LoadCovertTexture(p.texturePath);
-			mEmitter.radius = p.radius;
-			mEmitter.count = p.count;
-			mEmitter.frequency = p.frequency;
-			mEmitter.translate = p.position;
-
-			// 色の設定
-			mUpdate.colorStart = Vector4(p.colorStart.x, p.colorStart.y, p.colorStart.z, p.colorStart.w);
-			mUpdate.colorEnd   = Vector4(p.colorEnd.x, p.colorEnd.y, p.colorEnd.z, p.colorEnd.w);
-		}
-	}
-
+		Vector3 position;
+		Vector2 uv;
+	};
 	void ParticleSystem::Initialize()
 	{
 		D3D12_SAMPLER_DESC SamplerBilinearBorderDesc = SamplerPointBorderDesc;
 		SamplerBilinearBorderDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
 
-		mParticleSig.Reset(5, 1);
+		mParticleSig.Reset(4, 1);
 		mParticleSig.InitStaticSampler(0, SamplerPointBorderDesc);
 		mParticleSig[0].InitAsConstantBuffer(0);
 		mParticleSig[1].InitAsConstantBuffer(1);
-		mParticleSig[2].InitAsConstantBuffer(2);
-		mParticleSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
-		mParticleSig[4].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 10);
+		mParticleSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 5);
+		mParticleSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 10);
 		mParticleSig.Finalize(L"Particle RootSig", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		};
 
@@ -55,10 +58,12 @@ namespace AtomEngine
 		auto vsBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticleVS.hlsl", L"vs_6_2");
 		auto psBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticlePS.hlsl", L"ps_6_2");
 
-		auto particleInitBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticleInitCS.hlsl", L"cs_6_2");
+		// 修正: DispatchIndirect 引数を書き込むシェーダーは正しいファイルをコンパイルする
+		auto particleEmitBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticleEmitCS.hlsl", L"cs_6_2");
 		auto particleUpdateBlob = ShaderCompiler::CompileBlob(L"/Particle/ParticleUpdateCS.hlsl", L"cs_6_2");
-		auto emitterBlob = ShaderCompiler::CompileBlob(L"/Particle/EmitterCS.hlsl", L"cs_6_2");
-
+		// ここを正しいファイルに変更（以前は誤って Final 用を 2 回コンパイルしていた）
+		auto particleDispatchIndirectArgs = ShaderCompiler::CompileBlob(L"/Particle/ParticleDispatchIndirectArgs.hlsl", L"cs_6_2");
+		auto particleFinalDispatchIndirectArgs = ShaderCompiler::CompileBlob(L"/Particle/ParticleFinalDispatchIndirectArgsCS.hlsli", L"cs_6_2");
 		// PSO
 		mParticlePSOs.resize(kNumBlendModes);
 		for (uint32_t i = 0; i < kNumBlendModes; i++)
@@ -77,300 +82,71 @@ namespace AtomEngine
 			pso.Finalize();
 		}
 		//compute
-		mParticleInitCS.SetRootSignature(mParticleSig);
-		mParticleInitCS.SetComputeShader(particleInitBlob.Get());
-		mParticleInitCS.Finalize();
+		sParticleEmitCS.SetRootSignature(mParticleSig);
+		sParticleEmitCS.SetComputeShader(particleEmitBlob.Get());
+		sParticleEmitCS.Finalize();
 
-		mParticleUpdateCS.SetRootSignature(mParticleSig);
-		mParticleUpdateCS.SetComputeShader(particleUpdateBlob.Get());
-		mParticleUpdateCS.Finalize();
+		sParticleUpdateCS.SetRootSignature(mParticleSig);
+		sParticleUpdateCS.SetComputeShader(particleUpdateBlob.Get());
+		sParticleUpdateCS.Finalize();
 
-		mEmitterCS.SetRootSignature(mParticleSig);
-		mEmitterCS.SetComputeShader(emitterBlob.Get());
-		mEmitterCS.Finalize();
+		sParticleDispatchIndirectArgsCS.SetRootSignature(mParticleSig);
+		sParticleDispatchIndirectArgsCS.SetComputeShader(particleDispatchIndirectArgs.Get());
+		sParticleDispatchIndirectArgsCS.Finalize();
 
+		sParticleFinalDispatchIndirectArgsCS.SetRootSignature(mParticleSig);
+		sParticleFinalDispatchIndirectArgsCS.SetComputeShader(particleFinalDispatchIndirectArgs.Get());
+		sParticleFinalDispatchIndirectArgsCS.Finalize();
 
-		//vertex
-		mVerteices.resize(6);
-		mVerteices[0] = { {-0.5f,-0.5f,0.0f,1.0f} ,{0.0f,1.0f} };
-		mVerteices[1] = { {-0.5f,0.5f, 0.0f,1.0f},{ 0.0f,0.0f } };
-		mVerteices[2] = { {0.5f,-0.5f, 0.0f,1.0f},{ 1.0f,1.0f } };
-		mVerteices[3] = mVerteices[2];
-		mVerteices[4] = mVerteices[1];
-		mVerteices[5] = { {0.5f,0.5f,0.0f,1.0f},{1.0f,0.0f} };
-
-		mParticleBuffer.Create(L"Particles Buffer", kMaxParticles, sizeof(Particle));
-		mParticleFreeList.Create(L"Particles FreeList", kMaxParticles, sizeof(uint32_t));
-		mParticleFreeListIndex.Create(L"Particles FreeListIndex", kMaxParticles, sizeof(uint32_t));
+		sParticleBuffer.Create(L"Particles Buffer", kMaxParticles, sizeof(ParticleVertex));
 
 		__declspec(align(16)) UINT InitialDrawIndirectArgs[4] = { 6, 0, 0, 0 };
-		mDrawIndirectArgs.Create(L"Particles DrawIndirectArgs", 1, sizeof(D3D12_DRAW_ARGUMENTS), InitialDrawIndirectArgs);
+		sDrawIndirectArgs.Create(L"ParticleEffectManager DrawIndirectArgs", 1, sizeof(D3D12_DRAW_ARGUMENTS), InitialDrawIndirectArgs);
+		__declspec(align(16)) UINT InitialDispatchIndirectArgs[6] = { 0, 1, 1, 0, 1, 1 };
+		sFinalDispatchIndirectArgs.Create(L"ParticleEffectManager FinalDispatchIndirectArgs", 1, sizeof(D3D12_DISPATCH_ARGUMENTS), InitialDispatchIndirectArgs);
 
-		// デフォルトテクスチャ
-		tex = AssetManager::LoadCovertTexture("Asset/Textures/circle2.png");
 
-		// JSON からプリセットをロード（存在すれば適用）
-		LoadPresetsFromJson("Asset/Particles/particles.json");
-
-		// Init particles
-		ComputeContext& context = ComputeContext::Begin(L"Particle Init");
-		context.TransitionResource(mParticleBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		context.TransitionResource(mParticleFreeList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		context.TransitionResource(mParticleFreeListIndex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		context.SetRootSignature(mParticleSig);
-		context.SetPipelineState(mParticleInitCS);
-		context.SetDynamicDescriptor(3, 0, mParticleBuffer.GetUAV());
-		context.SetDynamicDescriptor(3, 1, mParticleFreeList.GetUAV());
-		context.SetDynamicDescriptor(3, 2, mParticleFreeListIndex.GetUAV());
-		context.Dispatch((kMaxParticles + 255) / 256, 1, 1);
-		context.Finish(true);
-
-		// Setup emitter (デフォルト or JSON で上書き済み)
-		if (mEmitter.count == 0)
-		{
-			mEmitter.translate = Vector3(0, 0, 0);
-			mEmitter.radius = 10.0f;
-			mEmitter.count = kMaxParticles;
-			mEmitter.frequency = 0.1f;
-			mEmitter.frequencyTime = 0.0f;
-			mEmitter.emit = 0;
-		}
-
-		mPrewView.time = 0.0f;
-		mUpdate.colorStart = Vector4(1,1,1,1);
-		mUpdate.colorEnd   = Vector4(1,1,1,1);
+		sInitComplete = true;
 	}
 
 	void ParticleSystem::Update(ComputeContext& Context, float deltaTime)
 	{
-		mPrewView.deltaTime = deltaTime;
-		mPrewView.time += deltaTime;
+		if (!sInitComplete || sParticlesActive.size() == 0)return;
 
-		mEmitter.frequencyTime += deltaTime;
-		if (mEmitter.frequency <= mEmitter.frequencyTime)
-		{
-			mEmitter.frequencyTime -= mEmitter.frequency;
-			mEmitter.emit = 1;
-		}
-		else
-		{
-			mEmitter.emit = 0;
-		}
+		sPrewView.deltaTime = deltaTime;
+		sPrewView.time += deltaTime;
 
-		static bool openAdvanced = false;
-		static char texturePathBuf[260] = "";
-
-		ImGui::Begin("Particle");
-
-		// --- Presets & Texture ---
-		if (!mPresets.empty())
-		{
-			std::vector<const char*> presetNames;
-			presetNames.reserve(mPresets.size());
-			for (auto& p : mPresets) presetNames.push_back(p.name.c_str());
-
-			int sel = mSelectedPresetIndex < 0 ? 0 : mSelectedPresetIndex;
-			if (ImGui::Combo("Presets", &sel, presetNames.data(), (int)presetNames.size()))
-			{
-				mSelectedPresetIndex = sel;
-				auto& s = mPresets[sel];
-				mBlendMode = s.blend;
-				tex = AssetManager::LoadCovertTexture(s.texturePath);
-				mEmitter.radius = s.radius;
-				mEmitter.count = s.count;
-				mEmitter.frequency = s.frequency;
-				mEmitter.translate = s.position;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Reload Presets")) LoadPresetsFromJson("Asset/Particles/particles.json");
-		}
-
-		// Texture path input
-		ImGui::InputText("Texture Path", texturePathBuf, sizeof(texturePathBuf));
-		ImGui::SameLine();
-		if (ImGui::Button("Load Texture"))
-		{
-			std::string p = texturePathBuf;
-			if (!p.empty())
-			{
-				auto newTex = AssetManager::LoadCovertTexture(p);
-				if (newTex.IsValid())
-					tex = newTex;
-			}
-		}
-		ImGui::Separator();
-
-		// --- Emitter ---
-		if (ImGui::CollapsingHeader("Emitter", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			ImGui::DragFloat3("Position", &mEmitter.translate.x, 0.01f);
-			ImGui::SliderFloat("Radius", &mEmitter.radius, 0.0f, 100.0f);
-			int count = (int)mEmitter.count;
-			if (ImGui::InputInt("Count", &count))
-			{
-				if (count < 0) count = 0;
-				if (count > (int)kMaxParticles) count = kMaxParticles;
-				mEmitter.count = (uint32_t)count;
-			}
-			ImGui::SliderFloat("Frequency", &mEmitter.frequency, 0.0f, 1.0f);
-			bool emitFlag = mEmitter.emit != 0;
-			if (ImGui::Checkbox("Emit (manual)", &emitFlag))
-			{
-				mEmitter.emit = emitFlag ? 1 : 0;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Burst"))
-			{
-				mEmitter.emit = 1;
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Stop"))
-			{
-				mEmitter.emit = 0;
-			}
-			if (ImGui::DragFloat3("Direction",&mEmitter.direction[0], 0.01f, -1.0f, 1.0f))
-			{
-				mEmitter.direction.Normalize();
-			}
-			if(ImGui::DragFloat("Spread", &mEmitter.spread, 0.01f, 0.0f, 1.0f))
-			{
-                mEmitter.spread = std::max(0.0f, mEmitter.spread);
-			}
-
-			if (ImGui::Button("Center"))
-				mEmitter.translate = Vector3(0, 0, 0);
-			ImGui::SameLine();
-			if (ImGui::Button("Up"))
-				mEmitter.translate.y += 1.0f;
-			ImGui::SameLine();
-			if (ImGui::Button("Down"))
-				mEmitter.translate.y -= 1.0f;
-		}
-
-		// --- Appearance ---
-		if (ImGui::CollapsingHeader("Appearance"))
-		{
-			const char* blendModeNames[] = { "None", "Normal", "AlphaAdd", "Screen" };
-			int currentBlendMode = static_cast<int>(mBlendMode);
-			if (ImGui::Combo("Blend Mode", &currentBlendMode, blendModeNames, IM_ARRAYSIZE(blendModeNames)))
-			{
-				mBlendMode = static_cast<BlendMode>(currentBlendMode);
-			}
-
-			float startCol[4] = { mUpdate.colorStart.x, mUpdate.colorStart.y, mUpdate.colorStart.z, mUpdate.colorStart.w };
-			float endCol[4]   = { mUpdate.colorEnd.x,   mUpdate.colorEnd.y,   mUpdate.colorEnd.z,   mUpdate.colorEnd.w };
-
-			if (ImGui::ColorEdit4("Start Color", startCol))
-			{
-				mUpdate.colorStart = Vector4(startCol[0], startCol[1], startCol[2], startCol[3]);
-			}
-			if (ImGui::ColorEdit4("End Color", endCol))
-			{
-				mUpdate.colorEnd = Vector4(endCol[0], endCol[1], endCol[2], endCol[3]);
-			}
-
-			// Vertex quad scale (visual preview)
-			static float quadScale = 1.0f;
-			if (ImGui::SliderFloat("Quad Scale", &quadScale, 0.1f, 5.0f))
-			{
-				for (auto& v : mVerteices)
-				{
-					v.position.x *= quadScale;
-					v.position.y *= quadScale;
-				}
-			}
-		}
-
-		if (ImGui::CollapsingHeader("Simulation"))
-		{
-			const char* modes[] = { "Default", "Gravity", "Wind", "Smoke", "Rain", "Snow", "Fire" };
-			int mode = (int)mUpdate.updateMode;
-			if (ImGui::Combo("Update Mode", &mode, modes, IM_ARRAYSIZE(modes)))
-			{
-				mUpdate.updateMode = (uint32_t)mode;
-			}
-
-			// Gravity Y
-			float gravY = mUpdate.gravity.y;
-			if (ImGui::SliderFloat("Gravity Y", &gravY, -50.0f, 50.0f))
-			{
-				mUpdate.gravity.y = gravY;
-			}
-			// Global drag
-			if (ImGui::SliderFloat("Global Drag", &mUpdate.globalDrag, 0.0f, 5.0f))
-			{
-			}
-			// Wind
-			if (ImGui::DragFloat3("Wind", &mUpdate.wind.x, 0.1f))
-			{
-			}
-			// Noise
-			if (ImGui::SliderFloat("Noise Scale", &mUpdate.noiseScale, 0.0f, 10.0f))
-			{
-			}
-
-			if (ImGui::Button("Reset Particles"))
-			{
-				Context.TransitionResource(mParticleBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-				Context.TransitionResource(mParticleFreeList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-				Context.TransitionResource(mParticleFreeListIndex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-				Context.SetRootSignature(mParticleSig);
-				Context.SetPipelineState(mParticleInitCS);
-				Context.SetDynamicDescriptor(3, 0, mParticleBuffer.GetUAV());
-				Context.SetDynamicDescriptor(3, 1, mParticleFreeList.GetUAV());
-				Context.SetDynamicDescriptor(3, 2, mParticleFreeListIndex.GetUAV());
-				Context.Dispatch((kMaxParticles + 255) / 256, 1, 1);
-			}
-
-		}
-
-		if (ImGui::CollapsingHeader("Advanced"))
-		{
-			ImGui::Checkbox("Show Preset Textures", &openAdvanced);
-			if (openAdvanced && !mPresets.empty())
-			{
-				for (size_t i = 0; i < mPresets.size(); ++i)
-				{
-					ImGui::Text("%u: %s -> %s", (uint32_t)i, mPresets[i].name.c_str(), mPresets[i].texturePath.c_str());
-				}
-			}
-		}
-
-		ImGui::End();
-
-		// end ImGui
-
-		Context.TransitionResource(mParticleBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		Context.TransitionResource(mParticleFreeList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		Context.TransitionResource(mParticleFreeListIndex, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-		// emitter
+		Context.ResetCounter(sParticleBuffer);
+		if (sParticlesActive.size() == 0)return;
 		Context.SetRootSignature(mParticleSig);
-		Context.SetPipelineState(mEmitterCS);
-		Context.SetDynamicConstantBufferView(0, sizeof(mPrewView), &mPrewView);
-		Context.SetDynamicConstantBufferView(1, sizeof(mEmitter), &mEmitter);
-		Context.SetDynamicConstantBufferView(2, sizeof(mUpdate), &mUpdate);
-		Context.SetDynamicDescriptor(3, 0, mParticleBuffer.GetUAV());
-		Context.SetDynamicDescriptor(3, 1, mParticleFreeList.GetUAV());
-		Context.SetDynamicDescriptor(3, 2, mParticleFreeListIndex.GetUAV());
-		Context.Dispatch(1, 1, 1);
+		Context.TransitionResource(sParticleBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		Context.SetDynamicConstantBufferView(0, sizeof(sPrewView), &sPrewView);
+		Context.SetDynamicDescriptor(2, 0, sParticleBuffer.GetUAV());
 
-		// update
-		Context.SetRootSignature(mParticleSig);
-		Context.SetPipelineState(mParticleUpdateCS);
-		Context.SetDynamicConstantBufferView(0, sizeof(mPrewView), &mPrewView);
-		Context.SetDynamicConstantBufferView(1, sizeof(mEmitter), &mEmitter);
-		Context.SetDynamicConstantBufferView(2, sizeof(mUpdate), &mUpdate);
-		Context.SetDynamicDescriptor(3, 0, mParticleBuffer.GetUAV());
-		Context.SetDynamicDescriptor(3, 1, mParticleFreeList.GetUAV());
-		Context.SetDynamicDescriptor(3, 2, mParticleFreeListIndex.GetUAV());
-		Context.Dispatch((mEmitter.count + 255) / 256, 1, 1);
+		for (uint32_t i = 0; i < sParticlesActive.size(); ++i)
+		{
+			sParticlesActive[i]->Update(Context, deltaTime);
+
+			if (sParticlesActive[i]->GetLifetime() <= sParticlesActive[i]->GetElapsedTime())
+			{
+				//Erase from vector
+				auto iter = sParticlesActive.begin() + i;
+				static std::mutex s_EraseEffectMutex;
+				s_EraseEffectMutex.lock();
+				sParticlesActive.erase(iter);
+				s_EraseEffectMutex.unlock();
+			}
+		}
+
+		SetFinalBuffers(Context);
 	}
 
-	void ParticleSystem::Render(GraphicsContext& gfxContext, const Camera& camera)
+	void ParticleSystem::Render(GraphicsContext& gfxContext, const Camera& camera, ColorBuffer& ColorTarget, DepthBuffer& DepthTarget)
 	{
-		mPrewView.ViewProj = camera.GetViewProjMatrix();
-		mPrewView.billboardMat = Matrix4x4(
+		if (!sInitComplete || sParticlesActive.size() == 0)return;
+
+		sPrewView.ViewProj = camera.GetViewProjMatrix();
+		sPrewView.billboardMat = Matrix4x4(
 			camera.GetRightVec(),
 			camera.GetUpVec(),
 			camera.GetForwardVec());
@@ -389,33 +165,100 @@ namespace AtomEngine
 		viewport.MinDepth = 0.0;
 		viewport.MaxDepth = 1.0;
 
-		gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-		gfxContext.TransitionResource(mParticleBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
 		gfxContext.SetRootSignature(mParticleSig);
-		gfxContext.SetPipelineState(mParticlePSOs[mBlendMode]);
+		gfxContext.SetPipelineState(mParticlePSOs[sBlendMode]);
+		gfxContext.TransitionResource(sParticleBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		gfxContext.TransitionResource(sDrawIndirectArgs, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+
+		static const InputVertex verteices[6] = {
+			{{-0.5f,-0.5f,0.0f},{0.0f,1.0f}},
+			{{-0.5f,0.5f, 0.0f},{ 0.0f,0.0f}},
+			{{0.5f,-0.5f, 0.0f},{ 1.0f,1.0f}},
+			{{0.5f,-0.5f, 0.0f},{ 1.0f,1.0f}},
+			{{-0.5f,0.5f, 0.0f},{ 0.0f,0.0f}},
+			{{0.5f,0.5f,0.0f},{1.0f,0.0f}}
+		};
+		gfxContext.SetDynamicVB(0, _countof(verteices), sizeof(InputVertex), verteices);
+
+		gfxContext.SetDynamicConstantBufferView(0, sizeof(sPrewView), &sPrewView);
+		gfxContext.SetDynamicDescriptor(3, 0, sParticleBuffer.GetSRV());
+		for (uint32_t i = 0; i < sParticlesActive.size(); ++i)
+		{
+			sParticlesActive[i]->Render(gfxContext);
+		}
 
 		gfxContext.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		gfxContext.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV_ReadOnly());
+		gfxContext.TransitionResource(ColorTarget, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		gfxContext.TransitionResource(DepthTarget, D3D12_RESOURCE_STATE_DEPTH_READ);
+		gfxContext.SetRenderTarget(ColorTarget.GetRTV(), DepthTarget.GetDSV_DepthReadOnly());
 		gfxContext.SetViewportAndScissor(viewport, scissor);
 
-		gfxContext.SetDynamicVB(0, mVerteices.size(), sizeof(ParticleVertex), mVerteices.data());
-
-		gfxContext.SetDynamicConstantBufferView(0, sizeof(mPrewView), &mPrewView);
-		gfxContext.SetDynamicConstantBufferView(1, sizeof(mEmitter), &mEmitter);
-		gfxContext.SetDynamicConstantBufferView(2, sizeof(mUpdate), &mUpdate);
-
-		gfxContext.SetDynamicDescriptor(4, 0, mParticleBuffer.GetSRV());
-		gfxContext.SetDynamicDescriptor(4, 1, tex.GetSRV());
-
-		gfxContext.DrawInstanced((UINT)mVerteices.size(), mEmitter.count);
+		gfxContext.DrawIndirect(sDrawIndirectArgs);
 	}
 
 	void ParticleSystem::Shutdown()
 	{
-		mVerteices.clear();
-		mParticlePSOs.clear();
-		mParticleBuffer.Destroy();
+		sParticlePool.clear();
+		sParticlesActive.clear();
+		sParticleBuffer.Destroy();
+		sDrawIndirectArgs.Destroy();
+		sDispatchIndirectArgs.Destroy();
+		sFinalDispatchIndirectArgs.Destroy();
+	}
+
+	uint32_t ParticleSystem::CreateParticle(ParticleProperty& props)
+	{
+		if (!sInitComplete)
+			return 0xffffffff;
+
+		static std::mutex s_InstantiateNewEffectMutex;
+		s_InstantiateNewEffectMutex.lock();
+		Particle* newEffect = new Particle(props);
+		sParticlePool.emplace_back(newEffect);
+		sParticlesActive.push_back(newEffect);
+		s_InstantiateNewEffectMutex.unlock();
+
+		uint32_t index = (uint32_t)sParticlesActive.size() - 1;
+		sParticlesActive[index]->Initialize();
+		return index;
+	}
+
+	void ParticleSystem::ResetParticle(uint32_t particleId)
+	{
+		if (!sInitComplete || sParticlesActive.size() == 0 || particleId >= sParticlesActive.size())
+			return;
+
+		sParticlesActive[particleId]->Reset();
+	}
+
+	float ParticleSystem::GetCurrentLife(uint32_t particleId)
+	{
+		if (!sInitComplete || sParticlesActive.size() == 0 || particleId >= sParticlesActive.size())
+			return -1.0;
+
+		return sParticlesActive[particleId]->GetElapsedTime();
+	}
+
+	void ParticleSystem::RegisterTexture(uint32_t particleId, const TextureRef& texture)
+	{
+		if (!sInitComplete || sParticlesActive.size() == 0 || particleId >= sParticlesActive.size())
+			return;
+
+        sParticlesActive[particleId]->SetTexture(texture);
+	}
+
+	void ParticleSystem::SetFinalBuffers(ComputeContext& CompContext)
+	{
+		CompContext.SetPipelineState(sParticleFinalDispatchIndirectArgsCS);
+		CompContext.TransitionResource(sParticleBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
+		CompContext.TransitionResource(sFinalDispatchIndirectArgs, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		CompContext.TransitionResource(sDrawIndirectArgs, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		CompContext.SetDynamicDescriptor(2, 0, sFinalDispatchIndirectArgs.GetUAV());
+		CompContext.SetDynamicDescriptor(2, 1, sDrawIndirectArgs.GetUAV());
+		CompContext.SetDynamicDescriptor(3, 0, sParticleBuffer.GetCounterSRV(CompContext));
+
+		CompContext.Dispatch(1, 1, 1);
 	}
 
 }

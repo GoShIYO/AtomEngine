@@ -11,6 +11,9 @@
 
 #include "../Tag.h"
 
+#include "Runtime/Function/Render/Particle/ParticleSystem.h"
+#include "Runtime/Function/Render/Particle/ParticleEditor.h"
+
 GameScene::GameScene(std::string_view name, SceneManager& manager)
  : Scene(name,manager){
 }
@@ -22,6 +25,36 @@ bool GameScene::Initialize()
 	
 	//システム初期化
 	InitSystems();
+
+	ParticleProperty props;
+
+	props.MinStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	props.MaxStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	props.MinEndColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+	props.MaxEndColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	props.TotalActiveLifetime = 0.0f;
+	props.LifeMinMax = float2(1.0f, 3.0f);
+
+	props.Size = Vector4(4.0f, 4, 4.0f, 4);
+
+	props.Velocity = Vector4(20.0f, 200.0f, 50.0f, 180.0f);
+
+	props.MassMinMax = Vector2(4.5f, 15.0f);
+
+	props.EmitProperties.Gravity = Vector3(0.0f, -9.8f, 0.0f);
+	props.EmitProperties.FloorHeight = -0.5f;
+	props.EmitProperties.EmitPosW = Vector3(0, 0, 0);
+	props.EmitProperties.LastEmitPosW = Vector3(0, 0, 0);
+	props.EmitProperties.MaxParticles = 1000;
+
+	props.EmitRate = 64;
+
+	props.Spread = float3(20.0f, 50.0f, 0.1f);
+
+	props.TexturePath = L"Asset/Textures/bubbles.png";
+
+	ParticleSystem::CreateParticle(props);
 
 	return Scene::Initialize();
 }
@@ -63,6 +96,7 @@ void GameScene::InitSystems()
 
 void GameScene::Render()
 {
+	ParticleEditor::Get().Render();
 	//Primitive::DrawLine(Vector3(0, 0, 0), Vector3(1, 1, 1), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawCube(Vector3(0, 0, 0), Vector3(1, 1, 1), testBoxTrans.GetMatrix(), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawSphere(Vector3(0, 0, 0), 1, Color::Green, mCamera.GetViewProjMatrix(),uint32_t(segment), uint32_t(segment));

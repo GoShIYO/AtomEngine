@@ -181,6 +181,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Game\System\MoveSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\Particle.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleEditor.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\OverlayPass.h" />
     <ClInclude Include="Source\Game\Scene\GameScene.h" />
@@ -292,6 +293,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Game\System\CollisionSystem.cpp" />
     <ClCompile Include="Source\Game\System\MoveSystem.cpp" />
     <ClCompile Include="Source\Game\Voxel\VoxelWorld.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\Particle.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleEditor.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\OverlayPass.cpp" />
     <ClCompile Include="Source\Game\Scene\GameScene.cpp" />
@@ -716,6 +719,28 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\Particle\ParticleDispatchIndirectArgs.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\Particle\ParticleEmitCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Asset\Shaders\PresentPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -822,6 +847,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="Asset\Shaders\Light\FillLightGridCS.hlsli" />
     <None Include="Asset\Shaders\Light\LightGrid.hlsli" />
     <None Include="Asset\Shaders\Light\Lighting.hlsli" />
+    <None Include="Asset\Shaders\Particle\ParticleFinalDispatchIndirectArgsCS.hlsli" />
+    <None Include="Asset\Shaders\Particle\ParticleUpdateCommon.hlsli" />
     <None Include="Asset\Shaders\Unility.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
