@@ -8,21 +8,19 @@
 
 namespace AtomEngine
 {
-	class com_exception : public std::exception
+	class com_exception : public std::runtime_error
 	{
-	public:
-		com_exception(HRESULT hr) : result(hr) {}
-
-		const char* what() const noexcept override
+		inline std::string what(HRESULT hr)
 		{
-			static char s_str[64] = {};
-			sprintf_s(s_str, "Failure with HRESULT of %08X",
-				static_cast<unsigned int>(result));
-			return s_str;
+			char s_str[64] = {};
+			sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<UINT>(hr));
+			return std::string(s_str);
 		}
-
+	public:
+		com_exception(HRESULT hr) : std::runtime_error(what(hr)), result(hr) {}
+		HRESULT Error() const { return result; }
 	private:
-		HRESULT result;
+		const HRESULT result;
 	};
 
 	// Helper utility converts D3D API failures into exceptions.
@@ -30,6 +28,15 @@ namespace AtomEngine
 	{
 		if (FAILED(hr))
 		{
+			throw com_exception(hr);
+		}
+	}
+
+	inline void ThrowIfFailed(HRESULT hr, const wchar_t* msg)
+	{
+		if (FAILED(hr))
+		{
+			OutputDebugString(msg);
 			throw com_exception(hr);
 		}
 	}
@@ -83,7 +90,7 @@ namespace AtomEngine
 	{
 	}
 #endif
-	
+
 	std::wstring UTF8ToWString(const std::string& str);
 	std::string WStringToUTF8(const std::wstring& str);
 	std::string ToLower(const std::string& str);

@@ -33,7 +33,7 @@ namespace AtomEngine
 			Matrix4x4 temp;
 			temp.MakeAffine(scale, rotation, transition);
 			if (parent)
-				return parent->GetMatrix() * temp;
+				return temp * parent->GetMatrix();
 			return temp;
 		}
 
@@ -42,7 +42,7 @@ namespace AtomEngine
 			Matrix4x4 temp;
 			temp.MakeAffine(scale, rotation, transition);
 			if (parent)
-				return parent->GetMatrix3x3() * Matrix3x3(temp);
+				return Matrix3x3(temp) * parent->GetMatrix3x3();
 			return Matrix3x3(temp);
 		}
 
@@ -66,7 +66,7 @@ namespace AtomEngine
 		inline Vector3 GetWorldPosition()
 		{
 			Matrix4x4 tmp = GetMatrix();
-			return Vector3{ tmp.mat[3][0],tmp.mat[3][1] ,tmp.mat[3][2] };
+			return tmp.GetTrans();
 		}
 
 

@@ -21,6 +21,7 @@ example:
 	std::vector<double> random_doubles(5);
 	Random::fill<std::uniform_real_distribution<double>>(random_doubles, 0.0, 1.0);
 */
+
 namespace AtomEngine
 {
 	class Random
@@ -45,9 +46,6 @@ namespace AtomEngine
 		template<typename T>
 		static T uniform(T min, T max)
 		{
-			if (min > max)
-				std::swap(min, max);
-
 			using Distribution = std::conditional_t<std::is_integral_v<T>,
 				std::uniform_int_distribution<T>,
 				std::uniform_real_distribution<T>>;

@@ -60,12 +60,12 @@ namespace AtomEngine
     inline BoundingPlane::BoundingPlane(const Vector3& pointOnPlane, const Vector3& normalToPlane)
     {
         auto nrmPlane = Math::Normalize(normalToPlane);
-        m_repr = Vector4(normalToPlane, -Math::Dot(pointOnPlane, nrmPlane));
+        m_repr = Vector4(nrmPlane, -Math::Dot(pointOnPlane, nrmPlane));
     }
 
     inline BoundingPlane PlaneFromPointsCCW(const Vector3& A, const Vector3& B, const Vector3& C)
     {
-        return BoundingPlane(A, Math::Cross(B - A, C - A));
+        return BoundingPlane(A, Math::Cross(C - A, B - A));
     }
 
 }

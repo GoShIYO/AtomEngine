@@ -18,6 +18,7 @@ namespace AtomEngine
 	{
 		mStateBuffers[0].Destroy();
 		mStateBuffers[1].Destroy();
+		mInitBuffer.Destroy();
 		mDispatchIndirectArgs.Destroy();
 	}
 

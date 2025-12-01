@@ -42,9 +42,9 @@ namespace AtomEngine
 
 	Vector3 Math::Normalize(const Vector3& v)
 	{
-        if (v.IsZero())
+		if (v.IsZero())
 			return Vector3::UNIT_SCALE;
-        return v.NormalizedCopy();
+		return v.NormalizedCopy();
 	}
 
 	float Math::Dot(const Vector3& lhs, const Vector3& rhs)
@@ -54,9 +54,9 @@ namespace AtomEngine
 
 	Vector3 Math::Cross(const Vector3& lhs, const Vector3& rhs)
 	{
-        if (lhs.IsZero() || rhs.IsZero())
+		if (lhs.IsZero() || rhs.IsZero())
 			return Vector3::ZERO;
-        return Vector3(
+		return Vector3(
 			lhs.y * rhs.z - lhs.z * rhs.y,
 			lhs.z * rhs.x - lhs.x * rhs.z,
 			lhs.x * rhs.y - lhs.y * rhs.x
@@ -70,13 +70,17 @@ namespace AtomEngine
 
 	Matrix4x4 Math::MakeLookAtMatrix(const Vector3& eyePosition, const Vector3& targetPosition, const Vector3& upDir)
 	{
-		Vector3 zaxis = (targetPosition - eyePosition).NormalizedCopy();
-		Vector3 xaxis = upDir.Cross(zaxis).NormalizedCopy();
-		Vector3 yaxis = zaxis.Cross(xaxis);
-		Vector3 w = { -xaxis.Dot(eyePosition) , -yaxis.Dot(eyePosition) , -zaxis.Dot(eyePosition) };
+		XMVECTOR eye = XMVectorSet(eyePosition.x, eyePosition.y, eyePosition.z, 1.0f);
+		XMVECTOR target = XMVectorSet(targetPosition.x, targetPosition.y, targetPosition.z, 1.0f);
+		XMVECTOR up = XMVectorSet(upDir.x, upDir.y, upDir.z, 0.0f);
 
-		Matrix4x4 view(xaxis,yaxis,zaxis,w);
-		return view;
+		XMMATRIX view = XMMatrixLookAtLH(eye, target, up);
+		return Matrix4x4{
+			Vector4(view.r[0].m128_f32),
+			Vector4(view.r[1].m128_f32),
+			Vector4(view.r[2].m128_f32),
+			Vector4(view.r[3].m128_f32)
+		};
 	}
 
 	Matrix4x4 Math::MakePerspectiveMatrix(Radian fovy, float aspect, float znear, float zfar)

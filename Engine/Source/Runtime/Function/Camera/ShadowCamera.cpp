@@ -7,36 +7,31 @@ namespace AtomEngine
 		const Vector3& shadowCenter,
 		const Vector3& shadowBounds,
 		uint32_t BufferWidth,
-		uint32_t BufferHeight,
-		uint32_t BufferPrecision
+		uint32_t BufferHeight
 	)
 	{
-		SetLookDirection(lightDir, Vector3::FORWARD);
+		float radius = shadowBounds.Length();
 
-		Vector3 RcpDimensions = 1 / shadowBounds;
-		Vector3 QuantizeScale = Vector3((float)BufferWidth, (float)BufferHeight, (float)((1 << BufferPrecision) - 1)) * RcpDimensions;
+		Vector3 lightPos = -2.0f * radius * lightDir + shadowCenter;
+		mViewMatrix = Math::MakeLookAtMatrix(lightPos, shadowCenter, Vector3::UP);
 
-		Vector3 center = GetRotation().Conjugate() * shadowCenter;
-		center = Math::Floor(center * QuantizeScale) / QuantizeScale;
-		center = GetRotation() * center;
+		Vector3 sphereCenterLS = shadowCenter * mViewMatrix;
 
-		SetPosition(center);
+		float l = sphereCenterLS.x - radius;
+		float r = sphereCenterLS.x + radius;
+		float b = sphereCenterLS.y - radius;
+		float t = sphereCenterLS.y + radius;
+		float n = sphereCenterLS.z - radius;
+		float f = sphereCenterLS.z + radius;
 
-		//float l = -shadowBounds.x * 0.5f;
-		//float r = shadowBounds.x * 0.5f;
-		//float b = -shadowBounds.y * 0.5f;
-		//float t = shadowBounds.y * 0.5f;
-		//float n = 0.0f;
-		//float f = shadowBounds.z;
-		//
-		//auto proj = Math::MakeOrthographicProjectionMatrix(l, r, b, t, n, f);
+		SetProjMatrix(Math::MakeOrthographicProjectionMatrix(l, r, b, t, n, f));
+		mViewProjMatrix = mViewMatrix * mProjMatrix;
 
-		//SetProjMatrix(proj);
+		Matrix4x4 ndcToUV = Matrix4x4(
+			Matrix3x3::MakeScale({ 0.5f, -0.5f, 1.0f }),
+			Vector3(0.5f, 0.5f, 0.0f)
+		);
 
-		SetProjMatrix(Matrix4x4::MakeScale(Vector3(2.0f, 2.0f, 1.0f) * RcpDimensions));
-
-		Update();
-
-		mShadowMatrix = mViewProjMatrix * Matrix4x4(Matrix3x3::MakeScale({ 0.5f,-0.5f,1.0f }), Vector3(0.5f, 0.5f, 0.0f));
+		mShadowMatrix = mViewProjMatrix * ndcToUV;
 	}
 }

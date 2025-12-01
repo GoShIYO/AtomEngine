@@ -78,7 +78,7 @@ namespace AtomEngine
         ASSERT(IsReady());
     }
 
-    void CommandListManager::Create(ID3D12Device5* pDevice)
+    void CommandListManager::Create(ID3D12Device* pDevice)
     {
         ASSERT(pDevice != nullptr);
 
@@ -89,7 +89,7 @@ namespace AtomEngine
         mCopyQueue.Create(pDevice);
     }
 
-    void CommandListManager::CreateNewCommandList(D3D12_COMMAND_LIST_TYPE Type, ID3D12GraphicsCommandList5** List, ID3D12CommandAllocator** Allocator)
+    void CommandListManager::CreateNewCommandList(D3D12_COMMAND_LIST_TYPE Type, ID3D12GraphicsCommandList** List, ID3D12CommandAllocator** Allocator)
     {
         ASSERT(Type != D3D12_COMMAND_LIST_TYPE_BUNDLE, "Bundles are not yet supported");
         switch (Type)
@@ -100,7 +100,7 @@ namespace AtomEngine
         case D3D12_COMMAND_LIST_TYPE_COPY: *Allocator = mCopyQueue.RequestAllocator(); break;
         }
 
-        ThrowIfFailed(mDevice->CreateCommandList(1, Type, *Allocator, nullptr, IID_PPV_ARGS(reinterpret_cast<ID3D12GraphicsCommandList**>(List))));
+        ThrowIfFailed(mDevice->CreateCommandList(1, Type, *Allocator, nullptr, IID_PPV_ARGS(List)));
         (*List)->SetName(L"CommandList");
     }
 

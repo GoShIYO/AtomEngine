@@ -276,13 +276,12 @@ namespace AtomEngine
 
 	Vector3 Quaternion::operator*(const Vector3& v) const
 	{
-		Vector3 qvec(x, y, z);
-		Vector3 uv = qvec.Cross(v);
-		Vector3 uuv = qvec.Cross(uv);
-		uv *= (2.0f * w);
-		uuv *= 2.0f;
+		Quaternion vq = Quaternion(v.x, v.y, v.z, 0);
 
-		return v + uv + uuv;
+		Quaternion temp = (*this) * vq;
+		Quaternion result = temp * this->Conjugate();
+
+		return Vector3{ result.x, result.y, result.z };
 	}
 
 	Radian Quaternion::Yaw(bool reprojectAxis) const

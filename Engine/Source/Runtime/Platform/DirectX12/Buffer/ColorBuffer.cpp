@@ -9,7 +9,7 @@ namespace AtomEngine
 
     void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips)
     {
-        ASSERT(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on uvCheckerTex arrays");
+        ASSERT(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on mTexture arrays");
 
         m_NumMipMaps = NumMips - 1;
 
