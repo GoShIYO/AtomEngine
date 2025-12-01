@@ -23,7 +23,7 @@ namespace AtomEngine
 	{
 		void CompositeOverlays(GraphicsContext& Context);
 
-		ComPtr<ID3D12Device5> gDevice = nullptr;
+		ComPtr<ID3D12Device> gDevice = nullptr;
 		CommandListManager gCommandManager;
 		ContextManager gContextManager;
 
@@ -266,12 +266,12 @@ namespace AtomEngine
 		{
 #ifdef _DEBUG
 
-			ComPtr<ID3D12Debug1> debugController = nullptr;
-			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
-			{
-				debugController->EnableDebugLayer();
-				debugController->SetEnableGPUBasedValidation(TRUE);
-			}
+			//ComPtr<ID3D12Debug1> debugController = nullptr;
+			//if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+			//{
+			//	debugController->EnableDebugLayer();
+			//	debugController->SetEnableGPUBasedValidation(TRUE);
+			//}
 
 #endif // _DEBUG
 
@@ -314,7 +314,7 @@ namespace AtomEngine
 			for (size_t i = 0; i < _countof(featureLevels); i++)
 			{
 				// 採用したアダプターでデバイスを生成
-				HRESULT hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(gDevice.GetAddressOf()));
+				HRESULT hr = D3D12CreateDevice(useAdapter.Get(), featureLevels[i], IID_PPV_ARGS(&gDevice));
 				if (SUCCEEDED(hr))
 				{
 					Log("feature levels is:%s", featureLevelStrings[i]);

@@ -13,7 +13,7 @@ namespace AtomEngine
 	{
 		enum eResolution { k720p, k900p, k1080p, k1440p, k1800p, k2160p };
 
-		extern Microsoft::WRL::ComPtr<ID3D12Device5> gDevice;
+		extern Microsoft::WRL::ComPtr<ID3D12Device> gDevice;
 		extern CommandListManager gCommandManager;
 		extern ContextManager gContextManager;
 

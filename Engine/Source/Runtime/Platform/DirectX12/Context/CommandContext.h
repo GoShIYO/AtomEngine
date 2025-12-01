@@ -97,7 +97,7 @@ namespace AtomEngine
 			return reinterpret_cast<ComputeContext&>(*this);
 		}
 
-		ID3D12GraphicsCommandList5* GetCommandList()
+		ID3D12GraphicsCommandList* GetCommandList()
 		{
 			return mCommandList;
 		}
@@ -146,7 +146,7 @@ namespace AtomEngine
 		void BindDescriptorHeaps(void);
 
 		CommandListManager* mOwningManager;
-		ID3D12GraphicsCommandList5* mCommandList;
+		ID3D12GraphicsCommandList* mCommandList;
 		ID3D12CommandAllocator* mCurrentAllocator;
 
 		ID3D12RootSignature* mCurGraphicsRootSignature;

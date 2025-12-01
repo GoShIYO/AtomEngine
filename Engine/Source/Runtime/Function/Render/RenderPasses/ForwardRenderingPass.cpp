@@ -13,13 +13,14 @@ namespace AtomEngine
 	ForwardRenderingPass::ForwardRenderingPass()
 	{
 		mSkybox.Initialize();
-		//mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kEnvHDR.dds");
-		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kBrdf.dds");
+		//mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvHDR.dds");
+		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvBrdf.dds");
 		mSkybox.SetIBLTextures(
-			L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kDiffuseHDR.dds",
-			L"Asset/Textures/EnvironmentMaps/PaperMill/PaperMill_E_3kSpecularHDR.dds");
+			L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvDiffuseHDR.dds",
+			L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvSpecularHDR.dds");
 		mGpuHandle = Renderer::GetTextureHeap().Alloc();
 		DX12Core::gDevice->CopyDescriptorsSimple(1, mGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
 	}
 
 	ForwardRenderingPass::~ForwardRenderingPass()
@@ -27,22 +28,16 @@ namespace AtomEngine
 		mSkybox.Shutdown();
 	}
 
-	struct ShadowParams
-	{
-		Vector3 Center;
-		Vector3 Bounds;
-	};
-
 	void ForwardRenderingPass::Render(GraphicsContext& gfxContext)
 	{
 		ASSERT(mWorld != nullptr);
 
 		const D3D12_VIEWPORT& viewport = mViewport;
 		const D3D12_RECT& scissor = mScissor;
-		float costheta = cosf(mSunOrientation);
-		float sintheta = sinf(mSunOrientation);
-		float cosphi = cosf(mSunInclination * Math::HalfPI);
-		float sinphi = sinf(mSunInclination * Math::HalfPI);
+		float costheta = Math::cos(mSunOrientation);
+		float sintheta = Math::sin(mSunOrientation);
+		float cosphi = Math::cos(mSunInclination * Math::HalfPI);
+		float sinphi = Math::sin(mSunInclination * Math::HalfPI);
 		//mSunDirection = Math::Normalize(Vector3(costheta * cosphi, sinphi, sintheta * cosphi));
 		ImGui::Begin("Forward Rendering");
 		ImGui::DragFloat("SunLightIntensity", &mSunLightIntensity, 0.01f, 0.0f, 1000.0f);
@@ -52,7 +47,7 @@ namespace AtomEngine
 		ImGui::DragFloat("IBLFactor", &mIBLFactor, 0.01f, 0.0f, 2.0f);
 		ImGui::DragFloat("IBLBias", &mIBLBias, 0.1f, 0.0f, 10.0f);
 		ImGui::DragFloat3("SunCenter", mShadowCenter.ptr(), 0.1f);
-		ImGui::DragFloat3("SunBounds", mShadowBounds.ptr(), 0.1f, 0.1f);
+		ImGui::DragFloat3("ShadowDim", mShadowDim.ptr(), 0.1f, 0.1f);
 		ImGui::Checkbox("EnableIBL", &mEnableIBL);
 		ImGui::End();
 
@@ -62,15 +57,9 @@ namespace AtomEngine
 
 		mSunDirection.Normalize();
 
-		Vector3 cameraPos = mCamera->GetPosition();
-		mShadowCamera.UpdateMatrix(
-			mSunDirection,
-			mShadowCenter,
-			mShadowBounds,
-			(uint32_t)gShadowBuffer.GetWidth(),
-			(uint32_t)gShadowBuffer.GetHeight(),
-			16
-		);
+		mShadowCamera.UpdateMatrix(mSunDirection, mCamera->GetPosition(), mShadowDim,
+			(uint32_t)gShadowBuffer.GetWidth(), (uint32_t)gShadowBuffer.GetHeight());
+
 		mSkybox.SetIBLBias(mIBLBias);
 
 		GlobalConstants globals;
@@ -127,8 +116,8 @@ namespace AtomEngine
 				mSkybox.Render(gfxContext, mCamera, viewport, scissor);
 
 			queue.RenderMeshes(RenderQueue::kOpaque, gfxContext, globals);
-
 		}
+
 		queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
 	}
 

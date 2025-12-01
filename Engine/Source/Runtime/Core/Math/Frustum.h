@@ -49,7 +49,8 @@ namespace AtomEngine
 		float radius = sphere.GetRadius();
 		for (int i = 0; i < 6; ++i)
 		{
-			if (m_FrustumPlanes[i].DistanceFromPoint(sphere.GetCenter()) + radius < 0.0f)
+			const auto& p = m_FrustumPlanes[i];
+			if (p.DistanceFromPoint(sphere.GetCenter()) + radius < 0.0f)
 				return false;
 		}
 		return true;
@@ -59,7 +60,7 @@ namespace AtomEngine
 	{
 		for (int i = 0; i < 6; ++i)
 		{
-			BoundingPlane p = m_FrustumPlanes[i];
+			const auto& p = m_FrustumPlanes[i];
 			Vector3 farCorner = Math::Select(aabb.GetMin(), aabb.GetMax(), p.GetNormal() > Vector3::ZERO);
 			if (p.DistanceFromPoint(farCorner) < 0.0f)
 				return false;

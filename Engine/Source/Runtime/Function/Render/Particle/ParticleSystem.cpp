@@ -222,6 +222,8 @@ namespace AtomEngine
 	{
 		sParticlePool.clear();
 		sParticlesActive.clear();
+		sTextures.clear();
+
 		sTextureArrayHeap.Destroy();
 		sParticleBuffer.Destroy();
 		sDrawIndirectArgs.Destroy();

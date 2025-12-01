@@ -367,16 +367,13 @@ namespace AtomEngine
 		XMVECTOR va = XMVectorSet(a.x, a.y, a.z, 0.0f);
 		XMVECTOR vb = XMVectorSet(b.x, b.y, b.z, 0.0f);
 
-		uint32_t maskValue = control ? 0xFFFFFFFF : 0x00000000;
-		XMVECTOR mask = XMVectorSetInt(maskValue, maskValue, maskValue, maskValue);
-
+		XMVECTOR mask = control ? XMVectorTrueInt() : XMVectorFalseInt();
 		XMVECTOR result = XMVectorSelect(va, vb, mask);
 
 		Vector3 out;
 		XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(&out), result);
 		return out;
 	}
-
 
 	inline float Math::Distance(const Vector3& a, const Vector3& b)
 	{

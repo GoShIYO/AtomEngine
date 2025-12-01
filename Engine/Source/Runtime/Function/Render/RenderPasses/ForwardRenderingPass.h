@@ -3,7 +3,6 @@
 #include "Runtime/Function/Camera/ShadowCamera.h"
 
 #include "../SkyboxRenderer.h"
-#include "../GridRenderer.h"
 
 namespace AtomEngine
 {
@@ -20,14 +19,14 @@ namespace AtomEngine
 		ShadowCamera mShadowCamera;
 
 		float mSunLightIntensity = 1.0f;
-		Vector3 mSunDirection = { 0,-1,0 };
+		Vector3 mSunDirection = { -0.14f,-0.446f,0.884f };
 		float mSunOrientation = -0.5f;
 		float mSunInclination = 0.75f;
-		Vector3 mShadowCenter = { 0.0f,3,0.0f };
-		Vector3 mShadowBounds = { 25, 20, 2 };
+		Vector3 mShadowCenter = { 0.0f,0,0.0f };
+		Vector3 mShadowDim = { 30, 30, 30 };
 		float mIBLBias = 2.0f;
-		float mIBLFactor = 0.5f;
-		bool mEnableIBL = false;
+		float mIBLFactor = 1.0f;
+		bool mEnableIBL = true;
 		DescriptorHandle mGpuHandle;
 
 	private:

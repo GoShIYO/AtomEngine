@@ -863,30 +863,35 @@ namespace AtomEngine
 		{
 			assert(IsAffine());
 
-			return Vector3(mat[0][0] * v.x + mat[0][1] * v.y + mat[0][2] * v.z + mat[0][3],
-				mat[1][0] * v.x + mat[1][1] * v.y + mat[1][2] * v.z + mat[1][3],
-				mat[2][0] * v.x + mat[2][1] * v.y + mat[2][2] * v.z + mat[2][3]);
+			return Vector3(
+				mat[0][0] * v.x + mat[1][0] * v.y + mat[2][0] * v.z + mat[3][0],
+				mat[0][1] * v.x + mat[1][1] * v.y + mat[2][1] * v.z + mat[3][1],
+				mat[0][2] * v.x + mat[1][2] * v.y + mat[2][2] * v.z + mat[3][2]);
 		}
 
 		Vector4 TransformAffine(const Vector4& v) const
 		{
 			assert(IsAffine());
-
 			return Vector4(
-				mat[0][0] * v.x + mat[0][1] * v.y + mat[0][2] * v.z + mat[0][3] * v.w,
-				mat[1][0] * v.x + mat[1][1] * v.y + mat[1][2] * v.z + mat[1][3] * v.w,
-				mat[2][0] * v.x + mat[2][1] * v.y + mat[2][2] * v.z + mat[2][3] * v.w,
-				v.w);
+				v.x * mat[0][0] + v.y * mat[1][0] + v.z * mat[2][0] + v.w * mat[3][0],
+				v.x * mat[0][1] + v.y * mat[1][1] + v.z * mat[2][1] + v.w * mat[3][1],
+				v.x * mat[0][2] + v.y * mat[1][2] + v.z * mat[2][2] + v.w * mat[3][2],
+				v.w
+			);
 		}
 
 		friend Vector3 operator*(const Vector3& v, const Matrix4x4& m)
 		{
-			assert(m.IsAffine());
-			return Vector3(
-				m.mat[0][0] * v.x + m.mat[0][1] * v.y + m.mat[0][2] * v.z + m.mat[0][3],
-				m.mat[1][0] * v.x + m.mat[1][1] * v.y + m.mat[1][2] * v.z + m.mat[1][3],
-				m.mat[2][0] * v.x + m.mat[2][1] * v.y + m.mat[2][2] * v.z + m.mat[2][3]
-			);
+			Vector3 r = {
+				m.mat[0][0] * v.x + m.mat[1][0] * v.y + m.mat[2][0] * v.z + m.mat[3][0],
+				m.mat[0][1] * v.x + m.mat[1][1] * v.y + m.mat[2][1] * v.z + m.mat[3][1],
+				m.mat[0][2] * v.x + m.mat[1][2] * v.y + m.mat[2][2] * v.z + m.mat[3][2],
+			};
+
+			float w = v.x * m.mat[0][3] + v.y * m.mat[1][3] + v.z * m.mat[2][3] + m.mat[3][3];
+			assert(w != 0);
+			r /= w;
+			return r;
 		}
 
 		Matrix4x4 Inverse() const

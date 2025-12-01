@@ -61,7 +61,7 @@ namespace AtomEngine
         CommandListManager();
         ~CommandListManager();
 
-        void Create(ID3D12Device5* pDevice);
+        void Create(ID3D12Device* pDevice);
         void Shutdown();
 
         CommandQueue& GetGraphicsQueue(void) { return mGraphicsQueue; }
@@ -85,7 +85,7 @@ namespace AtomEngine
 
         void CreateNewCommandList(
             D3D12_COMMAND_LIST_TYPE Type,
-            ID3D12GraphicsCommandList5** List,
+            ID3D12GraphicsCommandList** List,
             ID3D12CommandAllocator** Allocator);
 
         //フェンスにすでに実行終わっいるかどうかをテストします
@@ -107,7 +107,7 @@ namespace AtomEngine
 
     private:
 
-        ID3D12Device5* mDevice;
+        ID3D12Device* mDevice;
 
         CommandQueue mGraphicsQueue;
         CommandQueue mComputeQueue;
