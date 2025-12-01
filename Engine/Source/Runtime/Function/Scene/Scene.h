@@ -30,13 +30,13 @@ namespace AtomEngine
 		void RequestReplaceScene(std::unique_ptr<Scene>&& scene);
 
 		World& GetWorld() { return mWorld; }
-		Camera& GetCamera() { return mCamera; }
+		Camera& GetCamera() { return *mCamera; }
 		bool IsInitialized() const { return mIsInitialized; }
 
 	protected:
 		std::string mName;
 		World mWorld;
-		Camera mCamera;
+		Camera* mCamera;
 		SceneManager& mManager;
 
 		bool mIsInitialized;

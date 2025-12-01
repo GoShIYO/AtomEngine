@@ -20,8 +20,9 @@ GameScene::GameScene(std::string_view name, SceneManager& manager)
 
 bool GameScene::Initialize()
 {
-	mCamera.SetPosition({ 0.0f, 35.0f, -50.0f });
-	mDebugCamera.reset(new DebugCamera(mCamera));
+	mCamera = &mGameCamera;
+	mGameCamera.SetPosition({ 0.0f, 35.0f, -50.0f });
+	mDebugCamera.reset(new DebugCamera(mGameCamera));
 	
 	//システム初期化
 	InitSystems();
@@ -61,6 +62,25 @@ bool GameScene::Initialize()
 	ParticleSystem::CreateParticleFromFile("Asset/Particles/sparks.json");
 	ParticleSystem::CreateParticleFromFile("Asset/Particles/wavering.json");
 
+	auto model = AssetManager::LoadModel(L"Asset/Models/Stage/stage_test.obj");
+	auto obj = mWorld.CreateGameObject("stage");
+	obj->AddComponent<MaterialComponent>(model);
+	obj->AddComponent<MeshComponent>(model);
+	obj->AddComponent<TransformComponent>(Vector3::ZERO, Quaternion::IDENTITY, Vector3(20, 20, 20));
+	AddGameObject(std::move(obj));
+
+	auto playerModel = AssetManager::LoadModel(L"Asset/Models/player/player.obj");
+	auto player = mWorld.CreateGameObject("player");
+	player->AddComponent<MaterialComponent>(playerModel);
+	player->AddComponent<MeshComponent>(playerModel);
+	player->AddComponent<TransformComponent>(Vector3(-5, 5, -5), Quaternion::IDENTITY, Vector3(1.0f, 1.0f, 1.0f));
+	player->AddComponent<Body>(Vector3(0.5f, 0.5f, 0.5f), Vector3::ZERO);
+	player->AddComponent<PlayerTag>();
+	AddGameObject(std::move(player));
+
+	mVoxelWorld.Load("Asset/Voxel/test.vox");
+
+
 	return Scene::Initialize();
 }
 
@@ -70,6 +90,7 @@ void GameScene::Update(float deltaTime)
 	//カメラ更新
 	mDebugCamera->Update(deltaTime);
 
+	mPlayerSystem->Update(mWorld,mGameCamera,deltaTime);
 
 	ImGuiHandleObjects();
 	DestroyGameObject();
@@ -96,7 +117,7 @@ void GameScene::DestroyGameObject()
 
 void GameScene::InitSystems()
 {
-
+	mPlayerSystem.reset(new PlayerSystem());
 }
 
 void GameScene::Render()

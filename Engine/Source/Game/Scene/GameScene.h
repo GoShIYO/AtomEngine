@@ -21,7 +21,13 @@ public:
 
 private:
 	std::unordered_map<Entity, std::unique_ptr<GameObject>> mGameObjects;
+	Camera mGameCamera;
+	
+	std::unique_ptr<PlayerSystem> mPlayerSystem;
 
+	VoxelWorld mVoxelWorld;
+	
+	
 	std::unique_ptr<DebugCamera> mDebugCamera;
 	bool useDebug = false;
 private:
