@@ -314,12 +314,11 @@ namespace AtomEngine
 		std::lock_guard<std::mutex> guard(sModelMutex);
 
 		std::wstring filePathW = UTF8ToWString(filePath);
-		auto it = sModelDataCache.find(filePathW);
-		if (it != sModelDataCache.end())
-			return it->second;
-
 		std::wstring basePath = GetBasePath(filePathW);
 		std::wstring modelName = RemoveBasePath(filePathW);
+		auto it = sModelDataCache.find(modelName);
+		if (it != sModelDataCache.end())
+			return it->second;
 
 		auto model = std::make_shared<Model>();
 
@@ -336,23 +335,84 @@ namespace AtomEngine
 
 		model->mMeshData = std::move(modelData.meshes);
 		model->mSceneGraph = std::move(modelData.graphNodes);
-
 		//頂点データをアップロード
 		if (!modelData.vertices.empty())
 		{
-			size_t vertexBufferSize = modelData.vertices.size() * sizeof(Vertex);
+			if (modelData.skinClusterData.empty())
+			{
+				size_t vertexBufferSize = modelData.vertices.size() * sizeof(Vertex);
 
-			UploadBuffer vertexUpload;
-			vertexUpload.Create(L"VertexUpload", vertexBufferSize);
-			memcpy(vertexUpload.Map(), modelData.vertices.data(), vertexBufferSize);
-			vertexUpload.Unmap();
+				UploadBuffer vertexUpload;
+				vertexUpload.Create(L"VertexUpload", vertexBufferSize);
+				memcpy(vertexUpload.Map(), modelData.vertices.data(), vertexBufferSize);
+				vertexUpload.Unmap();
 
-			model->mVertexBuffer.Create(
-				RemoveExtension(modelName) + L"VertexBuffer",
-				static_cast<uint32_t>(modelData.vertices.size()),
-				sizeof(Vertex),
-				vertexUpload
-			);
+				model->mVertexBuffer.Create(
+					RemoveExtension(modelName) + L"VertexBuffer",
+					static_cast<uint32_t>(modelData.vertices.size()),
+					sizeof(Vertex),
+					vertexUpload
+				);
+			}
+			else
+			{
+				std::vector<JointVertex> sortedJointData(modelData.vertices.size());
+
+				for (const auto& [jointName, skinInfo] : modelData.skinClusterData)
+				{
+					auto it = modelData.skeleton.jointMap.find(jointName);
+					if (it == modelData.skeleton.jointMap.end()) continue;
+
+					int32_t jointIndex = it->second;
+
+					for (const auto& weightInfo : skinInfo.vertexWeights)
+					{
+						uint32_t vertexIdx = weightInfo.vertexIndex;
+						float weightVal = weightInfo.weight;
+
+						if (vertexIdx < sortedJointData.size())
+						{
+							// 既存のjointIndices/weights配列の空きスロットを探して代入
+							for (int k = 0; k < 4; ++k)
+							{
+								if (sortedJointData[vertexIdx].weights[k] == 0.0f)
+								{
+									sortedJointData[vertexIdx].jointIndices[k] = jointIndex;
+									sortedJointData[vertexIdx].weights[k] = weightVal;
+									break;
+								}
+							}
+						}
+					}
+				}
+
+				size_t vertexSize = sizeof(Vertex);
+				size_t skinSize = sizeof(JointVertex);
+				size_t totalSize = modelData.vertices.size() * (vertexSize + skinSize);
+
+				UploadBuffer vertexUpload;
+				vertexUpload.Create(L"VertexUpload", totalSize);
+
+				uint8_t* dst = reinterpret_cast<uint8_t*>(vertexUpload.Map());
+				for (size_t i = 0; i < modelData.vertices.size(); ++i)
+				{
+					memcpy(dst, &modelData.vertices[i], vertexSize);
+					dst += vertexSize;
+
+					memcpy(dst, &sortedJointData[i], skinSize);
+					dst += skinSize;
+				}
+
+				vertexUpload.Unmap();
+
+				model->mVertexBuffer.Create(
+					RemoveExtension(modelName) + L"VertexBuffer",
+					static_cast<uint32_t>(modelData.vertices.size()),
+					static_cast<uint32_t>(vertexSize + skinSize),
+					vertexUpload
+				);
+			}
+			
 		}
 		//インデックスデータをアップロード
 		if (!modelData.indices.empty())
@@ -387,25 +447,6 @@ namespace AtomEngine
 		if (modelData.materials.size() > 0)
 		{
 			model->mMaterials = std::move(modelData.materials);
-			//size_t materialSize = modelData.materials.size() * sizeof(MaterialConstants);
-			//
-			//UploadBuffer materialConstants;
-			//materialConstants.Create(L"Material Constant Upload", materialSize);
-			//MaterialConstants* materialCBV = (MaterialConstants*)materialConstants.Map();
-			//for (uint32_t i = 0; i < modelData.materials.size(); ++i)
-			//{
-			//	MaterialConstants materialCB;
-			//	materialCB.baseColorFactor = modelData.materials[i].baseColorFactor;
-			//    materialCB.emissiveFactor = modelData.materials[i].emissiveFactor;
-			//    materialCB.metallicFactor = modelData.materials[i].metallicFactor;
-			//	materialCB.roughnessFactor = modelData.materials[i].roughnessFactor;
-			//
-			//	memcpy(materialCBV, &materialCB, sizeof(MaterialConstants));
-			//	materialCBV++;
-			//}
-			//materialConstants.Unmap();
-			//model->mMaterialConstants.Create(L"Material Constants",
-				//(uint32_t)modelData.materials.size(), sizeof(MaterialConstants), materialConstants);
 		}
 
 		if (!modelData.animations.empty())
@@ -415,23 +456,19 @@ namespace AtomEngine
 
 		if (!modelData.skeleton.joints.empty())
 		{
-
-			model->mJointIBMs.resize(modelData.skeleton.joints.size());
-			for (size_t i = 0; i < modelData.skeleton.joints.size(); ++i)
-			{
-				model->mJointIBMs[i] = modelData.skeleton.joints[i].inverseBindPose;
-			}
-
-			for (auto& [name, cluster] : modelData.skinClusterData)
-			{
-				for (auto& [vtxIdx, weightData] : cluster.vertexWeights)
-				{
-					model->mJointIndices.push_back(static_cast<uint16_t>(vtxIdx));
-				}
-			}
 			model->mSkeleton = std::move(modelData.skeleton);
-			//model->mJointIBMs = std::move(modelData.jointIBMs);
-			//model->mJointIndices = std::move(modelData.jointIndices);
+			model->mNumJoints = static_cast<uint32_t>(model->mSkeleton.joints.size());
+			model->mJointIBMs.resize(model->mNumJoints);
+
+			for (const auto& jointWeight : modelData.skinClusterData)
+			{
+				auto it = model->mSkeleton.jointMap.find(jointWeight.first);
+				if (it == model->mSkeleton.jointMap.end())
+				{
+					continue;
+				}
+				model->mJointIBMs[it->second] = jointWeight.second.inverseBindPoseMatrix;
+			}
 		}
 
 		sModelDataCache[modelName] = model;

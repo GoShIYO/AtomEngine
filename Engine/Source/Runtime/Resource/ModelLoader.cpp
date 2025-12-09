@@ -13,7 +13,7 @@ namespace AtomEngine
 	static const TextureMapping textureMap[] =
 	{
 		{ aiTextureType_BASE_COLOR,					TextureSlot::kBaseColor			},
-		{ aiTextureType_DIFFUSE,					TextureSlot::kBaseColor			},		
+		{ aiTextureType_DIFFUSE,					TextureSlot::kBaseColor			},
 		{ aiTextureType_NORMALS,					TextureSlot::kNormal			},
 		{ aiTextureType_HEIGHT,						TextureSlot::kNormal			},
 		{ aiTextureType_LIGHTMAP,					TextureSlot::kOcclusion			},
@@ -26,7 +26,7 @@ namespace AtomEngine
 		if (mat.baseColorFactor.w < 1.0f)
 			return true;
 
-		if(mat.hasAlphaBlend)
+		if (mat.hasAlphaBlend)
 			return true;
 
 		return false;
@@ -51,7 +51,7 @@ namespace AtomEngine
 		return false;
 	}
 
-	Transform ConvertTransform(const aiMatrix4x4& matrix)
+	inline static Transform ConvertTransform(const aiMatrix4x4& matrix)
 	{
 		aiVector3D scale, translate;
 		aiQuaternion rotate;
@@ -76,7 +76,7 @@ namespace AtomEngine
 			aiProcess_CalcTangentSpace |
 			aiProcess_GenSmoothNormals |
 			aiProcess_JoinIdenticalVertices |
-			aiProcess_LimitBoneWeights |
+			aiProcess_PopulateArmatureData |
 			aiProcess_GenUVCoords;
 
 		Assimp::Importer importer;
@@ -88,19 +88,20 @@ namespace AtomEngine
 		importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, 45.0f);
 
 		const aiScene* scene = importer.ReadFile(filePath, flag);
-		ASSERT(scene && scene->mRootNode && scene->HasMeshes(),"Load Model Failed to scene");
+		ASSERT(scene && scene->mRootNode && scene->HasMeshes(), "Load Model Failed to scene");
 		//マテリアルをプロセス
 		for (uint32_t i = 0; i < scene->mNumMaterials; i++)
 			ProcessMaterial(model, scene->mMaterials[i]);
 		//ノードをプロセス
 		model.vertices.clear();
 		model.indices.clear();
-		model.rootNode = ProcessNode(model,scene->mRootNode, scene,nullptr);
-		model.skeleton = ProcessSkeleton(model,*model.rootNode);
+		model.rootNode = ProcessNode(model, scene->mRootNode, scene, nullptr);
+		if (model.armatureNode)
+			model.skeleton = ProcessSkeleton(model, model.armatureNode);
 
 		//アニメーションをプロセス
-		if(scene->HasAnimations())
-            ProcessAnimations(model, scene);
+		if (scene->HasAnimations())
+			ProcessAnimations(model, scene);
 		//バウンディングボックスを計算
 		ComputeBoundingVolumes(model);
 
@@ -148,15 +149,14 @@ namespace AtomEngine
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
 			auto childNode = ProcessNode(model, node->mChildren[i], scene, outNode.get());
-			outNode->children.push_back(std::move(childNode));
+			if (childNode)
+				outNode->children.push_back(std::move(childNode));
 		}
 
 		return outNode;
 	}
-	
-	std::map<std::string, uint16_t> m_JointNameToIndex;
-	uint16_t m_NextJointIndex = 0;
 
+	std::map<std::string, uint16_t> m_JointNameToIndex;
 	Mesh ModelLoader::ProcessMesh(ModelData& model, aiMesh* mesh)
 	{
 		Mesh outMesh;
@@ -211,16 +211,16 @@ namespace AtomEngine
 		if (mesh->HasBones())
 		{
 			outMesh.numJoints = mesh->mNumBones;
-			outMesh.startJoint = (uint16_t)model.jointIndices.size();
-
 			outMesh.psoFlags |= kHasSkin;
+
 			for (uint32_t b = 0; b < mesh->mNumBones; ++b)
 			{
-
 				aiBone* bone = mesh->mBones[b];
-				std::string jointName = bone->mName.C_Str();
-				JointWeightData& jwd = model.skinClusterData[jointName];
+				aiNode* node = bone->mNode;
+				model.armatureNode = bone->mArmature;
 
+				std::string jointName = node->mName.C_Str();
+				JointWeightData& jwd = model.skinClusterData[jointName];
 				// inverse bind pose
 				aiMatrix4x4 m = bone->mOffsetMatrix;
 				aiVector3D s, t; aiQuaternion r;
@@ -230,27 +230,11 @@ namespace AtomEngine
 
 				for (uint32_t w = 0; w < bone->mNumWeights; ++w)
 				{
-					uint32_t localVertexId = bone->mWeights[w].mVertexId;
+					uint32_t localId = bone->mWeights[w].mVertexId;
 					float weight = bone->mWeights[w].mWeight;
-					uint32_t globalVertexId = vertexBase + localVertexId;
-					jwd.vertexWeights.push_back({ weight, globalVertexId });
+					jwd.vertexWeights.push_back({ weight, localId });
 				}
-				uint16_t jointIndex;
-				if (m_JointNameToIndex.find(jointName) == m_JointNameToIndex.end())
-				{
-					jointIndex = m_NextJointIndex++;
-					m_JointNameToIndex[jointName] = jointIndex;
-
-					model.jointIBMs.push_back(ConvertTransform(bone->mOffsetMatrix).GetMatrix());
-				}
-				else
-				{
-					jointIndex = m_JointNameToIndex[jointName];
-				}
-
-				model.jointIndices.push_back(jointIndex);
 			}
-
 		}
 
 		outMesh.boundingBox = aabb;
@@ -304,10 +288,10 @@ namespace AtomEngine
 		material.metallicFactor = metallic;
 		material.roughnessFactor = roughness;
 
-		aiColor3D emission = {1,1,1};
+		aiColor3D emission = { 1,1,1 };
 		if (mat->Get(AI_MATKEY_COLOR_EMISSIVE, emission))
 		{
-            material.emissiveFactor[0] = emission.r;
+			material.emissiveFactor[0] = emission.r;
 			material.emissiveFactor[1] = emission.g;
 			material.emissiveFactor[2] = emission.b;
 		}
@@ -321,7 +305,7 @@ namespace AtomEngine
 		}
 		material.textures.clear();
 		for (auto& entry : textureMap)
-			SetTextures(material,mat,entry.aiType, entry.slot);
+			SetTextures(material, mat, entry.aiType, entry.slot);
 
 		if (!SetTextures(material, mat, aiTextureType_GLTF_METALLIC_ROUGHNESS, TextureSlot::kMetallicRoughness))
 		{
@@ -339,13 +323,8 @@ namespace AtomEngine
 			const aiAnimation* anim = scene->mAnimations[i];
 			AnimationClip clip{};
 			clip.name = anim->mName.C_Str();
-
-			double ticksPerSecond = anim->mTicksPerSecond;
-			if (ticksPerSecond <= 0.0)
-			{
-				ticksPerSecond = 25.0;
-			}
-			clip.duration = (float)(anim->mDuration / ticksPerSecond);
+			double ticksPerSecond = anim->mTicksPerSecond != 0.0 ? anim->mTicksPerSecond : 25.0;
+			clip.duration = static_cast<float>(anim->mDuration / ticksPerSecond);
 
 			for (uint32_t c = 0; c < anim->mNumChannels; ++c)
 			{
@@ -386,58 +365,62 @@ namespace AtomEngine
 		}
 	}
 
-	Skeleton ModelLoader::ProcessSkeleton(ModelData& model,const Node& rootNode)
+	Skeleton ModelLoader::ProcessSkeleton(ModelData& model, const aiNode* rootNode)
 	{
 		Skeleton skeleton;
 
-		CreateJoint(model,rootNode, std::nullopt, skeleton.joints);
+		// rootNode 自体がボーンでない場合もあるので、CreateJoint は該当ノードがボーンでなければ -1 を返します。
+		int32_t rootIdx = CreateJoint(model, rootNode, std::nullopt, skeleton.joints);
+		skeleton.rootJoint = rootIdx;
 
 		for (int32_t i = 0; i < (int32_t)skeleton.joints.size(); ++i)
 		{
 			skeleton.jointMap[skeleton.joints[i].name] = i;
 		}
 
-		skeleton.rootJoint = skeleton.joints.empty() ? -1 : 0;
-
 		return skeleton;
 	}
 
 	int32_t ModelLoader::CreateJoint(
 		ModelData& model,
-		const Node& node,
-		const std::optional<int32_t>& parent,
+		const aiNode* node,
+		const std::optional<int32_t>& parentJointIndex,
 		std::vector<Joint>& joints)
 	{
-		int32_t thisIndex = -1;
+		std::string nodeName = node->mName.C_Str();
+		bool isBone = (model.skinClusterData.find(nodeName) != model.skinClusterData.end());
 
-		auto it = model.skinClusterData.find(node.name);
-		if (it == model.skinClusterData.end())
+		int32_t myIndex = -1;
+
+		if (isBone)
 		{
-			thisIndex = static_cast<int32_t>(joints.size());
-			joints.emplace_back();
-			Joint& joint = joints.back();
+			Joint joint;
 
-			joint.name = node.name;
-			joint.index = thisIndex;
-			joint.parent = parent.has_value() ? parent.value() : -1;
-			joint.localBindPose = node.transform.GetMatrix();
-			joint.inverseBindPose = Matrix4x4::IDENTITY;
-			joint.transform = node.transform;
+			Transform nodeTrans = ConvertTransform(node->mTransformation);
+			joint.name = nodeName;
+			joint.index = static_cast<int32_t>(joints.size()); // push 前のサイズがこのジョイントのインデックス
+			joint.parent = parentJointIndex;
+			joint.localMatrix = nodeTrans.GetMatrix();
+			joint.skeletonSpaceMatrix = Matrix4x4::IDENTITY;
+			joint.transform = nodeTrans;
 
-			if (joint.parent > 0)
-				joints[joint.parent.value()].children.push_back(joint.index);
+			joints.push_back(joint);
+			myIndex = joint.index;
 		}
 
-		for (auto& child : node.children)
+		std::optional<int32_t> childParent = isBone ? std::optional<int32_t>(myIndex) : parentJointIndex;
+
+		for (uint32_t i = 0; i < node->mNumChildren; ++i)
 		{
-			int32_t childIndex = CreateJoint(model,*child, thisIndex >= 0 ? std::optional<int32_t>(thisIndex) : parent, joints);
-			if (thisIndex >= 0 && childIndex >= 0)
+			const aiNode* child = node->mChildren[i];
+			int32_t childIndex = CreateJoint(model, child, childParent, joints);
+			if (isBone && childIndex != -1)
 			{
-				joints[thisIndex].children.push_back(childIndex);
+				joints[myIndex].children.push_back(childIndex);
 			}
 		}
 
-		return thisIndex;
+		return myIndex;
 	}
 
 	float ComputeBoundingSphereRadius(const AxisAlignedBox& box, const std::vector<Vector3>& vertices)

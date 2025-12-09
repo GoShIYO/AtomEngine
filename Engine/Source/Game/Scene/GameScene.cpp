@@ -15,7 +15,8 @@
 #include "Runtime/Function/Render/Particle/ParticleEditor.h"
 
 GameScene::GameScene(std::string_view name, SceneManager& manager)
- : Scene(name,manager){
+	: Scene(name, manager)
+{
 }
 
 bool GameScene::Initialize()
@@ -23,74 +24,108 @@ bool GameScene::Initialize()
 	mCamera = &mGameCamera;
 	mGameCamera.SetPosition({ 0.0f, 35.0f, -50.0f });
 	mDebugCamera.reset(new DebugCamera(mGameCamera));
-	
+
+	const float kWorldScale = 20.0f;
+
 	//システム初期化
 	InitSystems();
 
 	ParticleProperty props;
-	props.MinStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	props.MaxStartColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	props.MinEndColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	props.MaxEndColor = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-
+	props.MinStartColor = Color(0x4647A7FF).ToVector4();
+	props.MaxStartColor = Color(0x5848F7FF).ToVector4();
+	props.MinEndColor = Color(0xCC71EEFF).ToVector4();
+	props.MaxEndColor = Color(0xFA8EFAFF).ToVector4();
+	
 	props.TotalActiveLifetime = 0.0f;
-	props.LifeMinMax = float2(1.0f, 3.0f);
+	props.LifeMinMax = float2(3, 5);
 
-	props.Size = Vector4(0.5f, 1.5f, 0.5f, 1.5f);
+	props.Size = Vector4(0.5f, 2, 0.5f, 2);
 
-	props.Velocity = Vector4(20.0f, 50.0f, 50.0f, 90.0f);
+	props.Velocity = Vector4(-3, 3, -3, 3);
 
 	props.MassMinMax = Vector2(4.5f, 15.0f);
-
-	props.EmitProperties.Gravity = Vector3(0.0f, -9.8f, 0.0f);
+	props.EmitProperties.Gravity = Vector3(0.0f, 0.0f, 0.0f);
 	props.EmitProperties.FloorHeight = -0.5f;
 	props.EmitProperties.EmitPosW = Vector3(0, 0, 0);
 	props.EmitProperties.LastEmitPosW = Vector3(0, 0, 0);
-	props.EmitProperties.MaxParticles = 1000;
-
+	props.EmitProperties.MaxParticles = 200;
 	props.EmitRate = 64;
 
-	props.Spread = float3(20.0f, 50.0f, 0.1f);
+	props.Spread = float3(40, 20, 80);
 
-	props.TexturePath = L"Asset/Textures/circle2.png";
+	props.TexturePath = L"Asset/Textures/Snow.png";
 
-	ParticleSystem::CreateParticle(props);
+	//ParticleSystem::CreateParticle(props);
 
-	ParticleSystem::CreateParticleFromFile("Asset/Particles/bubbles.json");
-	ParticleSystem::CreateParticleFromFile("Asset/Particles/fireworks.json");
-	ParticleSystem::CreateParticleFromFile("Asset/Particles/smoke_ring.json");
-	ParticleSystem::CreateParticleFromFile("Asset/Particles/sparks.json");
-	ParticleSystem::CreateParticleFromFile("Asset/Particles/wavering.json");
+	//ParticleSystem::CreateParticleFromFile("Asset/Particles/bubbles.json");
+	//ParticleSystem::CreateParticleFromFile("Asset/Particles/fireworks.json");
+	//ParticleSystem::CreateParticleFromFile("Asset/Particles/smoke_ring.json");
+	//ParticleSystem::CreateParticleFromFile("Asset/Particles/sparks.json");
+	//ParticleSystem::CreateParticleFromFile("Asset/Particles/wavering.json");
 
 	auto model = AssetManager::LoadModel(L"Asset/Models/Stage/stage_test.obj");
 	auto obj = mWorld.CreateGameObject("stage");
 	obj->AddComponent<MaterialComponent>(model);
 	obj->AddComponent<MeshComponent>(model);
-	obj->AddComponent<TransformComponent>(Vector3::ZERO, Quaternion::IDENTITY, Vector3(20, 20, 20));
+	obj->AddComponent<TransformComponent>(Vector3::ZERO, Quaternion::IDENTITY, kWorldScale);
 	AddGameObject(std::move(obj));
-
-	auto playerModel = AssetManager::LoadModel(L"Asset/Models/player/player.obj");
+	
+	auto playerModel = AssetManager::LoadModel(L"Asset/Models/human/walk.gltf");
 	auto player = mWorld.CreateGameObject("player");
 	player->AddComponent<MaterialComponent>(playerModel);
 	player->AddComponent<MeshComponent>(playerModel);
-	player->AddComponent<TransformComponent>(Vector3(-5, 5, -5), Quaternion::IDENTITY, Vector3(1.0f, 1.0f, 1.0f));
+	player->AddComponent<TransformComponent>(Vector3(-8, 8, -8), Quaternion::IDENTITY,Vector3(8,8,8));
 	player->AddComponent<Body>(Vector3(0.5f, 0.5f, 0.5f), Vector3::ZERO);
 	player->AddComponent<PlayerTag>();
 	AddGameObject(std::move(player));
 
 	mVoxelWorld.Load("Asset/Voxel/test.vox");
 
-
+	mTexture = AssetManager::LoadCovertTexture(L"Asset/Textures/uvChecker.png");
+	mSprite.reset(new Sprite(mTexture));
 	return Scene::Initialize();
 }
 
 void GameScene::Update(float deltaTime)
 {
+	/*static Quaternion q;
+	static Radian angle;
+	static bool st = false;
+	static float t = 0.0f;
+	
+	ImGui::Begin("Camera");
+	if (ImGui::Checkbox("Rotate", &st))
+	{
+		t = 0.0f;
+	}
+	if (st && t < 1.0f)
+		t += deltaTime * 0.1f;
+	angle = Math::Lerp(angle, Radian(Math::TwoPI), t);
+	q.FromAngleAxis(angle, mGameCamera.GetForwardVec());
+	
+	ImGui::DragFloat4("Rotation", q.ptr(), 0.01f);
+	q.Normalize();
+	ImGui::End();
+
+	mGameCamera.SetRotation(q);*/
+
 	gContext.imgui->ShowPerformanceWindow(deltaTime);
 	//カメラ更新
 	mDebugCamera->Update(deltaTime);
 
-	mPlayerSystem->Update(mWorld,mGameCamera,deltaTime);
+	mPlayerSystem->Update(mWorld, mGameCamera, deltaTime);
+
+	/*auto& spTrans = mSprite->GetWorldTransform();
+	auto& uvTrans = mSprite->GetUVTransform();
+	ImGui::Begin("Sprite");
+	ImGui::DragFloat2("wPosition", spTrans.transition.ptr(), 0.01f);
+	ImGui::DragFloat2("wScale", spTrans.scale.ptr(), 0.01f);
+	ImGui::DragFloat3("wRotation", spTrans.rotation.ptr(), 0.01f);
+
+	ImGui::DragFloat2("uPosition", uvTrans.transition.ptr(), 0.01f);
+	ImGui::DragFloat2("uScale", uvTrans.scale.ptr(), 0.01f);
+	ImGui::DragFloat3("Rotation", uvTrans.rotation.ptr(), 0.01f);
+	ImGui::End();*/
 
 	ImGuiHandleObjects();
 	DestroyGameObject();
@@ -123,6 +158,7 @@ void GameScene::InitSystems()
 void GameScene::Render()
 {
 	ParticleEditor::Get().Render();
+	//mSprite->Render();
 	//Primitive::DrawLine(Vector3(0, 0, 0), Vector3(1, 1, 1), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawCube(Vector3(0, 0, 0), Vector3(1, 1, 1), testBoxTrans.GetMatrix(), Color::Red, mCamera.GetViewProjMatrix());
 	//Primitive::DrawSphere(Vector3(0, 0, 0), 1, Color::Green, mCamera.GetViewProjMatrix(),uint32_t(segment), uint32_t(segment));

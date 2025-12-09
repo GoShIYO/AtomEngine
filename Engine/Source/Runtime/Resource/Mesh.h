@@ -42,7 +42,7 @@ namespace AtomEngine
 		uint16_t srvTable = 0;
 		uint16_t pso = 0;
 		uint16_t psoFlags = 0;
-		uint16_t numJoints = 0;
+		uint32_t numJoints = 0;
 		uint16_t startJoint = 0;
 
 		std::vector<SubMesh> subMeshes;

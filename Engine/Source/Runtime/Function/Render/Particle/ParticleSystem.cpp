@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <mutex>
 
 namespace AtomEngine
 {
@@ -41,6 +42,8 @@ namespace AtomEngine
 	DescriptorHeap ParticleSystem::sTextureArrayHeap;
 
 	bool ParticleSystem::sInitComplete = false;
+
+	std::vector<ParticleProperty> ParticleSystem::sParticlePrefabs;
 
 	struct InputVertex
 	{
@@ -223,6 +226,7 @@ namespace AtomEngine
 		sParticlePool.clear();
 		sParticlesActive.clear();
 		sTextures.clear();
+		sParticlePrefabs.clear();
 
 		sTextureArrayHeap.Destroy();
 		sParticleBuffer.Destroy();
@@ -245,6 +249,40 @@ namespace AtomEngine
 		sParticlePool.emplace_back(newEffect);
 		sParticlesActive.push_back(newEffect);
 		s_InstantiateNewEffectMutex.unlock();
+
+		uint32_t index = (uint32_t)sParticlesActive.size() - 1;
+		sParticlesActive[index]->Initialize();
+		return index;
+	}
+
+	// --- 追加: prefab を作る（発射はしない） ---
+	uint32_t ParticleSystem::CreateParticlePrefab(const ParticleProperty& props)
+	{
+		if (!sInitComplete) return 0xffffffff;
+
+		ParticleProperty p = props;
+		// テクスチャは先に登録しておく
+		p.EmitProperties.TextureID = GetTextureIndex(p.TexturePath);
+
+		sParticlePrefabs.push_back(std::move(p));
+		return (uint32_t)sParticlePrefabs.size() - 1;
+	}
+
+	// --- 追加: prefab を指定位置/方向で発射する ---
+	uint32_t ParticleSystem::EmitPrefab(uint32_t prefabId, const Vector3& emitPosW, const Vector3& emitDirW)
+	{
+		if (!sInitComplete || prefabId >= sParticlePrefabs.size()) return 0xffffffff;
+
+		ParticleProperty props = sParticlePrefabs[prefabId];
+		props.EmitProperties.EmitPosW = emitPosW;
+		props.EmitProperties.EmitDirW = emitDirW;
+
+		static std::mutex s_emit_mutex;
+		s_emit_mutex.lock();
+		Particle* newEffect = new Particle(props);
+		sParticlePool.emplace_back(newEffect);
+		sParticlesActive.push_back(newEffect);
+		s_emit_mutex.unlock();
 
 		uint32_t index = (uint32_t)sParticlesActive.size() - 1;
 		sParticlesActive[index]->Initialize();

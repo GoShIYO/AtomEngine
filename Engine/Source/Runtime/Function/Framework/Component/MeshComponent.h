@@ -9,20 +9,29 @@
 
 namespace AtomEngine
 {
-	
+
 	class MeshComponent
 	{
 	public:
 		MeshComponent(std::shared_ptr<Model> model);
 		~MeshComponent();
 
-		void Update(GraphicsContext& gfxContext,const TransformComponent& transform ,float deltaTime);
 		void Update(GraphicsContext& gfxContext, const TransformComponent& transform, const MaterialComponent& material, float deltaTime);
 		void Render(RenderQueue& sorter);
 
 		Transform& GetTransform() { return mModelTransform; }
 
 		void UpdateAnimation(float deltaTime);
+
+		void PlayAnimation(uint32_t animIdx, bool loop);
+
+		void PauseAnimation(uint32_t animIdx);
+
+		void ResetAnimation(uint32_t animIdx);
+
+		void StopAnimation(uint32_t animIdx);
+
+		void LoopAllAnimations();
 
 		bool IsRender() const { return mIsRender; }
 		void SetIsRender(bool isRender) { mIsRender = isRender; }
@@ -31,15 +40,15 @@ namespace AtomEngine
 		std::shared_ptr<Model> mModel = nullptr;
 		UploadBuffer mMeshConstantsCPU;
 		ByteAddressBuffer mMeshConstantsGPU;
-		
+
 		UploadBuffer mMaterialConstantsCPU;
 		ByteAddressBuffer mMaterialConstantsGPU;
 
 		Transform mModelTransform;
-		std::vector<GraphNode> mAnimGraph;
+		std::unique_ptr <GraphNode[]> mAnimGraph;
 		std::vector<AnimationState> mAnimState;
 
-		std::vector<JointXform> mSkeletonTransforms;
+		std::unique_ptr<JointXform[]> mSkeletonTransforms;
 		std::vector<Matrix4x4> mBoundingSphereTransforms;
 	};
 }

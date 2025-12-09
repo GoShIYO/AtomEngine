@@ -23,7 +23,7 @@ namespace AtomEngine
 		float mSunOrientation = -0.5f;
 		float mSunInclination = 0.75f;
 		Vector3 mShadowCenter = { 0.0f,0,0.0f };
-		Vector3 mShadowDim = { 30, 30, 30 };
+		Vector3 mShadowDim = { 60, 60, 60 };
 		float mIBLBias = 2.0f;
 		float mIBLFactor = 1.0f;
 		bool mEnableIBL = true;

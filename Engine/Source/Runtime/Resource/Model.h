@@ -66,12 +66,11 @@ namespace AtomEngine
 		std::vector<Mesh> mMeshData;
 		std::vector<uint8_t> mKeyFrameData;
 		std::vector<AnimationClip> mAnimationData;
-		std::vector<uint16_t>mJointIndices;
 		std::vector<Matrix4x4>mJointIBMs;
 		std::vector<GraphNode> mSceneGraph;
 
 		Skeleton mSkeleton;
-		uint32_t mNumAnimations = 0;
+		uint32_t mNumJoints = 0;
 	protected:
 
 		void Destroy();

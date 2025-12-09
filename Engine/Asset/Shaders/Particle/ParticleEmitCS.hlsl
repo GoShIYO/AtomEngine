@@ -2,7 +2,7 @@
 #include "ParticleUpdateCommon.hlsli"
 
 StructuredBuffer<ParticleEmitData> gResetData : register(t0);
-RWStructuredBuffer<ParticleDesc> gOutputBuffer : register(u1);
+RWStructuredBuffer<ParticleMotion> gOutputBuffer : register(u1);
 
 [RootSignature(Particle_RootSig)]
 [numthreads(64, 1, 1)]
@@ -24,11 +24,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     float3 emitterVelocity = EmitProperties.EmitPosW - EmitProperties.LastEmitPosW;
     float3 randDir = rd.Velocity.x * EmitProperties.EmitRightW + rd.Velocity.y * EmitProperties.EmitUpW + rd.Velocity.z * EmitProperties.EmitDirW;
-    float3 newVelocity = emitterVelocity * EmitProperties.EmitterVelocitySensitivity + randDir;
-    float3 adjustedPosition = EmitProperties.EmitPosW - emitterVelocity * rng.Generate3D().x + rng.Generate3D().y;
-
+    float3 newVelocity = emitterVelocity * EmitProperties.EmitterVelocitySensitivity + randDir * rng.Generate3D();
+    float3 adjustedPosition = EmitProperties.EmitPosW - emitterVelocity * rng.Generate1D() + rd.SpreadOffset;
+    
     //ÐÂ¤·¤¤¥Ñ©`¥Æ¥£¥¯¥ë¤òÉú³É
-    ParticleDesc newParticle = (ParticleDesc)0;
+    ParticleMotion newParticle;
     newParticle.Position = adjustedPosition;
     newParticle.Rotation = 0.0;
     newParticle.Velocity = newVelocity + EmitProperties.EmitDirW * EmitProperties.EmitSpeed;

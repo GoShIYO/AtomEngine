@@ -21,6 +21,12 @@ Texture2DArray<float> lightShadowArrayTex : register(t16);
 ByteAddressBuffer lightGrid : register(t17);
 ByteAddressBuffer lightGridBitMask : register(t18);
 
+float ComputeNormalBias(float3 normal, float3 lightDir, float baseBias)
+{
+    float NoL = saturate(dot(normal, lightDir));
+    return baseBias * (1.0 - NoL);
+}
+
 void AntiAliasSpecular(inout float3 texNormal, inout float gloss)
 {
     float normalLenSq = dot(texNormal, texNormal);
@@ -70,16 +76,17 @@ float3 ApplyAmbientLight(
 //    return result * result;
 //}
 
-float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
+float GetDirectionalShadow(float3 ShadowCoord,Texture2D<float> texShadow)
 {
     float sum = 0.0f;
+    [unroll]
     for (int x = -1; x <= 1; ++x)
     {
+        [unroll]
         for (int y = -1; y <= 1; ++y)
         {
             float2 offset = float2(x, y) * ShadowTexelSize.x;
-            float cmp = texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + offset, ShadowCoord.z);
-            sum += cmp;
+            sum += texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + offset, ShadowCoord.z);
         }
     }
     return sum / 9.0f;
@@ -93,9 +100,9 @@ float GetShadowConeLight(uint lightIndex, float3 shadowCoord)
 }
 
 float3 ApplyLightCommon(
-    float3 diffuseColor,    // Diffuse albedo
-    float3 specularColor,   // F0
-    float roughness,        // roughness
+    float3 diffuseColor, // Diffuse albedo
+    float3 specularColor, // F0
+    float roughness, // roughness
     float3 normal,
     float3 viewDir,
     float3 lightDir,
@@ -139,7 +146,10 @@ float3 ApplyDirectionalLight(
 	Texture2D<float> texShadow
 )
 {
+    shadowCoord.z += ComputeNormalBias(normal, lightDir, 0.0005);
+    shadowCoord.z = floor(shadowCoord.z * 65535.0) / 65535.0;
     float shadow = GetDirectionalShadow(shadowCoord, texShadow);
+
     return shadow * ApplyLightCommon(
         diffuseColor,
         specularColor,
@@ -234,13 +244,13 @@ float3 ApplyConeShadowedLight(
     float lightRadiusSq,
     float3 lightColor, // Radiance of directional light
     float3 coneDir,
-    float  innerCos,
-    float  outerCos,
+    float innerCos,
+    float outerCos,
     float4x4 shadowTextureMatrix,
     uint lightIndex
     )
 {
-    float4 shadowCoord = mul(float4(worldPos, 1.0),shadowTextureMatrix);
+    float4 shadowCoord = mul(float4(worldPos, 1.0), shadowTextureMatrix);
     shadowCoord.xyz *= rcp(shadowCoord.w);
     float shadow = GetShadowConeLight(lightIndex, shadowCoord.xyz);
 

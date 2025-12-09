@@ -39,11 +39,11 @@ namespace AtomEngine
         std::map<std::string, JointWeightData> skinClusterData;
         std::unique_ptr<Node> rootNode = nullptr;
         
+        aiNode* armatureNode = nullptr;
+        uint32_t numJoints = 0;
         Skeleton skeleton;
         
         std::vector<GraphNode> graphNodes;
-        std::vector<uint16_t> jointIndices;
-        std::vector<Matrix4x4> jointIBMs;
     };
 
     class ModelLoader
@@ -57,10 +57,10 @@ namespace AtomEngine
         static Mesh ProcessMesh(ModelData& model, aiMesh* mesh);
         static void ProcessMaterial(ModelData& model, aiMaterial* mat);
         static void ProcessAnimations(ModelData& model, const aiScene* scene);
-        static Skeleton ProcessSkeleton(ModelData& model,const Node& rootNode);
+        static Skeleton ProcessSkeleton(ModelData& model,const aiNode* rootNode);
         static int32_t CreateJoint(
             ModelData& model,
-            const Node& node,
+            const aiNode* node,
             const std::optional<int32_t>& parent,
             std::vector<Joint>& joints);
 

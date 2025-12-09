@@ -74,10 +74,65 @@ namespace AtomEngine
 			if (keyframes[index].time <= time && time <= keyframes[nextIndex].time)
 			{
 				float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
-				return Slerp(keyframes[index].value, keyframes[nextIndex].value, t);
+				return Slerp(keyframes[index].value, keyframes[nextIndex].value, t, true);
 			}
 		}
 
 		return (*keyframes.rbegin()).value;
 	}
+	inline Vector3 CalculateValueLoop(const std::vector<KeyframeVec3>& keyframes, float time, float duration)
+	{
+		assert(!keyframes.empty());
+		if (keyframes.size() == 1)
+			return keyframes[0].value;
+
+		const KeyframeVec3& first = keyframes.front();
+		const KeyframeVec3& last = keyframes.back();
+
+		if (time <= last.time)
+		{
+			for (size_t index = 0; index < keyframes.size() - 1; ++index)
+			{
+				size_t nextIndex = index + 1;
+				if (keyframes[index].time <= time && time <= keyframes[nextIndex].time)
+				{
+					float t = (time - keyframes[index].time) /
+						(keyframes[nextIndex].time - keyframes[index].time);
+					return Math::Lerp(keyframes[index].value, keyframes[nextIndex].value, t);
+				}
+			}
+			return last.value;
+		}
+
+		float t = (time - last.time) / (duration - last.time + first.time);
+		return Math::Lerp(last.value, first.value, t);
+	}
+	inline Quaternion CalculateRotationLoop(const std::vector<KeyframeQuat>& keyframes, float time, float duration)
+	{
+		assert(!keyframes.empty());
+		if (keyframes.size() == 1)
+			return keyframes[0].value;
+
+		const KeyframeQuat& first = keyframes.front();
+		const KeyframeQuat& last = keyframes.back();
+
+		if (time <= last.time)
+		{
+			for (size_t index = 0; index < keyframes.size() - 1; ++index)
+			{
+				size_t nextIndex = index + 1;
+				if (keyframes[index].time <= time && time <= keyframes[nextIndex].time)
+				{
+					float t = (time - keyframes[index].time) /
+						(keyframes[nextIndex].time - keyframes[index].time);
+					return Slerp(keyframes[index].value, keyframes[nextIndex].value, t,true);
+				}
+			}
+			return last.value;
+		}
+
+		float t = (time - last.time) / (duration - last.time + first.time);
+		return Slerp(last.value, first.value, t, true);
+	}
+
 }

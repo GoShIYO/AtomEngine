@@ -14,10 +14,10 @@ namespace AtomEngine
 	{
 		mSkybox.Initialize();
 		//mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvHDR.dds");
-		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvBrdf.dds");
+		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KBrdf.dds");
 		mSkybox.SetIBLTextures(
-			L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvDiffuseHDR.dds",
-			L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvSpecularHDR.dds");
+			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KDiffuseHDR.dds",
+			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KSpecularHDR.dds");
 		mGpuHandle = Renderer::GetTextureHeap().Alloc();
 		DX12Core::gDevice->CopyDescriptorsSimple(1, mGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -57,7 +57,7 @@ namespace AtomEngine
 
 		mSunDirection.Normalize();
 
-		mShadowCamera.UpdateMatrix(mSunDirection, mCamera->GetPosition(), mShadowDim,
+		mShadowCamera.UpdateMatrix(mSunDirection, mShadowCenter, mShadowDim,
 			(uint32_t)gShadowBuffer.GetWidth(), (uint32_t)gShadowBuffer.GetHeight());
 
 		mSkybox.SetIBLBias(mIBLBias);

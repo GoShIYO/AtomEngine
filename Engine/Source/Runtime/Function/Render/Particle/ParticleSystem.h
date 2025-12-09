@@ -20,6 +20,8 @@ namespace AtomEngine
 		static void Shutdown();
 
 		static uint32_t CreateParticle(ParticleProperty& props);
+		uint32_t CreateParticlePrefab(const ParticleProperty& props);
+		uint32_t EmitPrefab(uint32_t prefabId, const Vector3& emitPosW, const Vector3& emitDirW);
 		static void ResetParticle(uint32_t particleId);
 		static float GetCurrentLife(uint32_t particleId);
 		static void SetBlendMode(BlendMode mode) { sBlendMode = mode; }
@@ -47,7 +49,7 @@ namespace AtomEngine
 		static std::vector < std::pair<DescriptorHandle, TextureRef>> sTextures;
 		static std::map<std::wstring, uint32_t> sTextureArrayLookup;
 		static bool sInitComplete;
-
+		static std::vector<ParticleProperty> sParticlePrefabs;
 	private:
 		static void SetFinalBuffers(ComputeContext& CompContext);
 		static uint32_t GetTextureIndex(const std::wstring& name);

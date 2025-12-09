@@ -67,12 +67,11 @@ namespace AtomEngine
 
 		mExposureBuffer.Create(L"Exposure", 8, 4, initExposure);
 
+		mEnableAdaptation = false;
 		mMinExposure = 0.0f;
 		mMaxExposure = 2.0f;
 		mAdaptationRate = 0.05f;
-		mExposure = 2.0f;
-		mBloomThreshold = 0.3f;
-		mBloomStrength = 1.0f;
+		mExposure = 0.5f;
 		mBloomUpsampleFactor = 0.65f;
 
 		ParticleSystem::Initialize();

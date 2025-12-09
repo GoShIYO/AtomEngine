@@ -14,7 +14,7 @@ class GameScene : public Scene
 public:
 	GameScene(std::string_view name, AtomEngine::SceneManager& manager);
 	bool Initialize() override;
-    void Update(float deltaTime) override;
+	void Update(float deltaTime) override;
 	void Render() override;
 	void Shutdown() override;
 	bool Exit() override;
@@ -22,11 +22,13 @@ public:
 private:
 	std::unordered_map<Entity, std::unique_ptr<GameObject>> mGameObjects;
 	Camera mGameCamera;
-	
+
 	std::unique_ptr<PlayerSystem> mPlayerSystem;
 
 	VoxelWorld mVoxelWorld;
-	
+
+	TextureRef mTexture;
+	std::unique_ptr<Sprite> mSprite;
 	
 	std::unique_ptr<DebugCamera> mDebugCamera;
 	bool useDebug = false;

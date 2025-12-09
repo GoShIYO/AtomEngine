@@ -45,7 +45,7 @@ struct ParticleEmitData
     float4 EndColor;
 };
 
-struct ParticleDesc
+struct ParticleMotion
 {
     float4 Color;
     float3 Position;

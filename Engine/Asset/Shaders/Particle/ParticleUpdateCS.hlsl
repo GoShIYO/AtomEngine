@@ -2,9 +2,9 @@
 #include "ParticleUpdateCommon.hlsli"
 
 StructuredBuffer<ParticleEmitData> gResetData : register(t0);
-StructuredBuffer<ParticleDesc> gInputBuffer : register(t1);
+StructuredBuffer<ParticleMotion> gInputBuffer : register(t1);
 RWStructuredBuffer<ParticleVertex> gVertexBuffer : register(u0);
-RWStructuredBuffer<ParticleDesc> gOutputBuffer : register(u1);
+RWStructuredBuffer<ParticleMotion> gOutputBuffer : register(u1);
 
 [RootSignature(Particle_RootSig)]
 [numthreads(64, 1, 1)]
@@ -13,7 +13,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
     if (DTid.x >= EmitProperties.MaxParticles)
         return;
 
-    ParticleDesc ParticleState = gInputBuffer[DTid.x];
+    ParticleMotion ParticleState = gInputBuffer[DTid.x];
     ParticleEmitData rd = gResetData[ParticleState.ResetDataIndex];
 
     ParticleState.Age += deltaTime * rd.AgeRate;
@@ -25,14 +25,11 @@ void main(uint3 DTid : SV_DispatchThreadID)
 
     ParticleState.Position += ParticleState.Velocity * StepSize;
     ParticleState.Velocity += EmitProperties.Gravity * ParticleState.Mass * StepSize;
-
-    float4 interpColor = lerp(rd.StartColor, rd.EndColor, ParticleState.Age);
-    float fade = ParticleState.Age * (1.0 - ParticleState.Age) * (1.0 - ParticleState.Age) * 6.7;
-    fade = saturate(fade);
-
-    ParticleState.Color.rgb = interpColor.rgb * fade;
-    ParticleState.Color.a = interpColor.a;
-
+    
+    ParticleState.Color = lerp(rd.StartColor, rd.EndColor, ParticleState.Age);
+    ParticleState.Size = lerp(rd.StartSize, rd.EndSize, ParticleState.Age);
+    ParticleState.Color *= ParticleState.Age * (1.0 - ParticleState.Age) * (1.0 - ParticleState.Age) * 6.7;
+    
     uint index = gOutputBuffer.IncrementCounter();
     if (index >= EmitProperties.MaxParticles)
         return;

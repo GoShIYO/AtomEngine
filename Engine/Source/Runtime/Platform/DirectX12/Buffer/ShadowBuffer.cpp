@@ -5,7 +5,7 @@ namespace AtomEngine
 {
     void ShadowBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
     {
-        DepthBuffer::Create(Name, Width, Height, DXGI_FORMAT_D16_UNORM, VidMemPtr);
+        DepthBuffer::Create(Name, Width, Height, DXGI_FORMAT_D32_FLOAT, VidMemPtr);
 
         mViewport.TopLeftX = 0.0f;
         mViewport.TopLeftY = 0.0f;

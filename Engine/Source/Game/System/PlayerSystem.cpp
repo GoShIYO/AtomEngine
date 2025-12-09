@@ -31,18 +31,22 @@ void PlayerSystem::Update(World& world, const Camera& camera, float dt)
 		if (input->IsPressGamePad(LB) || input->IsPressKey('Q'))move.y = 1.0f;
 		if (input->IsPressGamePad(RB) || input->IsPressKey('E'))move.y = -1.0f;
 
-		if (input->IsPressKey('W'))move = moveForward;
-		if (input->IsPressKey('S'))move = -moveForward;
+		if (input->IsPressKey('W'))move += moveForward;
+		if (input->IsPressKey('S'))move += -moveForward;
 
-		if (input->IsPressKey('D'))move = moveRight;
-		if (input->IsPressKey('A'))move = -moveRight;
+		if (input->IsPressKey('D'))move += moveRight;
+		if (input->IsPressKey('A'))move += -moveRight;
 
 		if (move.LengthSqr() > 0.0001f)
 		{
 			move.Normalize();
+
+			float angleY = std::atan2(move.x, move.z);
+
+			Quaternion targetRot = Quaternion::GetQuaternionFromAngleAxis(Radian(angleY + Math::PI),Vector3::UP);
+			transform.rotation = Slerp(transform.rotation, targetRot, 0.1f, true);
 		}
 		body.velocity = move * 8.0f;
 		transform.transition += body.velocity * dt;
-
 	}
 }

@@ -8,20 +8,19 @@ namespace AtomEngine
 
     struct JointVertex
     {
-        uint16_t jointIndices[4];
         float weights[4];
+        uint32_t jointIndices[4];
     };
 
     struct Joint
     {
-        std::string name;
-        int32_t index;
-        std::optional<int32_t> parent;
-        std::vector<int32_t> children;
-
-        Transform transform;
-        Matrix4x4 localBindPose;
-        Matrix4x4 inverseBindPose;
+        Transform transform;                //transfrom情報
+        Matrix4x4 localMatrix;              //localMatrix
+        Matrix4x4 skeletonSpaceMatrix;      //skeletonSpaceでの変換行列
+        std::string name;                   //名前
+        std::vector<int32_t>children;       //子JointのIndexのリスト。いなければ空
+        int32_t index;                      //自身のIndex
+        std::optional<int32_t>parent;       //親JointのIndex。いなければnull
     };
 
     struct Skeleton

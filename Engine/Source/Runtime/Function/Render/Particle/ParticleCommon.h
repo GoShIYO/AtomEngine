@@ -51,7 +51,7 @@ namespace AtomEngine
 		uint32_t MaxParticles = 500;
 		Vector3 Gravity = { 0,-5,0 };
 		uint32_t TextureID;
-		Vector3 EmissiveColor;
+		Vector3 EmissiveColor = { 1,1,1 };
 		float pad1;
 	};
 
