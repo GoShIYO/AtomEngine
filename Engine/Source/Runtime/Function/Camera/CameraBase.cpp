@@ -70,8 +70,6 @@ namespace AtomEngine
 	Camera::Camera() : m_ReverseZ(false), m_InfiniteZ(false)
 	{
 		SetPerspectiveMatrix(Math::PIDiv4, 9.0f / 16.0f, 0.03f, 1000.0f);
-
-		cameraActions[Mode::kMoveForward] = Camera::MoveForward{};
 	}
 
 	void Camera::SetPerspectiveMatrix(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip)
@@ -125,48 +123,6 @@ namespace AtomEngine
 			Vector4(0.0f, 0.0f, Q1, 1.0f),
 			Vector4(0.0f, 0.0f, Q2, 0.0f)
 		));
-	}
-
-	void Camera::MainCameraUpdate(float deltaTime_,int cur_ingameMode_, float actionCnt_)
-	{
-		//lookDir = { 0.0f,-1.0f,1.0f };
-		//SetPosition(mapStartPos_);
-
-		//インゲームに応じたカメラのモードセット
-		SetMatchedMode(cur_ingameMode_);
-		//カメラアクション
-		cameraActions[cur_mode](&mCameraToWorld, deltaTime_, actionCnt_);
-
-
-
-		SetLookDirection(lookDir);
-		Update();
-	}
-
-	void Camera::Init(Vector3 const startPos_)
-	{
-		Vector3 adjust = { 0.0f,10.0f,-4.0f };
-		lookDir = { 0.0f,-1.5f,1.0f };
-
-
-
-		SetPosition(startPos_ + adjust);
-	}
-
-	void Camera::SetMatchedMode(int ingameMode_)
-	{
-		Camera::Mode modes[Camera::kCount] =
-		{
-			Camera::Mode::kMoveForward,
-			Camera::Mode::kCurve
-		};
-
-		cur_mode = modes[ingameMode_];
-	}
-
-	 void Camera::MoveForward::operator()(Transform* cameraTrans_, float deltaTime_,float actionCnt_)
-	{
-		 cameraTrans_->transition.z += moveSpeed * deltaTime_;
 	}
 }
 

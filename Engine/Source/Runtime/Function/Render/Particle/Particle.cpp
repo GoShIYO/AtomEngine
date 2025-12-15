@@ -40,6 +40,13 @@ namespace AtomEngine
 		mOriginalProperty = prop;
 	}
 
+	void Particle::Emit(const Vector3& emitPosW)
+	{
+		mProperty.EmitProperties.Emit = 1;
+		mProperty.EmitProperties.EmitPosW = emitPosW;
+		mProperty.EmitProperties.LastEmitPosW = emitPosW;
+	}
+
 	inline static Vector3 RandSpread(const Vector3& s)
 	{
 		return Vector3(
@@ -69,14 +76,79 @@ namespace AtomEngine
 			ParticleEmitData rd = {};
 
 			rd.AgeRate = 1.0f / Random::uniform(mProperty.LifeMinMax.x, mProperty.LifeMinMax.y);
-
-			float horizontalAngle = Random::uniform(0.0f, Math::TwoPI);
-			float horizontalVelocity = Random::uniform(mProperty.Velocity.x, mProperty.Velocity.y);
-
-			rd.Velocity.x = horizontalVelocity * cos(horizontalAngle);
-			rd.Velocity.y = Random::uniform(mProperty.Velocity.z, mProperty.Velocity.w);
-			rd.Velocity.z = horizontalVelocity * sin(horizontalAngle);
 			rd.SpreadOffset = RandSpread(mProperty.Spread);
+
+			switch (mProperty.EmitterType)
+			{
+			case 0:
+			{
+				float horizontalAngle = Random::uniform(0.0f, Math::TwoPI);
+				float horizontalVelocity = Random::uniform(mProperty.Velocity.x, mProperty.Velocity.y);
+
+				rd.Velocity.x = horizontalVelocity * cos(horizontalAngle);
+				rd.Velocity.y = Random::uniform(mProperty.Velocity.z, mProperty.Velocity.w);
+				rd.Velocity.z = horizontalVelocity * sin(horizontalAngle);
+				break;
+			}
+			case 1:
+			{
+				float theta = Random::uniform(0.0f, Math::TwoPI);
+				float u = Random::uniform(-1.0f, 1.0f);
+				float r = Random::uniform(mProperty.Velocity.x, mProperty.Velocity.y);
+
+				float sqrtTerm = sqrt(1.0f - u * u);
+				rd.Velocity.x = r * sqrtTerm * cos(theta);
+				rd.Velocity.y = r * u;
+				rd.Velocity.z = r * sqrtTerm * sin(theta);
+				break;
+			}
+			case 2:
+			default:
+			{
+				auto SampleSphere = [](const Vector3& extents) -> Vector3
+					{
+						Vector3 dir;
+						do
+						{
+							dir = Vector3(
+								Random::uniform(-1.0f, 1.0f),
+								Random::uniform(-1.0f, 1.0f),
+								Random::uniform(-1.0f, 1.0f));
+						} while (dir.IsZeroLength() || dir.LengthSqr() > 1.0f);
+
+						dir.Normalize();
+						float radius = std::cbrt(Random::uniform(0.0f, 1.0f));
+						Vector3 sample = dir * radius;
+						return Vector3(sample.x * extents.x, sample.y * extents.y, sample.z * extents.z);
+					};
+
+				rd.SpreadOffset = SampleSphere(mProperty.Spread);
+
+				Vector3 dirToCenter = -rd.SpreadOffset;
+				if (dirToCenter.IsZeroLength())
+				{
+					dirToCenter = Vector3::UP;
+				}
+				dirToCenter.Normalize();
+
+				const float radialSpeed = Random::uniform(mProperty.Velocity.x, mProperty.Velocity.y);
+				const float verticalSpeed = Random::uniform(mProperty.Velocity.z, mProperty.Velocity.w);
+
+				rd.Velocity = dirToCenter * radialSpeed;
+				rd.Velocity.y += verticalSpeed;
+
+				Vector3 swirlAxis = dirToCenter.Cross(Vector3::UP);
+				if (!swirlAxis.IsZeroLength())
+				{
+					swirlAxis.Normalize();
+					const float swirlStrength = Random::uniform(-1.0f, 1.0f) * mProperty.EmitProperties.EmitSpeed;
+					rd.Velocity += swirlAxis * swirlStrength;
+				}
+				break;
+			}
+			}
+
+
 			rd.StartSize = Random::uniform(mProperty.Size.x, mProperty.Size.y);
 			rd.EndSize = Random::uniform(mProperty.Size.z, mProperty.Size.w);
 			rd.StartColor = RandColor(mProperty.MinStartColor, mProperty.MaxStartColor);
@@ -84,6 +156,8 @@ namespace AtomEngine
 			rd.Mass = Random::uniform(mProperty.MassMinMax.x, mProperty.MassMinMax.y);
 			rd.RotationSpeed = Random::uniform_unit();
 			rd.Random = Random::uniform_unit();
+			rd.Drag = mProperty.drag;
+			rd.DragFactor = mProperty.dragFactor;
 
 			pSpawnData[i] = rd;
 		}
@@ -106,48 +180,49 @@ namespace AtomEngine
 		mElapsedTime += deltaTime;
 		mProperty.EmitProperties.LastEmitPosW = mProperty.EmitProperties.EmitPosW;
 
-		CompContext.SetDynamicConstantBufferView(1, sizeof(ParticleProperty), &mProperty);
+		for (uint32_t i = 0; i < 64; i++)
+		{
+			UINT random = (UINT)Random::uniform_int(mProperty.EmitProperties.MaxParticles - 1);
+			mProperty.EmitProperties.RandIndex[i].x = random;
+		}
 
-		UINT source = mCurrentStateBuffer;
-		UINT target = source ^ 1;
-
-		CompContext.SetRootSignature(ParticleSystem::mParticleSig);
-		CompContext.SetPipelineState(ParticleSystem::sParticleDispatchIndirectArgsCS);
-
-		CompContext.TransitionResource(mStateBuffers[source], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		CompContext.TransitionResource(mDispatchIndirectArgs, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-		CompContext.SetDynamicDescriptor(3, 0, mStateBuffers[source].GetCounterSRV(CompContext));
-		CompContext.SetDynamicDescriptor(2, 1, mDispatchIndirectArgs.GetUAV());
-
-		CompContext.Dispatch(1, 1, 1);
-
-		CompContext.TransitionResource(mDispatchIndirectArgs, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-
-		CompContext.ResetCounter(mStateBuffers[target]);
-
+		CompContext.SetDynamicConstantBufferView(1, sizeof(EmitterProperty), &mProperty.EmitProperties);
+		CompContext.TransitionResource(mStateBuffers[mCurrentStateBuffer], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		CompContext.SetDynamicDescriptor(3, 0, mInitBuffer.GetSRV());
-		CompContext.SetDynamicDescriptor(3, 1, mStateBuffers[source].GetSRV());
+		CompContext.SetDynamicDescriptor(3, 1, mStateBuffers[mCurrentStateBuffer].GetSRV());
 
+		mCurrentStateBuffer ^= 1;
+
+		CompContext.ResetCounter(mStateBuffers[mCurrentStateBuffer]);
+
+		//Update パス
 		CompContext.SetPipelineState(ParticleSystem::sParticleUpdateCS);
-		CompContext.TransitionResource(mStateBuffers[target], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		CompContext.SetDynamicDescriptor(2, 1, mStateBuffers[target].GetUAV());
+		CompContext.TransitionResource(mStateBuffers[mCurrentStateBuffer], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		CompContext.TransitionResource(mDispatchIndirectArgs, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+		CompContext.SetDynamicDescriptor(2, 2, mStateBuffers[mCurrentStateBuffer].GetUAV());
 		CompContext.DispatchIndirect(mDispatchIndirectArgs, 0);
 
-		CompContext.InsertUAVBarrier(mStateBuffers[target]);
+		CompContext.InsertUAVBarrier(mStateBuffers[mCurrentStateBuffer]);
 
-		CompContext.SetPipelineState(ParticleSystem::sParticleEmitCS);
-		CompContext.SetDynamicDescriptor(3, 0, mInitBuffer.GetSRV());
-		//u1 (target UAV) は既にバインドされている前提
-		UINT NumToSpawn = (UINT)(mProperty.EmitRate * deltaTime);
-		if (NumToSpawn > mProperty.EmitProperties.MaxParticles) NumToSpawn = mProperty.EmitProperties.MaxParticles;
-		UINT NumSpawnThreads = (NumToSpawn + 63) / 64;
-		CompContext.Dispatch((NumSpawnThreads == 0) ? 1 : NumSpawnThreads, 1, 1);
+		//Emit パス
+		if (mProperty.EmitProperties.Emit)
+		{
+			CompContext.SetPipelineState(ParticleSystem::sParticleEmitCS);
+			CompContext.SetDynamicDescriptor(3, 0, mInitBuffer.GetSRV());
+			UINT NumToSpawn = (UINT)(mProperty.EmitRate * deltaTime);
+			UINT NumSpawnThreads = (NumToSpawn + 63) / 64;
+			CompContext.Dispatch(NumSpawnThreads, 1, 1);
+		}
 
-		CompContext.InsertUAVBarrier(mStateBuffers[target]);
 
-		// 切り替え（次フレームの source とする）
-		mCurrentStateBuffer = target;
+
+		//Dispatch indirect args 
+		CompContext.SetPipelineState(ParticleSystem::sParticleDispatchIndirectArgsCS);
+		CompContext.TransitionResource(mStateBuffers[mCurrentStateBuffer], D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		CompContext.TransitionResource(mDispatchIndirectArgs, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		CompContext.SetDynamicDescriptor(3, 0, mStateBuffers[mCurrentStateBuffer].GetCounterSRV(CompContext));
+		CompContext.SetDynamicDescriptor(2, 1, mDispatchIndirectArgs.GetUAV());
+		CompContext.Dispatch(1, 1, 1);
 	}
 
 	void Particle::Reset()

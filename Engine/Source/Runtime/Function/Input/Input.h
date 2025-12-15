@@ -98,6 +98,12 @@ namespace AtomEngine
 		/// <param name="button">ボタンの種類</param>
 		/// <returns>トリガーか</returns>
 		bool IsTriggerGamePad(GamePadButton button)const;
+
+
+		bool IsReleaseKey(uint8_t key)const;
+
+		bool IsReleaseGamePad(GamePadButton button)const;
+
 		/// <summary>
 		///	マウススクリーン上の位置を取得
 		/// </summary>
@@ -118,6 +124,7 @@ namespace AtomEngine
 		const GameInputGamepadButtons& GetGamePadButton()const { return mGamepadState.buttons; };
 		bool IsUseGamePad()const;
 		bool IsStickTriggerRepeat(float value, float threshold, float dt, float firstDelay, float repeatInterval) const;
+		bool IsContactGamePad() { return mIsPadContact; }
 	private:
 
 		enum MouseButton
@@ -182,6 +189,8 @@ namespace AtomEngine
 		CursorState mCursorState;
 		CursorInput mCursorInput{};
 		CursorInput mLastCursorInput{};
+
+		bool mIsPadContact = false;
 
 		GamePadButton mGamePadButton = GamePadButton::COUNT;
 		InputDeviceType mDeviceType = InputDeviceType::None;

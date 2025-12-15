@@ -172,6 +172,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Runtime\Function\Audio\Audio.h" />
     <ClInclude Include="Source\Runtime\Function\Render\GridRenderer.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\GamePadCamera.h" />
     <ClInclude Include="Source\Game\System\PlayerSystem.h" />
@@ -179,6 +180,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Game\Voxel\ogt_vox.h" />
     <ClInclude Include="Source\Game\System\CollisionSystem.h" />
     <ClInclude Include="Source\Game\System\MoveSystem.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\MeshRenderer.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\Particle.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleEditor.h" />
@@ -206,7 +208,9 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h" />
     <ClInclude Include="Source\Runtime\Function\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Function\Scene\SceneManager.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\D3dUtility\d3dx12.h" />
     <ClInclude Include="Source\Runtime\Resource\GeometryGenerator.h" />
+    <ClInclude Include="Source\Runtime\Resource\PrimitiveMesh.h" />
     <ClInclude Include="Source\Runtime\Resource\Skeleton.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Shader\LightData.h" />
     <ClInclude Include="Source\Runtime\Function\Light\LightManager.h" />
@@ -287,12 +291,14 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Game\Voxel\VoxelWorld.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Runtime\Function\Audio\Audio.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\GridRenderer.cpp" />
     <ClCompile Include="Source\Runtime\Function\Camera\GamePadCamera.cpp" />
     <ClCompile Include="Source\Game\System\PlayerSystem.cpp" />
     <ClCompile Include="Source\Game\System\CollisionSystem.cpp" />
     <ClCompile Include="Source\Game\System\MoveSystem.cpp" />
     <ClCompile Include="Source\Game\Voxel\VoxelWorld.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\MeshRenderer.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\Particle\Particle.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleEditor.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp" />
@@ -314,6 +320,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Runtime\Function\Scene\Scene.cpp" />
     <ClCompile Include="Source\Runtime\Function\Scene\SceneManager.cpp" />
     <ClCompile Include="Source\Runtime\Resource\GeometryGenerator.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\PrimitiveMesh.cpp" />
     <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp" />
     <ClCompile Include="Source\Runtime\Function\Light\LightManager.cpp" />
     <ClCompile Include="Source\Runtime\Resource\ModelLoader.cpp" />
@@ -828,15 +835,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="Asset\Shaders\testShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.2</ShaderModel>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Particles\bubbles.json" />
@@ -854,11 +852,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="Asset\Shaders\Light\Lighting.hlsli" />
     <None Include="Asset\Shaders\Particle\ParticleFinalDispatchIndirectArgsCS.hlsli" />
     <None Include="Asset\Shaders\Particle\ParticleUpdateCommon.hlsli" />
-    <None Include="Asset\Shaders\Unility.hlsli">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </None>
+    <None Include="Asset\Shaders\Utility.hlsli" />
     <None Include="packages.config" />
     <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl">
       <FileType>Document</FileType>

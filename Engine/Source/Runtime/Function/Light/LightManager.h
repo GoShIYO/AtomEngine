@@ -27,10 +27,12 @@ namespace AtomEngine
 
 		static uint32_t AddLight(const LightDesc& desc);
 
+		static uint32_t AddPointLight(const Vector3& position, const Color& color, float radius);
 		static void RemoveLight(uint32_t lightID);
 		
 		static void UploadResources();
 		static void UpdateLight(uint32_t lightID, const LightDesc& desc);
+		static void UpdatePointLight(uint32_t lightID, const Vector3& position, const Color& color, float radius);
 
 		static void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
 

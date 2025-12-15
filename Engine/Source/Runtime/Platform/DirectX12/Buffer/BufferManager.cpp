@@ -93,7 +93,7 @@ namespace AtomEngine
 
 		gHistogram.Destroy();
 	}
-	void OnResize(uint32_t Width, uint32_t Height)
+	void ResizeBuffers(uint32_t Width, uint32_t Height)
 	{
 		gOverlayBuffer.Create(L"UI Overlay", DX12Core::gBackBufferWidth, DX12Core::gBackBufferHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
 

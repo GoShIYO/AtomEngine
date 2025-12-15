@@ -232,7 +232,9 @@ namespace AtomEngine
 				{
 					uint32_t localId = bone->mWeights[w].mVertexId;
 					float weight = bone->mWeights[w].mWeight;
-					jwd.vertexWeights.push_back({ weight, localId });
+					// ローカル頂点IDをグローバル頂点IDへ変換
+					uint32_t globalId = vertexBase + localId;
+					jwd.vertexWeights.push_back({ weight, globalId });
 				}
 			}
 		}

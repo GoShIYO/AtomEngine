@@ -12,7 +12,7 @@ namespace AtomEngine
     {
 
         mIsInitialized = true;
-        Log("[Info]Scene: %s is initialized", mName.c_str());
+        Log("[Info]Scene: %s is initialized\n", mName.c_str());
         return true;
     }
 

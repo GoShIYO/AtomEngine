@@ -1,4 +1,4 @@
-#include"Unility.hlsli"
+#include"Utility.hlsli"
     Texture2D<float3> ColorTex : register(t0);
     SamplerState BilinearClamp : register(s0);
 

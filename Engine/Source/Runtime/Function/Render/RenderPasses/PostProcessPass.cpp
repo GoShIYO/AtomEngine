@@ -67,11 +67,12 @@ namespace AtomEngine
 
 		mExposureBuffer.Create(L"Exposure", 8, 4, initExposure);
 
-		mEnableAdaptation = false;
 		mMinExposure = 0.0f;
 		mMaxExposure = 2.0f;
 		mAdaptationRate = 0.05f;
-		mExposure = 0.5f;
+		mExposure = 2.0f;
+		mBloomThreshold = 0.3f;
+		mBloomStrength = 1.0f;
 		mBloomUpsampleFactor = 0.65f;
 
 		ParticleSystem::Initialize();
@@ -108,8 +109,9 @@ namespace AtomEngine
 		Context.SetRootSignature(mPostEffectsRS);
 		Context.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		ProcessEffects(Context);
-
+#ifdef _DEBUG
 		mGridRenderer->Render(gfxContext, mCamera, *mRTV, *mDSV, mViewport, mScissor);
+#endif
 	}
 
 	void PostProcessPass::GenerateBloom(ComputeContext& Context)

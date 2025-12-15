@@ -4,16 +4,10 @@
 #include<unordered_map>
 #include<mutex>
 #include "Runtime/Platform/DirectX12/D3dUtility/d3dInclude.h"
-#pragma comment(lib,"xaudio2.lib")
 
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
-
-#pragma comment(lib, "Mf.lib")
-#pragma comment(lib, "mfplat.lib")
-#pragma comment(lib, "Mfreadwrite.lib")
-#pragma comment(lib, "mfuuid.lib")
 
 namespace AtomEngine
 {

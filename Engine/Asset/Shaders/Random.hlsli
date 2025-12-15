@@ -80,3 +80,46 @@ float3 rand1dTo3d(float value)
 		rand1dTo1d(value, 5.7241)
 	);
 }
+
+float wangHashFloat(uint x)
+{
+    x = (x ^ 61u) ^ (x >> 16);
+    x *= 9u;
+    x = x ^ (x >> 4);
+    x *= 0x27d4eb2du;
+    x = x ^ (x >> 15);
+    return asfloat((x & 0x007FFFFFu) | 0x3f800000u) - 1.0f; // [0,1)
+}
+
+uint uhash(uint a, uint b, uint c)
+{
+    // simple 3-int mixer
+    uint x = a + 0x9e3779b9u + (b << 6) + (b >> 2);
+    uint y = b + 0x9e3779b9u + (c << 6) + (c >> 2);
+    uint z = c + 0x9e3779b9u + (a << 6) + (a >> 2);
+    x ^= (y >> 13);
+    y ^= (z << 8);
+    z ^= (x >> 13);
+    return x ^ y ^ z;
+}
+
+float random01(uint i, uint dtX, uint seed)
+{
+    uint h = uhash(i, dtX, seed);
+    return wangHashFloat(h);
+}
+
+float3 randUnitSphere(uint i, uint dtX, uint seed)
+{
+    // Marsaglia method using two random floats
+    float u = random01(i, dtX, seed) * 2.0f - 1.0f;
+    float v = random01(i + 1, dtX, seed) * 2.0f - 1.0f;
+    float s = u * u + v * v;
+    if (s >= 1.0f || s == 0.0f)
+    {
+        // fallback: rehash
+        return float3(0, 1, 0);
+    }
+    float factor = sqrt(1.0f - s);
+    return normalize(float3(2.0f * u * factor, 1.0f - 2.0f * s, 2.0f * v * factor));
+}

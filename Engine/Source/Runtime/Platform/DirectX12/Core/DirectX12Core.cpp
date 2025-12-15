@@ -51,7 +51,7 @@ namespace AtomEngine
 		ColorBuffer gFrameBuffers[kSwapChainBufferCount];
 
 		UINT gCurrentBuffer = 0;
-
+		uint64_t gFrameIndex = 0;
 		eResolution NativeResolution = k1080p;
 		eResolution WindowResolution = k1080p;
 
@@ -59,12 +59,14 @@ namespace AtomEngine
 		GraphicsPSO PresentPS(L"Core: PresentSDR");
 		GraphicsPSO SharpeningUpsamplePS(L"Image Scaling: Sharpen Upsample PSO");
 		GraphicsPSO BlendUIPSO(L"Core: BlendUI");
+		GraphicsPSO CompositePS(L"Core: Composite");
+		GraphicsPSO ScaleAndCompositePS(L"Core: ScaleAndComposite");
 
 		float sharpeningSpread = 1.0f;
 		float sharpeningRotation = 45.0f;
 		float sharpeningStrength = 0.1f;
 
-		bool s_EnableVSync = true;
+		bool s_EnableVSync = true;	
 
 		void ResolutionToUINT(eResolution res, uint32_t& width, uint32_t& height)
 		{
@@ -250,6 +252,18 @@ namespace AtomEngine
 				BlendUIPSO.SetPixelShader(uiBlendPS.Get());
 				BlendUIPSO.SetRenderTargetFormat(gBackBufferFormat, DXGI_FORMAT_UNKNOWN);
 				BlendUIPSO.Finalize();
+
+				auto Composite = ShaderCompiler::CompileBlob(L"CompositePS.hlsl", L"ps_6_2");
+				CompositePS = BlendUIPSO;
+				CompositePS.SetBlendState(BlendDisable);
+				CompositePS.SetPixelShader(Composite.Get());
+				CompositePS.Finalize();
+
+				auto ScaleAndComposite = ShaderCompiler::CompileBlob(L"ScaleAndCompositePS.hlsl", L"ps_6_2");
+				ScaleAndCompositePS = BlendUIPSO;
+				ScaleAndCompositePS.SetBlendState(BlendDisable);
+				ScaleAndCompositePS.SetPixelShader(ScaleAndComposite.Get());
+                ScaleAndCompositePS.Finalize();
 			}
 		}
 
@@ -428,7 +442,7 @@ namespace AtomEngine
 
 		uint32_t GetFrameIndex()
 		{
-			return (gCurrentBuffer % 2);
+			return (gFrameIndex % 2);
 		}
 
 		void DX12Core::OnResize(uint32_t width, uint32_t height)
@@ -454,6 +468,8 @@ namespace AtomEngine
 			gCurrentBuffer = gSwapChain->GetCurrentBackBufferIndex();
 
 			gCommandManager.IdleGPU();
+
+			ResizeBuffers(gNativeWidth, gNativeHeight);
 		}
 
 		bool IsPIXDebug()
@@ -481,6 +497,18 @@ namespace AtomEngine
 
 			bool NeedsScaling = gNativeWidth != gBackBufferWidth || gNativeHeight != gBackBufferHeight;
 
+			//ui scale composite
+			{
+				Context.TransitionResource(gOverlayBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+				Context.SetDynamicDescriptor(0, 1, gOverlayBuffer.GetSRV());
+				Context.SetPipelineState(NeedsScaling ? ScaleAndCompositePS : CompositePS);
+				Context.SetConstants(1, 0.7071f / gNativeWidth, 0.7071f / gNativeHeight);
+				Context.TransitionResource(gFrameBuffers[gCurrentBuffer], D3D12_RESOURCE_STATE_RENDER_TARGET);
+				Context.SetRenderTarget(gFrameBuffers[gCurrentBuffer].GetRTV());
+				Context.SetViewportAndScissor(0, 0, gBackBufferWidth, gBackBufferHeight);
+				Context.Draw(3);
+			}
+
 			if (NeedsScaling)
 			{
 				BilinearSharpeningScale(Context, gFrameBuffers[gCurrentBuffer], gSceneColorBuffer);
@@ -496,10 +524,10 @@ namespace AtomEngine
 
 			}
 			CompositeOverlays(Context);
-
+		
 			//ImGui Present
 			gContext.imgui->Render(Context);
-
+			
 			Context.TransitionResource(gFrameBuffers[gCurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
 
 			bool isRunningUnderPIX = false;
@@ -516,6 +544,8 @@ namespace AtomEngine
 
 			gSwapChain->Present(s_EnableVSync ? 1 : 0, 0);
 			gCurrentBuffer = gSwapChain->GetCurrentBackBufferIndex();
+
+			++gFrameIndex;
 
 			SetNativeResolution();
 			SetWindowResolution();

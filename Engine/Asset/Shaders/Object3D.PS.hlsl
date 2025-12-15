@@ -22,11 +22,13 @@ Texture2D<float> texSSAO : register(t14);
 
 cbuffer MaterialConstants : register(b0)
 {
+    float4x4 uvTransform;
     float4 baseColorFactor;
     float3 emissiveFactor;
     float normalTextureScale;
     float3 FresnelF0;
     float2 metallicRoughnessFactor;
+    uint useLight;
 }
 
 struct VSOutput
@@ -35,7 +37,7 @@ struct VSOutput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
+    float3 bitangent : BITTANGENT;
     
     float3 worldPos : TEXCOORD1;
     float4 sunShadowCoord : TEXCOORD2;
@@ -79,20 +81,22 @@ float3 Specular_IBL(float3 specularAlbedo, float3 V, float3 N, float roughness)
 
 float4 main(VSOutput input) : SV_Target0
 {
+    
+    float2 uv = mul(float4(input.texcoord, 0.0, 1.0), uvTransform).xy;
     #ifdef USE_METALLICROUGHNESS
-    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
-    float metallic = metallicRoughnessFactor.x * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).b;
-    float roughness = metallicRoughnessFactor.y * metallicRoughnessTexture.Sample(defaultSampler, input.texcoord).g;
-    float occlusion = occlusionTexture.Sample(defaultSampler, input.texcoord);
-    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
-    float3 N = ComputeNormal(input, input.texcoord);
+    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler,uv);
+    float metallic = metallicRoughnessFactor.x * metallicRoughnessTexture.Sample(defaultSampler, uv).b;
+    float roughness = metallicRoughnessFactor.y * metallicRoughnessTexture.Sample(defaultSampler,uv).g;
+    float occlusion = occlusionTexture.Sample(defaultSampler,uv);
+    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, uv);
+    float3 N = ComputeNormal(input,uv);
     #else
-    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, input.texcoord);
-    float metallic = metallicRoughnessFactor.x * metallicTexture.Sample(defaultSampler, input.texcoord);
-    float roughness = metallicRoughnessFactor.y * roughnessTexture.Sample(defaultSampler, input.texcoord);
-    float occlusion = occlusionTexture.Sample(defaultSampler, input.texcoord);
-    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, input.texcoord);
-    float3 N = ComputeNormal(input, input.texcoord);
+    float4 baseColor = baseColorFactor * baseColorTexture.Sample(defaultSampler, uv);
+    float metallic = metallicRoughnessFactor.x * metallicTexture.Sample(defaultSampler, uv);
+    float roughness = metallicRoughnessFactor.y * roughnessTexture.Sample(defaultSampler, uv);
+    float occlusion = occlusionTexture.Sample(defaultSampler, uv);
+    float3 emissive = emissiveFactor * emissiveTexture.Sample(defaultSampler, uv);
+    float3 N = ComputeNormal(input, uv);
     #endif
 
     float2 pixelPos = input.position.xy;
@@ -116,13 +120,23 @@ float4 main(VSOutput input) : SV_Target0
     //鏡面反射
     float3 specularIBL = Specular_IBL(specularAlbedo, V, N, roughness) * IBLFactor;
     
-    float3 color = emissive + dirLight + diffuseIBL + specularIBL;
 
     //todo: tiled light
     float3 tiledLightColor = 0.0f;
+    float3 color = 0.0f;
     ShadeLights(tiledLightColor, pixelPos, diffuseAlbedo, specularAlbedo, roughness, N, V, input.worldPos);
+    if (useLight == 0)
+    {
+        dirLight = float3(0, 0, 0);
+        tiledLightColor = float3(0, 0, 0);
+        color += emissive + baseColor.rgb;
 
-    color += tiledLightColor;
+    }
+    else
+    {
+        color += emissive + dirLight + diffuseIBL + specularIBL + tiledLightColor;
+    }
+
 
     return float4(color, baseColor.a);
 }

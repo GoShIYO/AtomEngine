@@ -71,6 +71,11 @@ namespace AtomEngine
 			return uniform(-1.f, std::nextafter(1.f, FLT_MAX));
 		}
 
+		static int32_t uniform_int(int32_t max)
+		{
+            return uniform(0, max);
+		}
+
 		/// <summary>
 		/// 指定された確率で true または false を返します。
 		/// </summary>

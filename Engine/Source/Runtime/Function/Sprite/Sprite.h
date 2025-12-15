@@ -33,7 +33,7 @@ namespace AtomEngine
 		// 上下反転
 		bool isFlipY = false;
 		// ソートキー
-		uint32_t depth = 0;
+		uint32_t depth = 1;
 	};
 
 	class Sprite
@@ -49,6 +49,7 @@ namespace AtomEngine
 		/// <param name="blendMode">モード</param>
 		void SetBlendMode(BlendMode blendMode) { mBlendMode = blendMode; }
 
+		inline void SetColor(Color color_) { mDesc.color = color_; };
 		void SetVisible(bool flag) { mIsValid = flag; }
 		bool Valid() const{return mIsValid;}
 
@@ -61,7 +62,7 @@ namespace AtomEngine
 
 		Transform& GetWorldTransform() { return mWorldTransform; }
 		Transform& GetUVTransform() { return mUVTransform; }
-
+		void SetDepth(uint32_t depth) { mDesc.depth = depth; }
 		void Render(const Vector2& position,const Vector2& scale,float angle,const Vector2& pivot = {0,0}, const Color& color = Color::White, uint32_t layer = 0);
 		void Render(const Vector2& position, const Vector2& scale, float angle, TextureRef texture, const Vector2& pivot = {0,0}, const Color& color = Color::White, uint32_t layer = 0);
 		void Render();

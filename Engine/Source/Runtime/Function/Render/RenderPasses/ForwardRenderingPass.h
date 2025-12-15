@@ -18,14 +18,14 @@ namespace AtomEngine
 		SkyboxRenderer mSkybox;
 		ShadowCamera mShadowCamera;
 
+		Color mSunColor = Color::White;
 		float mSunLightIntensity = 1.0f;
 		Vector3 mSunDirection = { -0.14f,-0.446f,0.884f };
-		float mSunOrientation = -0.5f;
-		float mSunInclination = 0.75f;
 		Vector3 mShadowCenter = { 0.0f,0,0.0f };
-		Vector3 mShadowDim = { 60, 60, 60 };
+		Vector3 mShadowDim = { 30, 30, 30 };
 		float mIBLBias = 2.0f;
 		float mIBLFactor = 1.0f;
+		float mShadowBias = 0.001f;
 		bool mEnableIBL = true;
 		DescriptorHandle mGpuHandle;
 

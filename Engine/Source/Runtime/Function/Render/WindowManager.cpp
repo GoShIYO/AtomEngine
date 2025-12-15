@@ -11,9 +11,9 @@
 
 #include <mfapi.h>
 
+#ifndef RELEASE
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
-#pragma comment(lib, "mfplat.lib")
+#endif // 
 
 namespace AtomEngine
 {
@@ -109,15 +109,16 @@ namespace AtomEngine
 
 	LRESULT WindowManager::WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+#ifndef RELEASE
 		if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 			return true;
-
+#endif
 		switch (msg)
 		{
 		case WM_SIZE:
-			//mWindowWidth = (UINT)(UINT64)lParam & 0xFFFF;
-			//mWindowHeight = (UINT)(UINT64)lParam >> 16;
-			//OnResize(mWindowWidth, mWindowHeight);
+			mWindowWidth = (UINT)(UINT64)lParam & 0xFFFF;
+			mWindowHeight = (UINT)(UINT64)lParam >> 16;
+			OnResize(mWindowWidth, mWindowHeight);
 			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);

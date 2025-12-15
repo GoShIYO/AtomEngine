@@ -57,31 +57,3 @@ float3 Diffuse_Burley(float3 albedo, float roughness, float NdotL, float NdotV, 
     return albedo * (F_L * F_V);
 }
 
-float fract(float x)
-{
-    return x - floor(x);
-}
-float2 fract(float2 x)
-{
-    return x - floor(x);
-}
-
-float3 fract(float3 x)
-{
-    return x - floor(x);
-}
-
-float rcp(float x)
-{
-    return 1.0 / x;
-}
-
-float2 rcp(float2 x)
-{
-    return float2(1.0, 1.0) / x;
-}
-
-float3 rcp(float3 x)
-{
-    return float3(1.0, 1.0, 1.0) / x;
-}

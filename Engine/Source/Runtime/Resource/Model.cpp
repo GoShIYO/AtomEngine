@@ -45,7 +45,7 @@ namespace AtomEngine
 				);
 				BoundingSphere sphereVS = BoundingSphere(
 					sphereWS.GetCenter() * viewMat,
-					sphereWS.GetRadius()
+					sphereWS.GetRadius() + 1.0f
 				);
 
 				if (!frustum.IntersectSphere(sphereVS))

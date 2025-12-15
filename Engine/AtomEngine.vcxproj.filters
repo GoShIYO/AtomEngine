@@ -55,9 +55,6 @@
     <FxCompile Include="Asset\Shaders\SkyboxVS.hlsl">
       <Filter>Assets\Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shaders\testShader.hlsl">
-      <Filter>Assets\Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Asset\Shaders\PrimitiveVS.hlsl" />
     <FxCompile Include="Asset\Shaders\PrimitivePS.hlsl" />
     <FxCompile Include="Asset\Shaders\SpriteVS.hlsl" />
@@ -304,6 +301,9 @@
     <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\Particle\Particle.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleEditor.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\MeshRenderer.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Audio\Audio.cpp" />
+    <ClCompile Include="Source\Runtime\Resource\PrimitiveMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Runtime\Core\Math\Math.h">
@@ -593,6 +593,10 @@
     <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleEditor.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\MeshRenderer.h" />
+    <ClInclude Include="Source\Runtime\Function\Audio\Audio.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\D3dUtility\d3dx12.h" />
+    <ClInclude Include="Source\Runtime\Resource\PrimitiveMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">
@@ -613,9 +617,6 @@
     <None Include="packages.config">
       <Filter>Engine\Core\External</Filter>
     </None>
-    <None Include="Asset\Shaders\Unility.hlsli">
-      <Filter>Assets\Shader</Filter>
-    </None>
     <None Include="Asset\Shaders\Particle\ParticleUpdateCommon.hlsli" />
     <None Include="Asset\Shaders\Particle\ParticleFinalDispatchIndirectArgsCS.hlsli" />
     <None Include="Asset\Particles\fireworks.json" />
@@ -623,6 +624,7 @@
     <None Include="Asset\Particles\smoke_ring.json" />
     <None Include="Asset\Particles\sparks.json" />
     <None Include="Asset\Particles\wavering.json" />
+    <None Include="Asset\Shaders\Utility.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Editor">

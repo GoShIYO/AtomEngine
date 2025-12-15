@@ -11,6 +11,7 @@ cbuffer GlobalConstants : register(b1)
     float IBLFactor;
     float IBLRange;
     float IBLBias;
+    float ShadowBias;
     float4 ShadowTexelSize;
     float4 InvTileDim;
     uint4 TileCount;
@@ -76,13 +77,11 @@ float3 ApplyAmbientLight(
 //    return result * result;
 //}
 
-float GetDirectionalShadow(float3 ShadowCoord,Texture2D<float> texShadow)
+float GetDirectionalShadow(float3 ShadowCoord, Texture2D<float> texShadow)
 {
     float sum = 0.0f;
-    [unroll]
     for (int x = -1; x <= 1; ++x)
     {
-        [unroll]
         for (int y = -1; y <= 1; ++y)
         {
             float2 offset = float2(x, y) * ShadowTexelSize.x;
@@ -100,9 +99,9 @@ float GetShadowConeLight(uint lightIndex, float3 shadowCoord)
 }
 
 float3 ApplyLightCommon(
-    float3 diffuseColor, // Diffuse albedo
-    float3 specularColor, // F0
-    float roughness, // roughness
+    float3 diffuseColor,    // Diffuse albedo
+    float3 specularColor,   // F0
+    float roughness,        // roughness
     float3 normal,
     float3 viewDir,
     float3 lightDir,
@@ -146,8 +145,8 @@ float3 ApplyDirectionalLight(
 	Texture2D<float> texShadow
 )
 {
-    shadowCoord.z += ComputeNormalBias(normal, lightDir, 0.0005);
-    shadowCoord.z = floor(shadowCoord.z * 65535.0) / 65535.0;
+    //shadowCoord.z += ComputeNormalBias(normal, lightDir, ShadowBias);
+    //shadowCoord.z = floor(shadowCoord.z * 65535.0) / 65535.0;
     float shadow = GetDirectionalShadow(shadowCoord, texShadow);
 
     return shadow * ApplyLightCommon(
@@ -244,13 +243,13 @@ float3 ApplyConeShadowedLight(
     float lightRadiusSq,
     float3 lightColor, // Radiance of directional light
     float3 coneDir,
-    float innerCos,
-    float outerCos,
+    float  innerCos,
+    float  outerCos,
     float4x4 shadowTextureMatrix,
     uint lightIndex
     )
 {
-    float4 shadowCoord = mul(float4(worldPos, 1.0), shadowTextureMatrix);
+    float4 shadowCoord = mul(float4(worldPos, 1.0),shadowTextureMatrix);
     shadowCoord.xyz *= rcp(shadowCoord.w);
     float shadow = GetShadowConeLight(lightIndex, shadowCoord.xyz);
 

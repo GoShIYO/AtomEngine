@@ -32,9 +32,10 @@ namespace AtomEngine
 		void StopAnimation(uint32_t animIdx);
 
 		void LoopAllAnimations();
-
+		uint32_t GetNumAnimations() const { return static_cast<uint32_t>(mAnimState.size()); }
 		bool IsRender() const { return mIsRender; }
 		void SetIsRender(bool isRender) { mIsRender = isRender; }
+		void SetDeltaScale(float deltaScale) { mDeltaScale = deltaScale; }
 	private:
 		bool mIsRender = true;
 		std::shared_ptr<Model> mModel = nullptr;
@@ -50,6 +51,7 @@ namespace AtomEngine
 
 		std::unique_ptr<JointXform[]> mSkeletonTransforms;
 		std::vector<Matrix4x4> mBoundingSphereTransforms;
+		float mDeltaScale = 1.0f;
 	};
 }
 

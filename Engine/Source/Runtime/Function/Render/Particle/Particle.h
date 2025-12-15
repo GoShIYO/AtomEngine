@@ -30,6 +30,8 @@ namespace AtomEngine
 		ParticleProperty& GetProperty();
 		const ParticleProperty& GetProperty() const;
 		void SetProperty(const ParticleProperty& prop);
+		void Emit(const Vector3& emitPosW);
+
 	private:
 		StructuredBuffer mStateBuffers[2];
 		StructuredBuffer mInitBuffer;

@@ -1,4 +1,4 @@
-#include"Unility.hlsli"
+#include"Utility.hlsli"
 
 Texture2D ColorTex : register(t0);
 

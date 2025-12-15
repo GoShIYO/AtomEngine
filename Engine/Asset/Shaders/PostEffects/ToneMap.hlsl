@@ -22,15 +22,12 @@ void main(uint3 DTid : SV_DispatchThreadID)
     hdrColor += gBloomStrength * Bloom.SampleLevel(LinearSampler, TexCoord, 0);
     hdrColor *= Exposure[0];
 
-    ColorRW[DTid.xy] = hdrColor;
-    OutLuma[DTid.xy] = RGBToLogLuminance(hdrColor);
+    //ColorRW[DTid.xy] = hdrColor;
+    //OutLuma[DTid.xy] = RGBToLogLuminance(hdrColor);
 
 
     // SDR¤Ø¤Î¥È©`¥ó¥Þ¥Ã¥×
     float3 sdrColor = TM_Stanard(hdrColor);
-
     ColorRW[DTid.xy] = sdrColor;
-
     OutLuma[DTid.xy] = RGBToLogLuminance(sdrColor);
-
 }

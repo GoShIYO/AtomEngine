@@ -12,7 +12,7 @@ namespace AtomEngine
 	{
 		inline std::string what(HRESULT hr)
 		{
-			char s_str[64] = {};
+			char s_str[256] = {};
 			sprintf_s(s_str, "HRESULT of 0x%08X", static_cast<UINT>(hr));
 			return std::string(s_str);
 		}
@@ -46,22 +46,28 @@ namespace AtomEngine
 
 	inline void Printf(const char* format, ...)
 	{
+#ifdef _DEBUG
+
 		char buffer[1024];
 		va_list ap;
 		va_start(ap, format);
 		vsprintf_s(buffer, 1024, format, ap);
 		va_end(ap);
 		Print(buffer);
+#endif
 	}
 
 	inline void Printf(const wchar_t* format, ...)
 	{
+#ifdef _DEBUG
+
 		wchar_t buffer[1024];
 		va_list ap;
 		va_start(ap, format);
 		vswprintf(buffer, 1024, format, ap);
 		va_end(ap);
 		Print(buffer);
+#endif
 	}
 #ifdef _DEBUG
 	inline void PrintSubMessage(const char* format, ...)

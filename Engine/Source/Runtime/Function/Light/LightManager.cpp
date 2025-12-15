@@ -74,7 +74,7 @@ namespace AtomEngine
 		gLightShadowArray.CreateArray(L"LightShadowArray", shadowDim, shadowDim, MAX_LIGHTS, DXGI_FORMAT_R16_UNORM);
 		gLightShadowTempBuffer.Create(L"mightShadowTempBuffer", shadowDim, shadowDim);
 
-		gLightBuffer.Create(L"LightBuffer", MAX_LIGHTS, sizeof(LightData) - 12);
+		gLightBuffer.Create(L"LightBuffer", MAX_LIGHTS, sizeof(LightData));
 		gLights.reserve(MAX_LIGHTS);
 	}
 
@@ -96,6 +96,25 @@ namespace AtomEngine
 		}
 		gLights.push_back(lightData);
 
+		uint32_t id = gNextLightID++;
+		gLightIDToIndex[id] = (uint32_t)gLights.size() - 1;
+		dirty = true;
+		return id;
+	}
+
+	uint32_t LightManager::AddPointLight(const Vector3& position, const Color& color, float radius)
+	{
+		LightData lightData;
+		lightData.color = color.ToVector3();
+		lightData.position = position;
+		lightData.radiusSq = radius * radius;
+		lightData.type = (uint32_t)LightType::Point;
+
+		if (gLights.size() >= MAX_LIGHTS)
+		{
+			return 0;
+		}
+		gLights.push_back(lightData);
 		uint32_t id = gNextLightID++;
 		gLightIDToIndex[id] = (uint32_t)gLights.size() - 1;
 		dirty = true;
@@ -153,11 +172,10 @@ namespace AtomEngine
 			CommandContext::InitializeBuffer(
 				gLightBuffer,
 				gLights.data(),
-				gLights.size() * (sizeof(LightData) - 12)
+				gLights.size() * (sizeof(LightData))
 			);
-
+			dirty = false;
 		}
-		dirty = false;
 	}
 
 	void LightManager::UpdateLight(uint32_t lightID, const LightDesc& desc)
@@ -178,6 +196,18 @@ namespace AtomEngine
 		dirty = true;
 	}
 
+	void LightManager::UpdatePointLight(uint32_t lightID, const Vector3& position, const Color& color, float radius)
+	{
+		auto it = gLightIDToIndex.find(lightID);
+		if (it == gLightIDToIndex.end()) return;
+
+		LightData& data = gLights[it->second];
+		data.position = position;
+		data.radiusSq = radius * radius;
+		data.color = color.ToVector3();
+		dirty = true;
+	}
+
 	void LightManager::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	{
 		ComputeContext& Context = gfxContext.GetComputeContext();
@@ -193,17 +223,17 @@ namespace AtomEngine
 		default: ASSERT(false); break;
 		}
 
-		ColorBuffer& LinearDepth = gLinearDepth[DX12Core::GetFrameIndex()];
+		//ColorBuffer& LinearDepth = gLinearDepth[DX12Core::GetFrameIndex()];
 
 		Context.TransitionResource(gLightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		//Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(gLightGrid, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		Context.TransitionResource(gLightGridBitMask, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 		Context.SetDynamicDescriptor(1, 0, gLightBuffer.GetSRV());
-		Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
-		//Context.SetDynamicDescriptor(1, 1, g_SceneDepthBuffer.GetDepthSRV());
+		//Context.SetDynamicDescriptor(1, 1, LinearDepth.GetSRV());
+		Context.SetDynamicDescriptor(1, 1, gSceneDepthBuffer.GetDepthSRV());
 		Context.SetDynamicDescriptor(2, 0, gLightGrid.GetUAV());
 		Context.SetDynamicDescriptor(2, 1, gLightGridBitMask.GetUAV());
 
@@ -212,13 +242,12 @@ namespace AtomEngine
 
 		float FarClipDist = camera.GetFarClip();
 		float NearClipDist = camera.GetNearClip();
-		const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
 
 		struct CSConstants
 		{
 			uint32_t ViewportWidth, ViewportHeight;
 			float InvTileDim;
-			float RcpZMagic;
+			float NearClip, FarClip;
 			uint32_t TileCount;
 			Matrix4x4 ViewProjMatrix;
 		} csConstants;
@@ -226,7 +255,8 @@ namespace AtomEngine
 		csConstants.ViewportWidth = gSceneColorBuffer.GetWidth();
 		csConstants.ViewportHeight = gSceneColorBuffer.GetHeight();
 		csConstants.InvTileDim = 1.0f / LightGridDim;
-		csConstants.RcpZMagic = RcpZMagic;
+		csConstants.NearClip = NearClipDist;
+		csConstants.FarClip = FarClipDist;
 		csConstants.TileCount = tileCountX;
 		csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
 		Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);

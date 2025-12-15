@@ -35,8 +35,9 @@ namespace AtomEngine
 		const wchar_t* deviceKindString;
 		const wchar_t* deviceEventString = nullptr;
 
-		if (deviceKind & GameInputKindGamepad)
+		if (deviceKind & GameInputKindGamepad) {
 			deviceKindString = L"Gamepad";
+		}
 		else if (deviceKind & GameInputKindMouse)
 			deviceKindString = L"Mouse";
 		else
@@ -82,8 +83,6 @@ namespace AtomEngine
 
 	void Input::Update()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-
 #pragma region keyboard入力
 		// キーの押す状態を更新
 		std::memcpy(mPreKeys, mkeys, sizeof(mkeys));
@@ -114,9 +113,10 @@ namespace AtomEngine
 			}
 		}
 #pragma endregion
-		if (!io.WantCaptureMouse)
-		{
+
 #pragma region マウス入力
+		if (!ImGui::GetIO().WantCaptureMouse)
+		{
 			if (SUCCEEDED(mInput->GetCurrentReading(GameInputKindMouse, nullptr, &mReading)))
 			{
 				static int64_t lastDeltaX = 0;
@@ -143,8 +143,8 @@ namespace AtomEngine
 						mCursorInput.CursorInputRotation = static_cast<int>(deltaX);
 				}
 			}
-#pragma endregion
 		}
+#pragma endregion
 
 #pragma region GamePad
 
@@ -294,7 +294,35 @@ namespace AtomEngine
 		// 現在のフレームで押されていて、前のフレームで押されていないか
 		return ((mGamepadState.buttons & flag) != 0) && ((mPrevGamepadState.buttons & flag) == 0);
 	}
+	bool Input::IsReleaseKey(uint8_t key) const
+	{
+		return  mPreKeys[key] && !mkeys[key];
+	}
 
+	bool Input::IsReleaseGamePad(GamePadButton button) const
+	{
+		GameInputGamepadButtons flag;
+		switch (button)
+		{
+		case GamePadButton::A:              flag = GameInputGamepadA; break;
+		case GamePadButton::B:              flag = GameInputGamepadB; break;
+		case GamePadButton::X:              flag = GameInputGamepadX; break;
+		case GamePadButton::Y:              flag = GameInputGamepadY; break;
+		case GamePadButton::LB:				flag = GameInputGamepadLeftShoulder; break;
+		case GamePadButton::RB:				flag = GameInputGamepadRightShoulder; break;
+		case GamePadButton::LeftThumbstick: flag = GameInputGamepadLeftThumbstick; break;
+		case GamePadButton::RightThumbstick:flag = GameInputGamepadRightThumbstick; break;
+		case GamePadButton::DPadUp:         flag = GameInputGamepadDPadUp; break;
+		case GamePadButton::DPadDown:       flag = GameInputGamepadDPadDown; break;
+		case GamePadButton::DPadLeft:       flag = GameInputGamepadDPadLeft; break;
+		case GamePadButton::DPadRight:      flag = GameInputGamepadDPadRight; break;
+		case GamePadButton::Menu:           flag = GameInputGamepadMenu; break;
+		case GamePadButton::View:           flag = GameInputGamepadView; break;
+		default: return false;
+		}
+		// 現在のフレームで押されていて、前のフレームで押されていないか
+		return ((mPrevGamepadState.buttons & flag) != 0 && (mGamepadState.buttons & flag) == 0);
+	}
 	bool Input::GetMousePosition(int* mouseX, int* mouseY)
 	{
 		if (mouseX && mouseY)

@@ -5,6 +5,7 @@
 #include "Runtime/Function/Light/LightManager.h"
 #include "Runtime/Function/Render/RenderSystem.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+#include "Runtime/Function/Render/MeshRenderer.h"
 #include "Game/Tag.h"
 #include "imgui.h"
 
@@ -34,18 +35,14 @@ namespace AtomEngine
 
 		const D3D12_VIEWPORT& viewport = mViewport;
 		const D3D12_RECT& scissor = mScissor;
-		float costheta = Math::cos(mSunOrientation);
-		float sintheta = Math::sin(mSunOrientation);
-		float cosphi = Math::cos(mSunInclination * Math::HalfPI);
-		float sinphi = Math::sin(mSunInclination * Math::HalfPI);
-		//mSunDirection = Math::Normalize(Vector3(costheta * cosphi, sinphi, sintheta * cosphi));
+
 		ImGui::Begin("Forward Rendering");
+		ImGui::ColorEdit3("SunColor", mSunColor.ptr());
 		ImGui::DragFloat("SunLightIntensity", &mSunLightIntensity, 0.01f, 0.0f, 1000.0f);
-		ImGui::DragFloat("SunOrientation", &mSunOrientation, 0.01f);
-		ImGui::DragFloat("SunInclination", &mSunInclination, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat3("SunDirection", mSunDirection.ptr(), 0.01f);
 		ImGui::DragFloat("IBLFactor", &mIBLFactor, 0.01f, 0.0f, 2.0f);
 		ImGui::DragFloat("IBLBias", &mIBLBias, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat("ShadwBias", &mShadowBias, 0.0001f, 0.0001f, 0.01f);
 		ImGui::DragFloat3("SunCenter", mShadowCenter.ptr(), 0.1f);
 		ImGui::DragFloat3("ShadowDim", mShadowDim.ptr(), 0.1f, 0.1f);
 		ImGui::Checkbox("EnableIBL", &mEnableIBL);
@@ -67,10 +64,11 @@ namespace AtomEngine
 		globals.SunShadowMatrix = mShadowCamera.GetShadowMatrix();
 		globals.CameraPos = mCamera->GetPosition();
 		globals.SunDirection = mSunDirection;
-		globals.SunIntensity = Vector3(mSunLightIntensity);
+		globals.SunIntensity = mSunColor.ToVector3() * mSunLightIntensity;
 		globals.IBLFactor = mIBLFactor;
 		globals.IBLRange = mSkybox.GetIBLRange();
 		globals.IBLBias = mSkybox.GetIBLBias();
+		globals.ShadowBias = mShadowBias;
 		globals.ShadowTexelSize[0] = 1.0f / gShadowBuffer.GetWidth();
 		globals.InvTileDim[0] = 1.0f / LightManager::LightGridDim;
 		globals.InvTileDim[1] = 1.0f / LightManager::LightGridDim;
@@ -119,6 +117,7 @@ namespace AtomEngine
 		}
 
 		queue.RenderMeshes(RenderQueue::kTransparent, gfxContext, globals);
+		MeshRenderer::Render(gfxContext, mCamera);
 	}
 
 	void ForwardRenderingPass::RenderObjects(RenderQueue& queue)

@@ -2,6 +2,12 @@
 #include <filesystem>
 #include <Runtime/Core/Utility/Utility.h>
 
+#pragma comment(lib,"xaudio2.lib")
+#pragma comment(lib, "Mf.lib")
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "Mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
+
 namespace AtomEngine
 {
 	std::unordered_map<uint32_t, Audio::SoundData> Audio::soundDatas;

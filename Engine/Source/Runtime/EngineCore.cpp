@@ -53,7 +53,9 @@ namespace Engine
 	{
 		gContext.input->Update();
 
-		Renderer::Update(app.GetWorld(),deltaTime);
+		app.Update(deltaTime);
+
+		Renderer::Update(app.GetWorld(), deltaTime);
 	}
 
 	void AtomEngine::RenderTick(GameApp& app,float deltaTime)
@@ -102,7 +104,7 @@ namespace Engine
 		LogicalTick(app,deltaTime);
 		CalculateFPS(deltaTime);
 
-		app.Update(deltaTime);
+
 
 		RenderTick(app,deltaTime);
 	}

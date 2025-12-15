@@ -17,6 +17,8 @@
 #include "Runtime/Function/Framework/Component/MeshComponent.h"
 #include "Runtime/Function/Render/RenderPasses/RenderPassManager.h"
 #include "Runtime/Function/Render/RenderPasses/RenderPassesInclude.h"
+#include "Runtime/Function/Render/MeshRenderer.h"
+
 #include "imgui.h"
 
 namespace AtomEngine
@@ -232,6 +234,8 @@ namespace AtomEngine
 		ShadowBufferID = gShadowBuffer.GetVersionID();
 		Primitive::Initialize();
 		SpriteRenderer::Initialize();
+		MeshRenderer::Initialize();
+
 		InitializeRenderPasses();
 	}
 
@@ -327,6 +331,7 @@ namespace AtomEngine
 		LightManager::Shutdown();
 		Primitive::Shutdown();
 		SpriteRenderer::Shutdown();
+		MeshRenderer::Shutdown();
 	}
 
 	const GraphicsPSO& Renderer::GetPSO(uint16_t psoFlags)

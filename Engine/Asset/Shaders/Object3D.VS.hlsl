@@ -44,7 +44,7 @@ struct VSOutput
     float2 texcoord : TEXCOORD0;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
-    float3 bitangent : BITANGENT;
+    float3 bitangent : BITTANGENT;
     
     float3 worldPos : TEXCOORD1;
     float4 sunShadowCoord : TEXCOORD2;

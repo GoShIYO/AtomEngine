@@ -5,7 +5,6 @@
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
 #include "Runtime/Resource/AssetManager.h"
 #include "Runtime/Core/Utility/Utility.h"
-#include "Runtime/Resource/AssetManager.h"
 
 #include "imgui.h"
 #include <json.hpp>
@@ -44,7 +43,6 @@ namespace AtomEngine
 	bool ParticleSystem::sInitComplete = false;
 
 	std::vector<ParticleProperty> ParticleSystem::sParticlePrefabs;
-
 	struct InputVertex
 	{
 		Vector3 position;
@@ -128,7 +126,7 @@ namespace AtomEngine
 		uint32_t count = 1;
 		uint32_t source[] = { 1 };
 		D3D12_CPU_DESCRIPTOR_HANDLE sourceTex[] = { sParticleBuffer.GetSRV() };
-		DX12Core::gDevice->CopyDescriptors(1, &sParticleGpuHandle, 
+		DX12Core::gDevice->CopyDescriptors(1, &sParticleGpuHandle,
 			&count, count, sourceTex, source, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		sInitComplete = true;
@@ -226,7 +224,6 @@ namespace AtomEngine
 		sParticlePool.clear();
 		sParticlesActive.clear();
 		sTextures.clear();
-		sParticlePrefabs.clear();
 
 		sTextureArrayHeap.Destroy();
 		sParticleBuffer.Destroy();
@@ -255,7 +252,6 @@ namespace AtomEngine
 		return index;
 	}
 
-	// --- 追加: prefab を作る（発射はしない） ---
 	uint32_t ParticleSystem::CreateParticlePrefab(const ParticleProperty& props)
 	{
 		if (!sInitComplete) return 0xffffffff;
@@ -268,14 +264,13 @@ namespace AtomEngine
 		return (uint32_t)sParticlePrefabs.size() - 1;
 	}
 
-	// --- 追加: prefab を指定位置/方向で発射する ---
-	uint32_t ParticleSystem::EmitPrefab(uint32_t prefabId, const Vector3& emitPosW, const Vector3& emitDirW)
+	uint32_t ParticleSystem::EmitPrefab(uint32_t prefabId, const Vector3& emitPosW)
 	{
 		if (!sInitComplete || prefabId >= sParticlePrefabs.size()) return 0xffffffff;
 
 		ParticleProperty props = sParticlePrefabs[prefabId];
 		props.EmitProperties.EmitPosW = emitPosW;
-		props.EmitProperties.EmitDirW = emitDirW;
+		props.EmitProperties.LastEmitPosW = emitPosW;
 
 		static std::mutex s_emit_mutex;
 		s_emit_mutex.lock();
@@ -288,7 +283,6 @@ namespace AtomEngine
 		sParticlesActive[index]->Initialize();
 		return index;
 	}
-
 	void ParticleSystem::ResetParticle(uint32_t particleId)
 	{
 		if (!sInitComplete || sParticlesActive.size() == 0 || particleId >= sParticlesActive.size())
@@ -303,6 +297,14 @@ namespace AtomEngine
 			return -1.0;
 
 		return sParticlesActive[particleId]->GetElapsedTime();
+	}
+
+	void ParticleSystem::EmitParticle(uint32_t particleId, const Vector3& emitPosW)
+	{
+		if (!sInitComplete || sParticlesActive.size() == 0 || particleId >= sParticlesActive.size())
+			return;
+
+		
 	}
 
 	void ParticleSystem::SetFinalBuffers(ComputeContext& CompContext)

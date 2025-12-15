@@ -21,6 +21,7 @@ __declspec(align(256)) struct MeshConstants
 
 __declspec(align(256)) struct MaterialConstants
 {
+	Matrix4x4 uvTransform;
 	float4 baseColorFactor = { 1,1,1,1 };      // default=[1,1,1,1]
 	float3 emissiveFactor = { 1,1,1 };         // default=[1,1,1]
 	float normalTextureScale = 1.0f;           // default=1
@@ -28,6 +29,7 @@ __declspec(align(256)) struct MaterialConstants
 	float pad0;
 	float metallicFactor = 1.0f;               // default=1
 	float roughnessFactor = 1.0f;              // default=1
+	uint32_t uselight = 1;
 };
 
 __declspec(align(256)) struct GlobalConstants
@@ -42,6 +44,7 @@ __declspec(align(256)) struct GlobalConstants
 	float IBLFactor;				// IBLの強度
 	float IBLRange;					// IBLの範囲
 	float IBLBias;					// IBLのバイアス
+	float ShadowBias;
 	float ShadowTexelSize[4];
 	float InvTileDim[4];
 	uint32_t TileCount[4];

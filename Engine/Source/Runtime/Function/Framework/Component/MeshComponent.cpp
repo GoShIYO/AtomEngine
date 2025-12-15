@@ -76,6 +76,8 @@ namespace AtomEngine
 			materialCB.normalTextureScale = material.mMaterials[i].mNormalScale;
 			materialCB.emissiveFactor = material.mMaterials[i].mEmissive;
 			materialCB.FresnelF0 = material.mMaterials[i].mFresnelF0;
+			materialCB.uvTransform = material.mMaterials[i].uvTransform.GetMatrix();
+			materialCB.uselight = material.mMaterials[i].useLight;
 		}
 		mMaterialConstantsCPU.Unmap();
 
@@ -170,21 +172,19 @@ namespace AtomEngine
 	}
 	void MeshComponent::UpdateAnimation(float deltaTime)
 	{
-		GraphNode* animGraph = mAnimGraph.get();
-
 		for (uint32_t i = 0; i < mAnimState.size(); ++i)
 		{
 			AnimationState& animState = mAnimState[i];
 			if (animState.state == AnimationState::kStopped)
 				continue;
-			animState.time += deltaTime;
+			animState.time += deltaTime * mDeltaScale;
 			const AnimationClip& clip = mModel->mAnimationData[i];
 
 			if (animState.state == AnimationState::kLooping)
 				animState.time = std::fmodf(animState.time, clip.duration);
 			else if (animState.time > clip.duration)
 			{
-				animState.time = 0.0f;
+				animState.time = clip.duration;
 				animState.state = AnimationState::kStopped;
 			}
 
@@ -192,25 +192,25 @@ namespace AtomEngine
 			for (auto& curve : clip.curves)
 			{
 				auto& joint = mModel->mSkeleton.joints[curve.targetJoint];
-				if (animState.state == AnimationState::kLooping)
-				{
-					joint.transform.scale = CalculateValueLoop(curve.scale, time, clip.duration);
-					joint.transform.rotation = CalculateRotationLoop(curve.rotation, time, clip.duration);
-					joint.transform.transition = CalculateValueLoop(curve.translation, time, clip.duration);
-				}
-				else
-				{
-					joint.transform.scale = CalculateValue(curve.scale, time);
-					joint.transform.rotation = CaculateRotation(curve.rotation, time);
-					joint.transform.transition = CalculateValue(curve.translation, time);
-				}
+				joint.transform.scale = CalculateValue(curve.scale, time);
+				joint.transform.rotation = CaculateRotation(curve.rotation, time);
+				joint.transform.transition = CalculateValue(curve.translation, time);
 			}
 		}
 	}
 	void MeshComponent::PlayAnimation(uint32_t animIdx, bool loop)
 	{
-		if (animIdx < mAnimState.size())
-			mAnimState[animIdx].state = loop ? AnimationState::kLooping : AnimationState::kPlaying;
+		if (animIdx >= mAnimState.size())return;
+
+		for(uint32_t i = 0; i < mAnimState.size() ; i++)
+		{
+			if (i == animIdx)continue;
+			auto& animState = mAnimState[i];
+			animState.state = AnimationState::kStopped;
+			animState.time = 0.0f;
+		}
+	
+		mAnimState[animIdx].state = loop ? AnimationState::kLooping : AnimationState::kPlaying;
 	}
 
 	void MeshComponent::PauseAnimation(uint32_t animIdx)
@@ -221,13 +221,13 @@ namespace AtomEngine
 
 	void MeshComponent::ResetAnimation(uint32_t animIdx)
 	{
-		if (animIdx >= mAnimState.size())
+		if (animIdx < mAnimState.size())
 			mAnimState[animIdx].time = 0.0f;
 	}
 
 	void MeshComponent::StopAnimation(uint32_t animIdx)
 	{
-		if (animIdx >= mAnimState.size())
+		if (animIdx < mAnimState.size())
 		{
 			mAnimState[animIdx].state = AnimationState::kStopped;
 			mAnimState[animIdx].time = 0.0f;

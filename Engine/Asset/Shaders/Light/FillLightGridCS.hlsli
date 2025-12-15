@@ -9,7 +9,7 @@ cbuffer CSConstants : register(b0)
 {
     uint ViewportWidth, ViewportHeight;
     float InvTileDim;
-    float RcpZMagic;
+    float NearClip, FarClip;
     uint TileCountX;
     float4x4 ViewProjMatrix;
 };
@@ -52,8 +52,8 @@ void CSMain(
         tileLightCountCone = 0;
         tileLightCountConeShadowed = 0;
         tileLightBitMask = 0;
-        minDepthUInt = 0xffffffff;
-        maxDepthUInt = 0;
+        minDepthUInt = 0;
+        maxDepthUInt = 0xffffffff;
     }
     GroupMemoryBarrierWithGroupSync();
 
@@ -78,8 +78,12 @@ void CSMain(
     GroupMemoryBarrierWithGroupSync();
     //float tileMinDepth = asfloat(minDepthUInt);
     //float tileMaxDepth = asfloat(maxDepthUInt);
-    float tileMinDepth = (rcp(asfloat(maxDepthUInt)) - 1.0) * RcpZMagic;
-    float tileMaxDepth = (rcp(asfloat(minDepthUInt)) - 1.0) * RcpZMagic;
+    float minDepth = asfloat(minDepthUInt);
+    float maxDepth = asfloat(maxDepthUInt);
+
+    float tileMinDepth = (NearClip * FarClip) / (FarClip - minDepth * (FarClip - NearClip));
+    float tileMaxDepth = (NearClip * FarClip) / (FarClip - maxDepth * (FarClip - NearClip));
+
     float tileDepthRange = tileMaxDepth - tileMinDepth;
     tileDepthRange = max(tileDepthRange, FLT_MIN); // don't allow a depth range of 0
     float invTileDepthRange = rcp(tileDepthRange);
@@ -93,11 +97,17 @@ void CSMain(
         -2.0 * float(Gid.x) + invTileSize2X.x - 1.0,
         -2.0 * float(Gid.y) + invTileSize2X.y - 1.0,
         -tileMinDepth * invTileDepthRange);
+    //float4x4 projToTile = float4x4(
+    //    invTileSize2X.x, 0, 0, tileBias.x,
+    //    0, -invTileSize2X.y, 0, tileBias.y,
+    //    0, 0, invTileDepthRange, tileBias.z,
+    //    0, 0, 0, 1
+    //    );
     float4x4 projToTile = float4x4(
-        invTileSize2X.x, 0, 0, tileBias.x,
-        0, -invTileSize2X.y, 0, tileBias.y,
-        0, 0, invTileDepthRange, tileBias.z,
-        0, 0, 0, 1
+        invTileSize2X.x, 0, 0, 0,
+        0, -invTileSize2X.y, 0, 0,
+        0, 0, invTileDepthRange, 0,
+        tileBias.x, tileBias.y, tileBias.z, 1
         );
     float4x4 tileMVP = mul(projToTile, ViewProjMatrix);
     

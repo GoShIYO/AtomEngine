@@ -20,11 +20,13 @@ namespace AtomEngine
 		static void Shutdown();
 
 		static uint32_t CreateParticle(ParticleProperty& props);
-		uint32_t CreateParticlePrefab(const ParticleProperty& props);
-		uint32_t EmitPrefab(uint32_t prefabId, const Vector3& emitPosW, const Vector3& emitDirW);
+		static uint32_t CreateParticlePrefab(const ParticleProperty& props);
+		static uint32_t EmitPrefab(uint32_t prefabId, const Vector3& emitPosW);
 		static void ResetParticle(uint32_t particleId);
 		static float GetCurrentLife(uint32_t particleId);
 		static void SetBlendMode(BlendMode mode) { sBlendMode = mode; }
+		static EmitterProperty& GetEmitterProperty(uint32_t particleId) { return sParticlePool[particleId]->GetProperty().EmitProperties; }
+		static void EmitParticle(uint32_t particleId, const Vector3& emitPosW);
 	private:
 		static RootSignature mParticleSig;
 		static std::vector<GraphicsPSO> mParticlePSOs;
@@ -44,7 +46,7 @@ namespace AtomEngine
 		static std::vector<Particle*> sParticlesActive;
 		static BlendMode sBlendMode;
 		static PrewView sPrewView;
-		
+
 		static DescriptorHeap sTextureArrayHeap;
 		static std::vector < std::pair<DescriptorHandle, TextureRef>> sTextures;
 		static std::map<std::wstring, uint32_t> sTextureArrayLookup;
@@ -54,9 +56,9 @@ namespace AtomEngine
 		static void SetFinalBuffers(ComputeContext& CompContext);
 		static uint32_t GetTextureIndex(const std::wstring& name);
 	public:
-		static std::vector<Particle*>& GetParticles(void) {return sParticlesActive;}
+		static std::vector<Particle*>& GetParticles(void) { return sParticlesActive; }
 		static uint32_t CreateParticleFromFile(const std::string& utf8Path);
-		static bool ParseParticlePropertyFromJson(const std::string & text, ParticleProperty& out);
+		static bool ParseParticlePropertyFromJson(const std::string& text, ParticleProperty& out);
 	};
 }
 

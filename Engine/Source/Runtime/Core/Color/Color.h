@@ -28,7 +28,36 @@ namespace AtomEngine
         Color(const Vector4& v) : r(v.x), g(v.y), b(v.z), a(v.w) {}
 
 		float* ptr(void) { return reinterpret_cast<float*>(this); }
+		const float* ptr(void) const { return reinterpret_cast<const float*>(this); }
 		float& operator[](int idx) { return ptr()[idx]; }
+		const float& operator[](int idx) const { return ptr()[idx]; }
+
+		Color operator+(const Color& rhs) const
+		{
+            return Color(r + rhs.r, g + rhs.g, b + rhs.b, a + rhs.a);
+		}
+		Color operator-(const Color& rhs) const
+		{
+            return Color(r - rhs.r, g - rhs.g, b - rhs.b, a - rhs.a);
+		}
+
+		Color& operator+=(const Color& rhs)
+		{
+			r += rhs.r;
+			g += rhs.g;
+			b += rhs.b;
+			a += rhs.a;
+			return *this;
+		}
+
+		Color& operator-=(const Color& rhs)
+		{
+			r -= rhs.r;
+			g -= rhs.g;
+			b -= rhs.b;
+			a -= rhs.a;
+			return *this;
+		}
 
 		Color(uint32_t rgba)
 		{
@@ -62,6 +91,16 @@ namespace AtomEngine
 		 static const Color Gray;
 	};
 	
+	inline Color operator*(const Color& lhs, float alpha)
+	{
+		return Color(lhs.r * alpha, lhs.g * alpha, lhs.b * alpha, lhs.a);
+	}
+
+	inline Color operator*(float alpha, const Color& rhs)
+	{
+		return Color(rhs.r * alpha, rhs.g * alpha, rhs.b * alpha, rhs.a);
+	}
+
 	inline Color Max(const Color& a, const Color& b)
 	{
 		return Color(

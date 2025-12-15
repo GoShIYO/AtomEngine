@@ -9,12 +9,6 @@ namespace AtomEngine
 	class CameraBase
 	{
 	public:
-
-		//許せサスケ
-		Vector3 lookDir = { 0,0,1 };
-		Transform mCameraToWorld;
-
-
 		void Update();
 		
 		void SetLookAt(const Vector3& eye, const Vector3& lookAt, const Vector3& up);
@@ -42,7 +36,7 @@ namespace AtomEngine
 	protected:
 		void SetProjMatrix(const Matrix4x4& ProjMat) { mProjMatrix = ProjMat; }
 
-		//Transform mCameraToWorld;
+		Transform mCameraToWorld;
 
 		Matrix4x4 mBasis;
 
@@ -65,15 +59,7 @@ namespace AtomEngine
 	{
 	public:
 
-		//InGameで使用します。許せサスケ
-		static inline AtomEngine::Vector3 cur_positionOffSet = { 0.0f,5.0f,-3.0f};
-
-
 		Camera();
-
-		void MainCameraUpdate(float deltaTime_, int cur_ingameMode_,float actionCnt_);
-		void Init(Vector3 const startPos_);
-
 
 		void SetPerspectiveMatrix(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip);
 		void SetFOV(float verticalFovInRadians) { m_VerticalFOV = verticalFovInRadians; UpdateProjMatrix(); }
@@ -85,39 +71,14 @@ namespace AtomEngine
 		float GetNearClip() const { return m_NearClip; }
 		float GetFarClip() const { return m_FarClip; }
 		float GetClearDepth() const { return m_ReverseZ ? 1.0f : 0.0f; }
-
 	private:
-
-		enum Mode
-		{
-			kMoveForward,
-			kCurve,
-
-			kCount
-		};
-
-		struct MoveForward
-		{
-			void operator()(Transform* cameraTrans_,float deltaTime_, float actionCnt_);
-			float moveSpeed = 0.5f;
-
-		};
-
-		void SetMatchedMode(int ingameMode_);
-		void CameraAction();
 		void UpdateProjMatrix(void);
-
-
-		//[CameraActions]
-		std::unordered_map<Mode, std::function<void(Transform* cameraTrans_, float deltaTime_, float actionCnt_)>> cameraActions;
 		float m_VerticalFOV;
 		float m_AspectRatio;
 		float m_NearClip;
 		float m_FarClip;
 		bool m_ReverseZ;
 		bool m_InfiniteZ;
-		Mode cur_mode = kMoveForward;
-
 	};
 }
 

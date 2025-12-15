@@ -16,6 +16,8 @@ namespace AtomEngine
 			float mRoughness = 1.0f;
 			float mNormalScale = 1.0f;
 			Vector3 mFresnelF0 = { 0.04f,0.04f,0.04f };
+			Transform uvTransform;
+			uint32_t useLight = 1;
 		};
 		std::vector<Material> mMaterials;
 	};

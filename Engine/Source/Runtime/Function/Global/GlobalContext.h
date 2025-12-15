@@ -5,7 +5,7 @@ namespace AtomEngine
 {
 	class WindowManager;
 	class Input;
-
+	class Audio;
 	class GlobalContext
 	{
 	public:
@@ -17,6 +17,7 @@ namespace AtomEngine
 		/// グローバルコンテキストのコンポーネント
 		WindowManager* windowManager = nullptr;
 		Input* input = nullptr;
+		Audio* audio = nullptr;
 		std::unique_ptr<ImGuiCommon> imgui;
 	};
 

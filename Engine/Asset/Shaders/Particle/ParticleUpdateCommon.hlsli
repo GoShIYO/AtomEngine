@@ -14,21 +14,16 @@ struct EmitterProperty
     float3 Gravity;
     uint TextureID;
     float3 EmissiveColor;
+    uint Emit;
+    float3 Scale;
+    uint IsFollow;
+    uint4 RandIndex[64];
+    float colorScale;
 };
 
 cbuffer ParticleProperty : register(b1)
 {
-    float4 MinStartColor;
-    float4 MaxStartColor;
-    float4 MinEndColor;
-    float4 MaxEndColor;
     EmitterProperty EmitProperties;
-    float4 Velocity;
-    float4 Size;
-    float3 Spread;
-    float EmitRate;
-    float2 LifeMinMax;
-    float2 MassMinMax;
 };
 
 struct ParticleEmitData
@@ -43,6 +38,8 @@ struct ParticleEmitData
     float Random;
     float4 StartColor;
     float4 EndColor;
+    float Drag;
+    float DragFactor;
 };
 
 struct ParticleMotion
@@ -52,6 +49,7 @@ struct ParticleMotion
     float Mass;
     float3 Velocity;
     float Age;
+    float3 LocalOffset;
     float Size;
     float Rotation;
     uint ResetDataIndex;

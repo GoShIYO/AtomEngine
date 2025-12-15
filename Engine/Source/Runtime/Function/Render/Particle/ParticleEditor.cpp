@@ -224,7 +224,7 @@ namespace AtomEngine
 						dirty |= ImGui::DragFloat("EmitSpeed", &e.EmitSpeed, 0.01f);
 						dirty |= ImGui::DragFloat("EmitterVelocitySensitivity", &e.EmitterVelocitySensitivity, 0.01f);
 						dirty |= ImGui::DragFloat("FloorHeight", &e.FloorHeight, 0.01f);
-						dirty |= ImGui::ColorEdit3("EmissiveColor", &e.EmissiveColor.x);
+						dirty |= ImGui::ColorEdit3("Emissive",e.EmissiveColor.ptr());
 						{
 							int tmpMax = (int)e.MaxParticles;
 							if (ImGui::DragInt("MaxParticles", &tmpMax, 1.0f, 1, 0x8000000))
