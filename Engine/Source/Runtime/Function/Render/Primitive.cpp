@@ -9,11 +9,10 @@ namespace AtomEngine
 	GraphicsPSO Primitive::sPSO;
 
 	std::vector<PrimitiveVertex> Primitive::sVertices;
-	std::vector<uint16_t> Primitive::sIndices;
 	Matrix4x4 Primitive::sViewProj;
 
 	void Primitive::Initialize()
-	{ 
+	{
 		sRootSig.Reset(1, 0);
 		sRootSig[0].InitAsConstantBuffer(0, D3D12_SHADER_VISIBILITY_VERTEX);
 		sRootSig.Finalize(L"Primitive RootSig",
@@ -48,7 +47,6 @@ namespace AtomEngine
 	void Primitive::Shutdown()
 	{
 		sVertices.clear();
-        sIndices.clear();
 	}
 	void Primitive::DrawLine(const Vector3& a, const Vector3& b, const Color& color, const Matrix4x4& viewProj)
 	{
@@ -163,23 +161,16 @@ namespace AtomEngine
 		ctx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 
 		ctx.SetDynamicVB(0, sVertices.size(), sizeof(PrimitiveVertex), sVertices.data());
-		ctx.SetDynamicIB(sIndices.size(), sIndices.data());
 
 		ctx.SetDynamicConstantBufferView(0, sizeof(sViewProj), &sViewProj);
 
-		ctx.DrawIndexedInstanced((uint32_t)sIndices.size(), 1, 0, 0, 0);
+		ctx.DrawInstanced((uint32_t)sVertices.size(), 1, 0, 0);
 
 		sVertices.clear();
-		sIndices.clear();
 	}
 	void Primitive::AddLineInternal(const Vector3& a, const Vector3& b, const Vector4& color)
 	{
-		uint32_t start = (uint32_t)sVertices.size();
-
 		sVertices.push_back({ a, color });
 		sVertices.push_back({ b, color });
-
-		sIndices.push_back(start + 0);
-		sIndices.push_back(start + 1);
 	}
 }

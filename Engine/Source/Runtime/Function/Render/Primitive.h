@@ -76,7 +76,6 @@ namespace AtomEngine
 		static Matrix4x4 sViewProj;
 
 		static std::vector<PrimitiveVertex> sVertices;
-		static std::vector<uint16_t> sIndices;
 	};
 }
 

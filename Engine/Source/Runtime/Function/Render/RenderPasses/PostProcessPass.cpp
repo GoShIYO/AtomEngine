@@ -68,11 +68,12 @@ namespace AtomEngine
 		mExposureBuffer.Create(L"Exposure", 8, 4, initExposure);
 
 		mMinExposure = 0.0f;
-		mMaxExposure = 2.0f;
-		mAdaptationRate = 0.05f;
-		mExposure = 2.0f;
-		mBloomThreshold = 0.3f;
-		mBloomStrength = 1.0f;
+		mMaxExposure = 1.0f;
+		mTargetLuminance = 0.45f;
+		mAdaptationRate = 0.5f;
+		mExposure = 1.0f;
+		mBloomThreshold = 0.8f;
+		mBloomStrength = 1.5f;
 		mBloomUpsampleFactor = 0.65f;
 
 		ParticleSystem::Initialize();
@@ -83,6 +84,7 @@ namespace AtomEngine
 	void PostProcessPass::Update(GraphicsContext& Context, float deltaTime)
 	{
 		ParticleSystem::Update(Context.GetComputeContext(), deltaTime);
+#ifndef RELEASE
 
 		ImGui::Begin("Post Process");
 		ImGui::Checkbox("EnableAdaptation", &mEnableAdaptation);
@@ -99,6 +101,7 @@ namespace AtomEngine
 		ImGui::DragFloat("BloomStrength", &mBloomStrength, 0.01f, 0.0f, 2.0f);
 		ImGui::DragFloat("BloomUpsampleFactor", &mBloomUpsampleFactor, 0.01f, 0.0f, 1.0f);
 		ImGui::End();
+#endif
 	}
 
 	void PostProcessPass::Render(GraphicsContext& gfxContext)
@@ -110,7 +113,7 @@ namespace AtomEngine
 		Context.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		ProcessEffects(Context);
 #ifdef _DEBUG
-		mGridRenderer->Render(gfxContext, mCamera, *mRTV, *mDSV, mViewport, mScissor);
+		//mGridRenderer->Render(gfxContext, mCamera, *mRTV, *mDSV, mViewport, mScissor);
 #endif
 	}
 

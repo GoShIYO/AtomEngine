@@ -175,8 +175,8 @@ namespace AtomEngine
 	{
 		ASSERT(BufferData != nullptr && IsAligned(BufferData, 16));
 		DynAlloc cb = mCpuLinearAllocator.Allocate(BufferSize);
-		//SIMDMemCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
-		memcpy(cb.DataPtr, BufferData, BufferSize);
+		SIMDMemCopy(cb.DataPtr, BufferData, AlignUp(BufferSize, 16) >> 4);
+		//memcpy(cb.DataPtr, BufferData, BufferSize);
 		mCommandList->SetGraphicsRootConstantBufferView(RootIndex, cb.GpuAddress);
 	}
 

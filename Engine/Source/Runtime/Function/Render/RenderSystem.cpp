@@ -259,9 +259,10 @@ namespace AtomEngine
 		{
 			//メッシュコンポーネントを更新
 			auto& mesh = view.get<MeshComponent>(entity);
+			if (!mesh.IsRender())continue;
+
 			auto& material = view.get<MaterialComponent>(entity);
 			auto& transform = view.get<TransformComponent>(entity);
-			if (!mesh.IsRender())continue;
             mesh.Update(gfxContext,transform, material,deltaTime);
 		}
 		//描画パスを更新

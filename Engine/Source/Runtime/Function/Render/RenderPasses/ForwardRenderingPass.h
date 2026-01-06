@@ -20,15 +20,15 @@ namespace AtomEngine
 
 		Color mSunColor = Color::White;
 		float mSunLightIntensity = 1.0f;
-		Vector3 mSunDirection = { -0.14f,-0.446f,0.884f };
+		Vector3 mSunDirection = { -0.003f,-0.988f,0.156f };
 		Vector3 mShadowCenter = { 0.0f,0,0.0f };
-		Vector3 mShadowDim = { 30, 30, 30 };
+		Vector3 mShadowDim = { 45, 45, 45 };
 		float mIBLBias = 2.0f;
 		float mIBLFactor = 1.0f;
 		float mShadowBias = 0.001f;
 		bool mEnableIBL = true;
 		DescriptorHandle mGpuHandle;
-
+			
 	private:
 		void RenderObjects(RenderQueue& queue);
 	};

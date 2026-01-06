@@ -70,6 +70,7 @@ namespace AtomEngine
 		for (uint32_t i = 0; i < mModel->mMaterials.size(); ++i)
 		{
 			MaterialConstants& materialCB = mc[i];
+
 			materialCB.baseColorFactor = material.mMaterials[i].mBaseColor;
 			materialCB.metallicFactor = material.mMaterials[i].mMetallic;
 			materialCB.roughnessFactor = material.mMaterials[i].mRoughness;

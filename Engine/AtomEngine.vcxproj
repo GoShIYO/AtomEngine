@@ -172,6 +172,25 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Game\System\SoundManaged.h" />
+    <ClInclude Include="Source\Game\Camera\InGameCameraController.h" />
+    <ClInclude Include="Source\Game\Component\DynamicVoxelBodyComponent.h" />
+    <ClInclude Include="Source\Game\Component\GoalComponent.h" />
+    <ClInclude Include="Source\Game\Component\ItemComponent.h" />
+    <ClInclude Include="Source\Game\Component\LadderComponent.h" />
+    <ClInclude Include="Source\Game\Component\PlatformComponent.h" />
+    <ClInclude Include="Source\Game\Component\UiComponent.h" />
+    <ClInclude Include="Source\Game\Component\VoxelColliderComponent.h" />
+    <ClInclude Include="Source\Game\Editor\ItemGoalEditor.h" />
+    <ClInclude Include="Source\Game\Editor\LadderEditor.h" />
+    <ClInclude Include="Source\Game\Editor\PlatformEditor.h" />
+    <ClInclude Include="Source\Game\Scene\ClearScene.h" />
+    <ClInclude Include="Source\Game\System\GoalSystem.h" />
+    <ClInclude Include="Source\Game\System\ItemSystem.h" />
+    <ClInclude Include="Source\Game\System\LadderSystem.h" />
+    <ClInclude Include="Source\Game\System\PlatformSystem.h" />
+    <ClInclude Include="Source\Game\System\UiSystem.h" />
+    <ClInclude Include="Source\Game\System\VoxelCollisionSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Audio\Audio.h" />
     <ClInclude Include="Source\Runtime\Function\Render\GridRenderer.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\GamePadCamera.h" />
@@ -291,6 +310,18 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Game\Voxel\VoxelWorld.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Game\System\SoundManaged.cpp" />
+    <ClCompile Include="Source\Game\Camera\InGameCameraController.cpp" />
+    <ClCompile Include="Source\Game\Editor\ItemGoalEditor.cpp" />
+    <ClCompile Include="Source\Game\Editor\LadderEditor.cpp" />
+    <ClCompile Include="Source\Game\Editor\PlatformEditor.cpp" />
+    <ClCompile Include="Source\Game\Scene\ClearScene.cpp" />
+    <ClCompile Include="Source\Game\System\GoalSystem.cpp" />
+    <ClCompile Include="Source\Game\System\ItemSystem.cpp" />
+    <ClCompile Include="Source\Game\System\LadderSystem.cpp" />
+    <ClCompile Include="Source\Game\System\PlatformSystem.cpp" />
+    <ClCompile Include="Source\Game\System\UiSystem.cpp" />
+    <ClCompile Include="Source\Game\System\VoxelCollisionSystem.cpp" />
     <ClCompile Include="Source\Runtime\Function\Audio\Audio.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\GridRenderer.cpp" />
     <ClCompile Include="Source\Runtime\Function\Camera\GamePadCamera.cpp" />

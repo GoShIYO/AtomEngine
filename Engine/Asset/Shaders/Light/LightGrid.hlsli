@@ -10,8 +10,10 @@ struct LightData
     uint type;
     float3 direction;
     float innerCos;
-    float3 pad;
     float outerCos;
+    uint isActive;
+    float2 pad;
+    
     float4x4 shadowMatrix;
 };
 

@@ -89,7 +89,7 @@ namespace AtomEngine
 		lightData.innerCos = Math::cos(desc.innerAngle);
 		lightData.outerCos = Math::cos(desc.outerAngle);
 		lightData.shadowMatrix = desc.shadowMatrix;
-
+		lightData.isActive = true;
 		if (gLights.size() >= MAX_LIGHTS)
 		{
 			return 0;
@@ -109,7 +109,7 @@ namespace AtomEngine
 		lightData.position = position;
 		lightData.radiusSq = radius * radius;
 		lightData.type = (uint32_t)LightType::Point;
-
+		lightData.isActive = true;
 		if (gLights.size() >= MAX_LIGHTS)
 		{
 			return 0;
@@ -240,25 +240,27 @@ namespace AtomEngine
 		uint32_t tileCountX = DivideByMultiple(gSceneColorBuffer.GetWidth(), LightGridDim);
 		uint32_t tileCountY = DivideByMultiple(gSceneColorBuffer.GetHeight(), LightGridDim);
 
-		float FarClipDist = camera.GetFarClip();
-		float NearClipDist = camera.GetNearClip();
-
 		struct CSConstants
 		{
+			Matrix4x4 ProjMatrix;
+			Matrix4x4 InvProjMatrix;
+			Matrix4x4 ViewMatrix;
 			uint32_t ViewportWidth, ViewportHeight;
-			float InvTileDim;
-			float NearClip, FarClip;
 			uint32_t TileCount;
-			Matrix4x4 ViewProjMatrix;
+			float NearClip;
+			float FarClip;
 		} csConstants;
 
 		csConstants.ViewportWidth = gSceneColorBuffer.GetWidth();
 		csConstants.ViewportHeight = gSceneColorBuffer.GetHeight();
-		csConstants.InvTileDim = 1.0f / LightGridDim;
-		csConstants.NearClip = NearClipDist;
-		csConstants.FarClip = FarClipDist;
+		csConstants.NearClip = camera.GetNearClip();
+        csConstants.FarClip = camera.GetFarClip();
 		csConstants.TileCount = tileCountX;
-		csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+		const auto& proj =  camera.GetProjMatrix();
+		csConstants.ProjMatrix = proj;
+		csConstants.InvProjMatrix = proj.Inverse();
+		csConstants.ViewMatrix  = camera.GetViewMatrix();
+
 		Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
 
 		Context.Dispatch(tileCountX, tileCountY, 1);

@@ -35,7 +35,7 @@ namespace AtomEngine
 
 		const D3D12_VIEWPORT& viewport = mViewport;
 		const D3D12_RECT& scissor = mScissor;
-
+#ifndef RELEASE
 		ImGui::Begin("Forward Rendering");
 		ImGui::ColorEdit3("SunColor", mSunColor.ptr());
 		ImGui::DragFloat("SunLightIntensity", &mSunLightIntensity, 0.01f, 0.0f, 1000.0f);
@@ -51,7 +51,7 @@ namespace AtomEngine
 		ImGui::Begin("Shadow Srv");
 		ImGui::Image((ImTextureID)mGpuHandle.GetGpuPtr(), ImVec2(512, 512));
 		ImGui::End();
-
+#endif
 		mSunDirection.Normalize();
 
 		mShadowCamera.UpdateMatrix(mSunDirection, mShadowCenter, mShadowDim,
@@ -89,6 +89,9 @@ namespace AtomEngine
 		queue.Sort();
 
 		queue.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
+		
+		
+		LightManager::FillLightGrid(gfxContext, *mCamera);
 
 		{
 			RenderQueue shadowSorter(RenderQueue::kShadows);
@@ -100,8 +103,6 @@ namespace AtomEngine
 			shadowSorter.Sort();
 			shadowSorter.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
 		}
-
-		LightManager::FillLightGrid(gfxContext, *mCamera);
 
 		gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		gfxContext.ClearColor(gSceneColorBuffer);

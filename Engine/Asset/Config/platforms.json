@@ -1,0 +1,256 @@
+{
+    "platforms": [
+        {
+            "circleCenter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "circleRadius": 5.0,
+            "enableRotation": false,
+            "endPosition": [
+                26.0,
+                51.0,
+                21.0
+            ],
+            "id": 3,
+            "isMoving": true,
+            "isOneWay": false,
+            "isPlatform": true,
+            "modelPath": "Asset/Models/platform/platform.obj",
+            "motionType": 1,
+            "moveSpeed": 5.0,
+            "name": "Platform",
+            "oneWayDirection": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "pingPong": true,
+            "position": [
+                7.636594772338867,
+                47.92662811279297,
+                29.835948944091797
+            ],
+            "pushEntities": true,
+            "rotation": [
+                0.0,
+                0.7071070075035095,
+                0.0,
+                0.7071065306663513
+            ],
+            "rotationAxis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "rotationSpeed": 1.0,
+            "selfRotationAxis": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "selfRotationSpeed": 0.0,
+            "size": [
+                8.0,
+                2.0,
+                8.0
+            ],
+            "startPosition": [
+                2.0999999046325684,
+                47.0,
+                32.5
+            ],
+            "voxelSize": 2.0
+        },
+        {
+            "circleCenter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "circleRadius": 5.0,
+            "enableRotation": false,
+            "endPosition": [
+                -56.0,
+                50.0,
+                36.0
+            ],
+            "id": 2,
+            "isMoving": true,
+            "isOneWay": false,
+            "isPlatform": true,
+            "modelPath": "Asset/Models/platform/platform.obj",
+            "motionType": 1,
+            "moveSpeed": 5.0,
+            "name": "Platform",
+            "oneWayDirection": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "pingPong": true,
+            "position": [
+                -56.0,
+                50.0,
+                20.849769592285156
+            ],
+            "pushEntities": true,
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotationAxis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "rotationSpeed": 1.0,
+            "selfRotationAxis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "selfRotationSpeed": 0.0,
+            "size": [
+                6.0,
+                3.0,
+                6.0
+            ],
+            "startPosition": [
+                -56.0,
+                50.0,
+                9.0
+            ],
+            "voxelSize": 2.0
+        },
+        {
+            "circleCenter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "circleRadius": 5.0,
+            "enableRotation": false,
+            "endPosition": [
+                -55.0,
+                25.5,
+                -55.0
+            ],
+            "id": 1,
+            "isMoving": true,
+            "isOneWay": false,
+            "isPlatform": true,
+            "modelPath": "Asset/Models/platform/cubePlat.obj",
+            "motionType": 1,
+            "moveSpeed": 5.0,
+            "name": "Platform",
+            "oneWayDirection": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "pingPong": true,
+            "position": [
+                -55.0,
+                2.5457749366760254,
+                -55.0
+            ],
+            "pushEntities": true,
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "rotationAxis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "rotationSpeed": 1.0,
+            "selfRotationAxis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "selfRotationSpeed": 0.0,
+            "size": [
+                10.0,
+                1.0,
+                10.0
+            ],
+            "startPosition": [
+                -55.0,
+                0.5,
+                -55.0
+            ],
+            "voxelSize": 2.0
+        },
+        {
+            "circleCenter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "circleRadius": 5.0,
+            "enableRotation": false,
+            "endPosition": [
+                37.5,
+                76.4000015258789,
+                35.0
+            ],
+            "id": 0,
+            "isMoving": true,
+            "isOneWay": false,
+            "isPlatform": true,
+            "modelPath": "Asset/Models/platform/platform.obj",
+            "motionType": 1,
+            "moveSpeed": 5.0,
+            "name": "Platform",
+            "oneWayDirection": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "pingPong": true,
+            "position": [
+                37.5,
+                54.35936737060547,
+                35.0
+            ],
+            "pushEntities": true,
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                2.5495097637176514
+            ],
+            "rotationAxis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "rotationSpeed": 1.0,
+            "selfRotationAxis": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "selfRotationSpeed": 0.0,
+            "size": [
+                10.0,
+                5.0,
+                10.0
+            ],
+            "startPosition": [
+                37.5,
+                50.0,
+                35.0
+            ],
+            "voxelSize": 2.0
+        }
+    ]
+}

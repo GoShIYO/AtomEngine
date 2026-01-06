@@ -16,8 +16,7 @@ namespace AtomEngine
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-		io.ConfigFlags |= ImGuiConfigFlags_IsSRGB;
+		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
 		// セットImGuiスタイル
 		ImGui::StyleColorsDark();
@@ -62,6 +61,8 @@ namespace AtomEngine
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
+
 	}
 
 	void ImGuiCommon::Render(GraphicsContext& Context)

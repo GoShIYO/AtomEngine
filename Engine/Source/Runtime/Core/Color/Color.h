@@ -26,6 +26,7 @@ namespace AtomEngine
 		Color(float r_, float g_, float b_) : r(r_), g(g_), b(b_), a(1.0f) {}
         Color(const Vector3& v) : r(v.x), g(v.y), b(v.z), a(1.0f) {}
         Color(const Vector4& v) : r(v.x), g(v.y), b(v.z), a(v.w) {}
+		Color(const Color& color) : r(color.r), g(color.g), b(color.b), a(color.a) {}
 
 		float* ptr(void) { return reinterpret_cast<float*>(this); }
 		const float* ptr(void) const { return reinterpret_cast<const float*>(this); }
@@ -40,7 +41,14 @@ namespace AtomEngine
 		{
             return Color(r - rhs.r, g - rhs.g, b - rhs.b, a - rhs.a);
 		}
-
+		Color operator=(const Color& rhs)
+		{
+            this->r = rhs.r;
+			this->g = rhs.g;
+			this->b = rhs.b;
+			this->a = rhs.a;
+            return *this;
+		}
 		Color& operator+=(const Color& rhs)
 		{
 			r += rhs.r;

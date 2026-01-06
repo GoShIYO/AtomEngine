@@ -16,6 +16,7 @@ namespace AtomEngine
 
 		windowManager = WindowManager::GetInstance();
 		WindowCreateInfo windowCreateInfo;
+		windowCreateInfo.title = L"P and Advance";
 		windowManager->Initialize(windowCreateInfo);
 
 		imgui = std::make_unique<ImGuiCommon>();
@@ -26,8 +27,6 @@ namespace AtomEngine
 
 		audio = Audio::GetInstance();
 		audio->Initialize();
-
-		srand(unsigned int(time(NULL)));
 
 		Random::Initialize();
 	}

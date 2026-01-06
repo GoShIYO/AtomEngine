@@ -12,192 +12,150 @@ using namespace GameInput::v2;
 using namespace GameInput::v3;
 #endif
 
-#include<array>
+#include <array>
 #include <wrl.h>
 
 namespace AtomEngine
 {
-	enum GamePadButton
-	{
-		A = 0,
-		B,
-		X,
-		Y,
-		LB,
-		RB,
-		LeftThumbstick,
-		RightThumbstick,
-		DPadUp,
-		DPadDown,
-		DPadLeft,
-		DPadRight,
-		Menu,
-		View,
-		COUNT
-	};
+    enum GamePadButton
+    {
+        A = 0,
+        B,
+        X,
+        Y,
+        LB,
+        RB,
+        LeftThumbstick,
+        RightThumbstick,
+        DPadUp,
+        DPadDown,
+        DPadLeft,
+        DPadRight,
+        Menu,
+        View,
+        COUNT
+    };
 
-	struct PadStick
-	{
-		float leftTrigger;
-		float rightTrigger;
-		float leftStickX;
-		float leftStickY;
-		float rightStickX;
-		float rightStickY;
-	};
+    struct PadStick
+    {
+        float leftTrigger;
+        float rightTrigger;
+        float leftStickX;
+        float leftStickY;
+        float rightStickX;
+        float rightStickY;
+    };
 
-	enum class InputDeviceType
-	{
-		None,
-		Keyboard,
-		Mouse,
-		Gamepad
-	};
+    enum class InputDeviceType
+    {
+        None,
+        Keyboard,
+        Mouse,
+        Gamepad
+    };
 
-	class Input
-	{
-	public:
-		static Input* GetInstance();
+    class Input
+    {
+    public:
+        static Input* GetInstance();
 
-		void Initialize();
-		void Shutdown();
-		void Update();
-		/// <summary>
-		/// キーの押下をチェック
-		/// </summary>
-		/// <param name="key">キー番号( VK_W 等)</param>
-		/// <returns>押されているか</returns>
-		bool IsPressKey(uint8_t key)const;
-		/// <summary>
-		/// キーのトリガーをチェック
-		/// </summary>
-		/// <param name="key">キー番号( VK_W 等)</param>
-		/// <returns>トリガーか</returns>
-		bool IsTriggerKey(uint8_t key)const;
-		/// <summary>
-		/// マウスの押下をチェック
-		/// </summary>
-		/// <param name="button">マウスボタン番号(0:左,1:右,2:中,3~4:拡張マウスボタン)</param>
-		/// <returns>押されているか</returns>
-		bool IsPressMouse(int button)const;
-		/// <summary>
-		/// マウスのトリガーをチェック。押した瞬間だけtrueになる
-		/// </summary>
-		/// <param name="button">マウスボタン番号(0:左,1:右,2:中,3~4:拡張マウスボタン)</param>
-		/// <returns>トリガーか</returns>
-		bool IsTriggerMouse(int button)const;
-		/// <summary>
-		/// コントローラーのボタン押下をチェック
-		/// </summary>
-		/// <param name="button">ボタンの種類</param>
-		/// <returns>押されているか</returns>
-		bool IsPressGamePad(GamePadButton button)const;
-		/// <summary>
-		/// コントローラーのボタントリガーをチェック
-		/// </summary>
-		/// <param name="button">ボタンの種類</param>
-		/// <returns>トリガーか</returns>
-		bool IsTriggerGamePad(GamePadButton button)const;
+        void Initialize();
+        void Shutdown();
+        void Update();
+        bool IsPressKey(uint8_t key)const;
+        bool IsTriggerKey(uint8_t key)const;
+        bool IsPressMouse(int button)const;
+        bool IsTriggerMouse(int button)const;
+        bool IsPressGamePad(GamePadButton button)const;
+        bool IsTriggerGamePad(GamePadButton button)const;
+        bool IsReleaseKey(uint8_t key)const;
+        bool IsReleaseGamePad(GamePadButton button)const;
+        bool GetMousePosition(int* mouseX, int* mouseY);
+        const GameInputMouseState& GetMouseState()const { return mMouseState; };
+        const PadStick& GetGamePadStick()const { return mSticks; };
+        const GameInputGamepadButtons& GetGamePadButton()const { return mGamepadState.buttons; };
+        bool IsUseGamePad()const;
+        bool IsStickTriggerRepeat(float value, float threshold, float dt, float firstDelay, float repeatInterval) const;
+        bool IsContactGamePad() { return mIsPadContact; }
+    private:
 
+        enum MouseButton
+        {
+            Left = 0,
+            Right,
+            Middle,
+            Button4,
+            Button5,
+            NONE
+        };
 
-		bool IsReleaseKey(uint8_t key)const;
+        struct CursorState
+        {
+            int xPos;
+            int yPos;
+            int degreeRotation;
+            bool isRelativeMode;
+            bool cursorVisible;
 
-		bool IsReleaseGamePad(GamePadButton button)const;
+            CursorState() = default;
+            CursorState(int x, int y)
+            {
+                xPos = x; yPos = y; degreeRotation = 0; isRelativeMode = true; cursorVisible = true;
+            };
+        };
 
-		/// <summary>
-		///	マウススクリーン上の位置を取得
-		/// </summary>
-		/// <param name="mouseX">X座標</param>
-		/// <param name="mouseY">Y座標</param>
-		/// <returns></returns>
-		bool GetMousePosition(int* mouseX, int* mouseY);
-		/// <summary>
-		/// マウスの状態を取得
-		/// </summary>
-		/// <returns></returns>
-		const GameInputMouseState& GetMouseState()const { return mMouseState; };
-		/// <summary>
-		/// ゲームパッドのスティック情報を取得します。
-		/// </summary>
-		/// <returns>現在のゲームパッドスティック（PadStick型）への参照。</returns>
-		const PadStick& GetGamePadStick()const { return mSticks; };
-		const GameInputGamepadButtons& GetGamePadButton()const { return mGamepadState.buttons; };
-		bool IsUseGamePad()const;
-		bool IsStickTriggerRepeat(float value, float threshold, float dt, float firstDelay, float repeatInterval) const;
-		bool IsContactGamePad() { return mIsPadContact; }
-	private:
+        struct CursorInput
+        {
+            bool CursorInputSwitch = false;
+            float CursorInputAxisX;
+            float CursorInputAxisY;
+            int CursorInputRotation;
+            int CursorInputMouseX;
+            int CursorInputMouseY;
+        };
 
-		enum MouseButton
-		{
-			Left = 0,
-			Right,
-			Middle,
-			Button4,
-			Button5,
-			NONE
-		};
+        struct StickRepeatState
+        {
+            bool pressed = false;
+            float timer = 0.0f;
+        };
 
-		struct CursorState
-		{
-			int xPos;
-			int yPos;
-			int degreeRotation;
-			bool isRelativeMode;
-			bool cursorVisible;
+        void UpdateKeyboardStateWin32();
+        void UpdateMouseStateWin32();
+        bool UpdateGamepadStateFromXInput();
 
-			CursorState() = default;
-			CursorState(int x, int y)
-			{
-				xPos = x; yPos = y; degreeRotation = 0; isRelativeMode = true; cursorVisible = true;
-			};
-		};
+        Microsoft::WRL::ComPtr<IGameInput> mInput;
+        Microsoft::WRL::ComPtr<IGameInputReading>   mPrevReading;
+        Microsoft::WRL::ComPtr<IGameInputReading>   mReading;
 
-		struct CursorInput
-		{
-			bool CursorInputSwitch = false;
-			float CursorInputAxisX;
-			float CursorInputAxisY;
-			int CursorInputRotation;
-			int CursorInputMouseX;
-			int CursorInputMouseY;
-		};
+        GameInputCallbackToken mDeviceCallbackToken = 0;
 
-		struct StickRepeatState
-		{
-			bool pressed = false;
-			float timer = 0.0f;
-		};
+        GameInputMouseState mMouseState;
+        GameInputMouseState mPrevMouseState;
 
-		Microsoft::WRL::ComPtr<IGameInput> mInput;
-		Microsoft::WRL::ComPtr<IGameInputReading>   mPrevReading;
-		Microsoft::WRL::ComPtr<IGameInputReading>   mReading;
+        GameInputGamepadState mGamepadState = {};
+        GameInputGamepadState mPrevGamepadState = {};
 
-		GameInputCallbackToken mDeviceCallbackToken = 0;
+        bool mkeys[256] = {};
+        bool mPreKeys[256] = {};
 
-		GameInputMouseState mMouseState;
-		GameInputMouseState mPrevMouseState;
+        mutable StickRepeatState mLeftXState;
+        PadStick mSticks{};
 
-		GameInputGamepadState mGamepadState = {};
-		GameInputGamepadState mPrevGamepadState = {};
+        CursorState mCursorState;
+        CursorInput mCursorInput{};
+        CursorInput mLastCursorInput{};
 
-		bool mkeys[256] = {};
-		bool mPreKeys[256] = {};
+        bool mIsPadContact = false;
+        bool mGameInputSupported = false;
 
-		mutable StickRepeatState mLeftXState;
-		PadStick mSticks{};
+        GamePadButton mGamePadButton = GamePadButton::COUNT;
+        InputDeviceType mDeviceType = InputDeviceType::None;
 
-		CursorState mCursorState;
-		CursorInput mCursorInput{};
-		CursorInput mLastCursorInput{};
-
-		bool mIsPadContact = false;
-
-		GamePadButton mGamePadButton = GamePadButton::COUNT;
-		InputDeviceType mDeviceType = InputDeviceType::None;
-	private:
-		Input() = default;
-		~Input() = default;
-		Input(const Input&) = delete;
-		Input& operator=(const Input&) = delete;
-	};
+    private:
+        Input() = default;
+        ~Input() = default;
+        Input(const Input&) = delete;
+        Input& operator=(const Input&) = delete;
+    };
 }

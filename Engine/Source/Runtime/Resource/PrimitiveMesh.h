@@ -3,9 +3,18 @@
 #include "Runtime/Core/Math/MathInclude.h"
 #include "Runtime/Platform/DirectX12/Buffer/UploadBuffer.h"
 #include "Runtime/Function/Camera/CameraBase.h"
+#include <cstdint>
 
 namespace AtomEngine
 {
+	enum class PrimitiveMeshType : uint8_t
+	{
+		Quad = 0,
+		Cube,
+		Sphere,
+		Count
+	};
+
 	class PrimitiveMesh
 	{
 	public:
@@ -32,6 +41,10 @@ namespace AtomEngine
 
 		void SetVisid(bool flag) { isValid = flag; }
 		bool IsValid() const { return isValid; }
+
+		void SetPrimitiveType(PrimitiveMeshType type) { mPrimitiveType = type; }
+		PrimitiveMeshType GetPrimitiveType() const { return mPrimitiveType; }
+
 	private:
 		Transform mTransform;
 		Transform mUVTransform;
@@ -40,6 +53,7 @@ namespace AtomEngine
 		BlendMode mBlendMode = BlendMode::kBlendNormal;
 		float toCameraDistance = 0.0f;
 		bool isValid = true;
+		PrimitiveMeshType mPrimitiveType = PrimitiveMeshType::Quad;
 	};
 
 }
