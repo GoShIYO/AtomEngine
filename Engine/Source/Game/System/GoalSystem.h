@@ -7,12 +7,6 @@
 
 using namespace AtomEngine;
 
-struct GoalReachedEvent
-{
-	Entity goal;
-	Entity player;
-};
-
 class GoalSystem
 {
 public:

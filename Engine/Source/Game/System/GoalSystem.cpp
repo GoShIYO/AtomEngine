@@ -67,7 +67,6 @@ void GoalSystem::CheckGoalCollision(World& world)
 				goal.isReached = true;
 				mGoalReached = true;
 
-				world.GetDispatcher().trigger<GoalReachedEvent>(goalEntity, playerEntity);
 				Audio::GetInstance()->Play(Sound::gSoundMap["goal"]);
 			}
 		}
