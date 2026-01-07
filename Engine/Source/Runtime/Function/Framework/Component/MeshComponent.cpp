@@ -47,18 +47,22 @@ namespace AtomEngine
 
 	MeshComponent::~MeshComponent()
 	{
+		DX12Core::gCommandManager.IdleGPU();
+
 		mMeshConstantsCPU.Destroy();
 		mMeshConstantsGPU.Destroy();
 
 		mMaterialConstantsCPU.Destroy();
 		mMaterialConstantsGPU.Destroy();
-
-		DX12Core::gCommandManager.IdleGPU();
 	}
 
 	void MeshComponent::Update(GraphicsContext& gfxContext, const TransformComponent& transform, const MaterialComponent& material, float deltaTime)
 	{
-		if (!mModel)return;
+		if (!mModel) return;
+
+		if (!mMeshConstantsCPU.GetResource() || !mMaterialConstantsCPU.GetResource())
+			return;
+
 		constexpr size_t kMaxStackDepth = 32;
 
 		size_t stackIdx = 0;
@@ -66,7 +70,15 @@ namespace AtomEngine
 		Matrix4x4 ParentMatrix = transform.GetMatrix() * mModelTransform.GetMatrix();
 
 		MeshConstants* cb = (MeshConstants*)mMeshConstantsCPU.Map();
+		if (!cb) return;
+
 		MaterialConstants* mc = (MaterialConstants*)mMaterialConstantsCPU.Map();
+		if (!mc)
+		{
+			mMeshConstantsCPU.Unmap();
+			return;
+		}
+
 		for (uint32_t i = 0; i < mModel->mMaterials.size(); ++i)
 		{
 			MaterialConstants& materialCB = mc[i];
@@ -154,6 +166,9 @@ namespace AtomEngine
 
 		mMeshConstantsCPU.Unmap();
 
+		if (!mMeshConstantsGPU.GetResource() || !mMaterialConstantsGPU.GetResource())
+			return;
+
 		gfxContext.TransitionResource(mMeshConstantsGPU, D3D12_RESOURCE_STATE_COPY_DEST, true);
 		gfxContext.TransitionResource(mMaterialConstantsGPU, D3D12_RESOURCE_STATE_COPY_DEST, true);
 		gfxContext.GetCommandList()->CopyBufferRegion(mMeshConstantsGPU.GetResource(), 0, mMeshConstantsCPU.GetResource(), 0, mMeshConstantsCPU.GetBufferSize());
@@ -217,13 +232,13 @@ namespace AtomEngine
 	void MeshComponent::PauseAnimation(uint32_t animIdx)
 	{
 		if (animIdx < mAnimState.size())
-			mAnimState[animIdx].state = AnimationState::kStopped;
+		 mAnimState[animIdx].state = AnimationState::kStopped;
 	}
 
 	void MeshComponent::ResetAnimation(uint32_t animIdx)
 	{
 		if (animIdx < mAnimState.size())
-			mAnimState[animIdx].time = 0.0f;
+		 mAnimState[animIdx].time = 0.0f;
 	}
 
 	void MeshComponent::StopAnimation(uint32_t animIdx)
