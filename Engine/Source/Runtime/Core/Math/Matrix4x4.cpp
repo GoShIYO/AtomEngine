@@ -6,29 +6,6 @@ namespace AtomEngine
 	const Matrix4x4 Matrix4x4::ZEROAFFINE(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
 	const Matrix4x4 Matrix4x4::IDENTITY(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
 
-	Matrix4x4 Matrix4x4::Adjoint() const
-	{
-		return Matrix4x4(GetMinor(1, 2, 3, 1, 2, 3),
-			-GetMinor(0, 2, 3, 1, 2, 3),
-			GetMinor(0, 1, 3, 1, 2, 3),
-			-GetMinor(0, 1, 2, 1, 2, 3),
-
-			-GetMinor(1, 2, 3, 0, 2, 3),
-			GetMinor(0, 2, 3, 0, 2, 3),
-			-GetMinor(0, 1, 3, 0, 2, 3),
-			GetMinor(0, 1, 2, 0, 2, 3),
-
-			GetMinor(1, 2, 3, 0, 1, 3),
-			-GetMinor(0, 2, 3, 0, 1, 3),
-			GetMinor(0, 1, 3, 0, 1, 3),
-			-GetMinor(0, 1, 2, 0, 1, 3),
-
-			-GetMinor(1, 2, 3, 0, 1, 2),
-			GetMinor(0, 2, 3, 0, 1, 2),
-			-GetMinor(0, 1, 3, 0, 1, 2),
-			GetMinor(0, 1, 2, 0, 1, 2));
-	}
-
 	Matrix4x4 Matrix4x4::InverseAffine(void) const
 	{
 		assert(IsAffine());
@@ -75,8 +52,7 @@ namespace AtomEngine
 
 	void Matrix4x4::MakeAffine(const Vector3& scale, const Quaternion& orientation, const Vector3& position)
 	{
-		Matrix4x4 rot;
-		orientation.ToRotationMatrix(rot);
+		Matrix4x4 rot(orientation);
 
 		mat[0][0] = scale.x * rot.mat[0][0];
 		mat[0][1] = scale.y * rot.mat[0][1];
@@ -138,8 +114,7 @@ namespace AtomEngine
 		inv_translate = inv_rot * inv_translate;
 		inv_translate *= inv_scale;
 
-		Matrix3x3 rot3x3;
-		inv_rot.ToRotationMatrix(rot3x3);
+		Matrix3x3 rot3x3(inv_rot);
 
 		mat[0][0] = inv_scale.x * rot3x3.mat[0][0];
 		mat[0][1] = inv_scale.x * rot3x3.mat[0][1];
@@ -160,36 +135,6 @@ namespace AtomEngine
 		mat[3][3] = 1.0f;
 	}
 
-	void Matrix4x4::Decomposition(Vector3& scale, Quaternion& orientation, Vector3& position) const
-	{
-		//assert(IsAffine());
-
-		Matrix3x3 m3x3;
-		Extract3x3Matrix(m3x3);
-
-		Matrix3x3 mat_q;
-		Vector3   vec_u;
-		m3x3.CalculateQDUDecomposition(mat_q, scale, vec_u);
-
-		orientation = Quaternion(mat_q);
-		position = Vector3(mat[3][0], mat[3][1], mat[3][2]);
-	}
-
-	void Matrix4x4::DecompositionWithoutScale(class Vector3& position, class Quaternion& rotation) const
-	{
-		//assert(IsAffine());
-
-		Matrix3x3 m3x3;
-		Extract3x3Matrix(m3x3);
-
-		Matrix3x3 mat_q;
-		Vector3   vec_u;
-		Vector3   scale;
-		m3x3.CalculateQDUDecomposition(mat_q, scale, vec_u);
-
-		rotation = Quaternion(mat_q);
-		position = Vector3(mat[3][0], mat[3][1], mat[3][2]);
-	}
 	Vector4 operator*(const Vector4& v, const Matrix4x4& mat)
 	{
 		return Vector4(v.x * mat[0][0] + v.y * mat[1][0] + v.z * mat[2][0] + v.w * mat[3][0],

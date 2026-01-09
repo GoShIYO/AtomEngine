@@ -73,15 +73,10 @@ namespace AtomEngine
 			return Vector3(mat[0][col], mat[1][col], mat[2][col]);
 		}
 
-		void SetColumn(int col, const Vector3& v);
-		void FromAxes(const Vector3& xAxis, const Vector3& yAxis, const Vector3& zAxis);
-
 		Quaternion GetRotation() const
 		{
 			return Quaternion(*this);
 		}
-
-		void CalculateQDUDecomposition(Matrix3x3& out_Q, Vector3& out_D, Vector3& out_U) const;
 
 		const Vector3 GetX() const { return Vector3(mat[0]); }
 		const Vector3 GetY() const { return Vector3(mat[1]); }
@@ -249,13 +244,12 @@ namespace AtomEngine
 		// デルタ(det|A|)
 		float Determinant() const
 		{
-			float cofactor00 = mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1];
-			float cofactor10 = mat[1][2] * mat[2][0] - mat[1][0] * mat[2][2];
-			float cofactor20 = mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0];
-
-			float det = mat[0][0] * cofactor00 + mat[0][1] * cofactor10 + mat[0][2] * cofactor20;
-
-			return det;
+			return mat[0][0] * mat[1][1] * mat[2][2] +
+				mat[0][1] * mat[1][2] * mat[2][0] +
+				mat[0][2] * mat[1][0] * mat[2][1] -
+				mat[0][2] * mat[1][1] * mat[2][0] -
+				mat[0][1] * mat[1][0] * mat[2][2] -
+				mat[0][0] * mat[1][2] * mat[2][1];
 		}
 
 		static Matrix3x3 MakeScale(const Vector3& v);

@@ -30,12 +30,30 @@ namespace AtomEngine
 			mat[3][0] = m.mat[3][0];
 			mat[3][1] = m.mat[3][1];
 			mat[3][2] = m.mat[3][2];
-			mat[3][3] = 1.0f;
+			mat[3][3] = m.mat[3][3];
 		}
 
 		Matrix4x4(const Matrix3x3& m)
 		{
-			SetMatrix3x3(m);
+			mat[0][0] = m.mat[0][0];
+			mat[0][1] = m.mat[0][1];
+			mat[0][2] = m.mat[0][2];
+			mat[0][3] = 0.0f;
+
+			mat[1][0] = m.mat[1][0];
+			mat[1][1] = m.mat[1][1];
+			mat[1][2] = m.mat[1][2];
+			mat[1][3] = 0.0f;
+
+			mat[2][0] = m.mat[2][0];
+			mat[2][1] = m.mat[2][1];
+			mat[2][2] = m.mat[2][2];
+			mat[2][3] = 0.0f;
+
+			mat[3][0] = 0.0f;
+			mat[3][1] = 0.0f;
+			mat[3][2] = 0.0f;
+			mat[3][3] = 1.0f;
 		}
 
 		Matrix4x4() { operator=(IDENTITY); }
@@ -217,20 +235,21 @@ namespace AtomEngine
 			float wx = rot.w * rot.x;
 			float wy = rot.w * rot.y;
 			float wz = rot.w * rot.z;
+			float ww = rot.w * rot.w;
 
-			mat[0][0] = 1.0f - 2.0f * (yy + zz);
+			mat[0][0] = ww + xx - yy - zz;
 			mat[0][1] = 2.0f * (xy + wz);
 			mat[0][2] = 2.0f * (xz - wy);
 			mat[0][3] = 0.0f;
 
 			mat[1][0] = 2.0f * (xy - wz);
-			mat[1][1] = 1.0f - 2.0f * (xx + zz);
+			mat[1][1] = ww - xx + yy - zz;
 			mat[1][2] = 2.0f * (yz + wx);
 			mat[1][3] = 0.0f;
 
 			mat[2][0] = 2.0f * (xz + wy);
 			mat[2][1] = 2.0f * (yz - wx);
-			mat[2][2] = 1.0f - 2.0f * (xx + yy);
+			mat[2][2] = ww - xx - yy + zz;
 			mat[2][3] = 0.0f;
 
 			mat[3][0] = position.x;
@@ -239,73 +258,9 @@ namespace AtomEngine
 			mat[3][3] = 1.0f;
 		}
 
-
-		void FromData(const float(&float_array)[16])
-		{
-			mat[0][0] = float_array[0];
-			mat[0][1] = float_array[1];
-			mat[0][2] = float_array[2];
-			mat[0][3] = float_array[3];
-			mat[1][0] = float_array[4];
-			mat[1][1] = float_array[5];
-			mat[1][2] = float_array[6];
-			mat[1][3] = float_array[7];
-			mat[2][0] = float_array[8];
-			mat[2][1] = float_array[9];
-			mat[2][2] = float_array[10];
-			mat[2][3] = float_array[11];
-			mat[3][0] = float_array[12];
-			mat[3][1] = float_array[13];
-			mat[3][2] = float_array[14];
-			mat[3][3] = float_array[15];
-		}
-
-		void ToData(float(&float_array)[16]) const
-		{
-			float_array[0] = mat[0][0];
-			float_array[1] = mat[0][1];
-			float_array[2] = mat[0][2];
-			float_array[3] = mat[0][3];
-			float_array[4] = mat[1][0];
-			float_array[5] = mat[1][1];
-			float_array[6] = mat[1][2];
-			float_array[7] = mat[1][3];
-			float_array[8] = mat[2][0];
-			float_array[9] = mat[2][1];
-			float_array[10] = mat[2][2];
-			float_array[11] = mat[2][3];
-			float_array[12] = mat[3][0];
-			float_array[13] = mat[3][1];
-			float_array[14] = mat[3][2];
-			float_array[15] = mat[3][3];
-		}
-
-		void SetMatrix3x3(const Matrix3x3& mat3)
-		{
-			mat[0][0] = mat3.mat[0][0];
-			mat[0][1] = mat3.mat[0][1];
-			mat[0][2] = mat3.mat[0][2];
-			mat[0][3] = 0;
-
-			mat[1][0] = mat3.mat[1][0];
-			mat[1][1] = mat3.mat[1][1];
-			mat[1][2] = mat3.mat[1][2];
-			mat[1][3] = 0;
-
-			mat[2][0] = mat3.mat[2][0];
-			mat[2][1] = mat3.mat[2][1];
-			mat[2][2] = mat3.mat[2][2];
-			mat[2][3] = 0;
-
-			mat[3][0] = 0;
-			mat[3][1] = 0;
-			mat[3][2] = 0;
-			mat[3][3] = 1;
-		}
-
 		Matrix4x4(const Quaternion& rot)
 		{
-			rot.ToRotationMatrix(*this);
+			*this = Matrix4x4(rot,Vector3::ZERO);
 		}
 
 		float* operator[](size_t row_index)
@@ -442,27 +397,6 @@ namespace AtomEngine
 				scalar * mat[3][3]);
 		}
 
-
-		bool operator==(const Matrix4x4& m2) const
-		{
-			return !(mat[0][0] != m2.mat[0][0] || mat[0][1] != m2.mat[0][1] || mat[0][2] != m2.mat[0][2] ||
-				mat[0][3] != m2.mat[0][3] || mat[1][0] != m2.mat[1][0] || mat[1][1] != m2.mat[1][1] ||
-				mat[1][2] != m2.mat[1][2] || mat[1][3] != m2.mat[1][3] || mat[2][0] != m2.mat[2][0] ||
-				mat[2][1] != m2.mat[2][1] || mat[2][2] != m2.mat[2][2] || mat[2][3] != m2.mat[2][3] ||
-				mat[3][0] != m2.mat[3][0] || mat[3][1] != m2.mat[3][1] || mat[3][2] != m2.mat[3][2] ||
-				mat[3][3] != m2.mat[3][3]);
-		}
-
-		bool operator!=(const Matrix4x4& m2) const
-		{
-			return mat[0][0] != m2.mat[0][0] || mat[0][1] != m2.mat[0][1] || mat[0][2] != m2.mat[0][2] ||
-				mat[0][3] != m2.mat[0][3] || mat[1][0] != m2.mat[1][0] || mat[1][1] != m2.mat[1][1] ||
-				mat[1][2] != m2.mat[1][2] || mat[1][3] != m2.mat[1][3] || mat[2][0] != m2.mat[2][0] ||
-				mat[2][1] != m2.mat[2][1] || mat[2][2] != m2.mat[2][2] || mat[2][3] != m2.mat[2][3] ||
-				mat[3][0] != m2.mat[3][0] || mat[3][1] != m2.mat[3][1] || mat[3][2] != m2.mat[3][2] ||
-				mat[3][3] != m2.mat[3][3];
-		}
-
 		Matrix4x4 Transpose() const
 		{
 			return Matrix4x4(mat[0][0],
@@ -483,14 +417,6 @@ namespace AtomEngine
 				mat[3][3]);
 		}
 
-		//-----------------------------------------------------------------------
-		float GetMinor(size_t r0, size_t r1, size_t r2, size_t c0, size_t c1, size_t c2) const
-		{
-			return mat[r0][c0] * (mat[r1][c1] * mat[r2][c2] - mat[r2][c1] * mat[r1][c2]) -
-				mat[r0][c1] * (mat[r1][c0] * mat[r2][c2] - mat[r2][c0] * mat[r1][c2]) +
-				mat[r0][c2] * (mat[r1][c0] * mat[r2][c1] - mat[r2][c0] * mat[r1][c1]);
-		}
-
 		void setTrans(const Vector3& v)
 		{
 			mat[3][0] = v.x;
@@ -502,7 +428,7 @@ namespace AtomEngine
 
 		Matrix3x3 Get3x3()const
 		{
-            return Matrix3x3(*this);
+			return Matrix3x3(*this);
 		}
 
 		Quaternion GetRotation() const
@@ -519,61 +445,6 @@ namespace AtomEngine
 			return result;
 		}
 
-		Matrix4x4 MakeViewportMatrix(uint32_t width, uint32_t height)
-		{
-
-			Matrix4x4 result = Matrix4x4::IDENTITY;
-
-			result.mat[0][0] = (float)width * 0.5f;
-			result.mat[3][0] = (float)width * 0.5f;
-			result.mat[1][1] = (float)height * -0.5f;
-			result.mat[3][1] = (float)height * 0.5f;
-			result.mat[2][2] = 1.0f;
-			result.mat[3][2] = 0.0f;
-
-			return result;
-		}
-
-		static Matrix4x4 MirrorMatrix(const Vector4& mirrorPlane)
-		{
-			Vector3 n(mirrorPlane.x, mirrorPlane.y, mirrorPlane.z);
-			float d = mirrorPlane.w;
-
-			float len2 = n.LengthSqr();
-			if (len2 <= 1e-8f)
-			{
-				return Matrix4x4::IDENTITY;
-			}
-			float invLen = 1.0f / std::sqrt(len2);
-			n.x *= invLen; n.y *= invLen; n.z *= invLen;
-			d *= invLen;
-
-			Matrix4x4 result;
-
-			result.mat[0][0] = 1.0f - 2.0f * n.x * n.x;
-			result.mat[0][1] = -2.0f * n.x * n.y;
-			result.mat[0][2] = -2.0f * n.x * n.z;
-			result.mat[0][3] = -2.0f * d * n.x;
-
-			result.mat[1][0] = -2.0f * n.y * n.x;
-			result.mat[1][1] = 1.0f - 2.0f * n.y * n.y;
-			result.mat[1][2] = -2.0f * n.y * n.z;
-			result.mat[1][3] = -2.0f * d * n.y;
-
-			result.mat[2][0] = -2.0f * n.z * n.x;
-			result.mat[2][1] = -2.0f * n.z * n.y;
-			result.mat[2][2] = 1.0f - 2.0f * n.z * n.z;
-			result.mat[2][3] = -2.0f * d * n.z;
-
-			result.mat[3][0] = 0.0f;
-			result.mat[3][1] = 0.0f;
-			result.mat[3][2] = 0.0f;
-			result.mat[3][3] = 1.0f;
-
-			return result;
-		}
-
-
 		static Matrix4x4 RotationMatrix(Vector3 normal)
 		{
 			Vector3 up = Vector3(0, 0, 1);
@@ -588,10 +459,7 @@ namespace AtomEngine
 			right.Normalize();
 			up.Normalize();
 
-			Matrix4x4 result = Matrix4x4::IDENTITY;
-			result.SetMatrix3x3(Matrix3x3(right, up, normal));
-
-			return result;
+			return Matrix3x3(right, up, normal);
 		}
 
 		void MakeTrans(const Vector3& v)
@@ -801,45 +669,6 @@ namespace AtomEngine
 			m3x3.mat[2][2] = mat[2][2];
 		}
 
-		void ExtractAxes(Vector3& out_x, Vector3& out_y, Vector3& out_z) const
-		{
-			out_x = Vector3(mat[0][0], mat[1][0], mat[2][0]);
-			out_x.Normalize();
-			out_y = Vector3(mat[0][1], mat[1][1], mat[2][1]);
-			out_y.Normalize();
-			out_z = Vector3(mat[0][2], mat[1][2], mat[2][2]);
-			out_z.Normalize();
-		}
-
-		bool HasScale() const
-		{
-			float t = mat[0][0] * mat[0][0] + mat[1][0] * mat[1][0] + mat[2][0] * mat[2][0];
-			if (!Math::Equal(t, 1.0, (float)1e-04))
-				return true;
-			t = mat[0][1] * mat[0][1] + mat[1][1] * mat[1][1] + mat[2][1] * mat[2][1];
-			if (!Math::Equal(t, 1.0, (float)1e-04))
-				return true;
-			t = mat[0][2] * mat[0][2] + mat[1][2] * mat[1][2] + mat[2][2] * mat[2][2];
-			return !Math::Equal(t, 1.0, (float)1e-04);
-		}
-
-		bool HasNegativeScale() const { return Determinant() < 0; }
-
-		Quaternion ExtractQuaternion() const
-		{
-			Matrix3x3 m3x3;
-			Extract3x3Matrix(m3x3);
-			return Quaternion(m3x3);
-		}
-
-		Matrix4x4 Adjoint() const;
-
-		float Determinant() const
-		{
-			return mat[0][0] * GetMinor(1, 2, 3, 1, 2, 3) - mat[0][1] * GetMinor(1, 2, 3, 0, 2, 3) +
-				mat[0][2] * GetMinor(1, 2, 3, 0, 1, 3) - mat[0][3] * GetMinor(1, 2, 3, 0, 1, 2);
-		}
-
 		void MakeAffine(const Vector3& scale, const Quaternion& orientation, const Vector3& position);
 
 		void MakeAffine(const Vector3& scale, const Vector3& orientation, const Vector3& position);
@@ -847,10 +676,6 @@ namespace AtomEngine
 		static Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& orientation, const Vector3& position);
 
 		void MakeInverseTransform(const Vector3& scale, const Quaternion& orientation, const Vector3& position);
-
-		void Decomposition(Vector3& scale, Quaternion& orientation, Vector3& position) const;
-
-		void DecompositionWithoutScale(Vector3& position, Quaternion& rotation) const;
 
 		bool IsAffine(void) const
 		{

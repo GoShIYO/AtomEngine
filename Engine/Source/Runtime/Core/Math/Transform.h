@@ -46,7 +46,7 @@ namespace AtomEngine
 			return Matrix3x3(temp);
 		}
 
-		void SetScale(float s) { scale *= s; }
+		void SetScale(float s) { scale = s; }
 		float GetScale() const 
 		{ 
 			return Math::Max(Math::Max(scale.x, scale.y), scale.z);

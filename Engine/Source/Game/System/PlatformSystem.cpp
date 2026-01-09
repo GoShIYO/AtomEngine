@@ -13,7 +13,6 @@
 using namespace AtomEngine;
 using json = nlohmann::json;
 
-// JSON辅助函数
 static json Vec3ToJson(const Vector3& v)
 {
 	return json::array({ v.x, v.y, v.z });
@@ -204,10 +203,8 @@ Entity PlatformSystem::CreatePlatform(World& world, const PlatformCreateInfo& in
 	auto platformObj = world.CreateGameObject(info.name);
 	Entity entity = platformObj->GetHandle();
 
-	// 添加TransformComponent，scale使用platformSize
 	world.AddComponent<TransformComponent>(entity, info.position, Quaternion::IDENTITY, info.size);
 
-	// 加载模型并添加MeshComponent和MaterialComponent
 	if (!info.modelPath.empty())
 	{
 		auto model = AssetManager::LoadModel(info.modelPath.c_str());
@@ -218,7 +215,6 @@ Entity PlatformSystem::CreatePlatform(World& world, const PlatformCreateInfo& in
 		}
 	}
 
-	// 添加PlatformComponent
 	PlatformComponent platformComp;
 	platformComp.modelPath = info.modelPath;
 	platformComp.startPosition = info.position;
@@ -229,7 +225,6 @@ Entity PlatformSystem::CreatePlatform(World& world, const PlatformCreateInfo& in
 	platformComp.platformId = mNextPlatformId++;
 	world.AddComponent<PlatformComponent>(entity, std::move(platformComp));
 
-	// 添加DynamicVoxelBodyComponent用于碰撞
 	DynamicVoxelBodyComponent bodyComp;
 	bodyComp.halfExtentsInVoxels = info.size * 0.5f / info.voxelSize;
 	bodyComp.voxelSize = info.voxelSize;

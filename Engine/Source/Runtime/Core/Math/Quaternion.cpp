@@ -59,64 +59,6 @@ namespace AtomEngine
 		FromRotationMatrix(r);
 	}
 
-	void Quaternion::ToRotationMatrix(Matrix3x3& kRot) const
-	{
-		float xx = x * x;
-		float yy = y * y;
-		float zz = z * z;
-		float xy = x * y;
-		float xz = x * z;
-		float yz = y * z;
-		float wx = w * x;
-		float wy = w * y;
-		float wz = w * z;
-
-		kRot.mat[0][0] = 1.0f - 2.0f * (yy + zz);
-		kRot.mat[0][1] = 2.0f * (xy + wz);
-		kRot.mat[0][2] = 2.0f * (xz - wy);
-
-		kRot.mat[1][0] = 2.0f * (xy - wz);
-		kRot.mat[1][1] = 1.0f - 2.0f * (xx + zz);
-		kRot.mat[1][2] = 2.0f * (yz + wx);
-
-		kRot.mat[2][0] = 2.0f * (xz + wy);
-		kRot.mat[2][1] = 2.0f * (yz - wx);
-		kRot.mat[2][2] = 1.0f - 2.0f * (xx + yy);
-	}
-
-	void Quaternion::ToRotationMatrix(Matrix4x4& kRot) const
-	{
-		float xx = x * x;
-		float yy = y * y;
-		float zz = z * z;
-		float xy = x * y;
-		float xz = x * z;
-		float yz = y * z;
-		float wx = w * x;
-		float wy = w * y;
-		float wz = w * z;
-
-		kRot.mat[0][0] = 1.0f - 2.0f * (yy + zz);
-		kRot.mat[0][1] = 2.0f * (xy + wz);
-		kRot.mat[0][2] = 2.0f * (xz - wy);
-		kRot.mat[0][3] = 0.0f;
-
-		kRot.mat[1][0] = 2.0f * (xy - wz);
-		kRot.mat[1][1] = 1.0f - 2.0f * (xx + zz);
-		kRot.mat[1][2] = 2.0f * (yz + wx);
-		kRot.mat[1][3] = 0.0f;
-
-		kRot.mat[2][0] = 2.0f * (xz + wy);
-		kRot.mat[2][1] = 2.0f * (yz - wx);
-		kRot.mat[2][2] = 1.0f - 2.0f * (xx + yy);
-		kRot.mat[2][3] = 0.0f;
-
-		kRot.mat[3][0] = 0.0f;
-		kRot.mat[3][1] = 0.0f;
-		kRot.mat[3][2] = 0.0f;
-		kRot.mat[3][3] = 1.0f;
-	}
-
 	void Quaternion::FromAngleAxis(const Radian& angle, const Vector3& axis)
 	{
         Vector3 v = axis.NormalizedCopy();
@@ -258,8 +200,7 @@ namespace AtomEngine
 	//-----------------------------------------------------------------------
 	void Quaternion::ToAxes(Vector3& xaxis, Vector3& yaxis, Vector3& zaxis) const
 	{
-		Matrix3x3 rot;
-		ToRotationMatrix(rot);
+		Matrix3x3 rot(*this);
 
 		xaxis.x = rot.mat[0][0];
 		xaxis.y = rot.mat[0][1];

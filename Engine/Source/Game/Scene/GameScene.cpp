@@ -369,13 +369,14 @@ void GameScene::ImGuiHandleObjects()
 			{
 				ImGui::PushID(index);
 
-				if (ImGui::TreeNode("Transform"))
+				if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::DragFloat3("Position##A", transform.transition.ptr(), 0.01f);
 					ImGui::DragFloat4("Rotation##A", transform.rotation.ptr(), 0.01f);
 					ImGui::DragFloat3("Scale##A", transform.scale.ptr(), 0.01f);
 					transform.rotation.Normalize();
 
+					ImGui::Text("S:%.3f\n", transform.GetScale());
 					ImGui::TreePop();
 				}
 
@@ -395,6 +396,7 @@ void GameScene::ImGuiHandleObjects()
 								ImGui::DragFloat("Metallic##A", &mat.mMetallic, 0.01f, 0.0f, 1.0f);
 								ImGui::DragFloat("Roughness##A", &mat.mRoughness, 0.01f, 0.0f, 1.0f);
 								ImGui::DragFloat("Normal Scale##A", &mat.mNormalScale, 0.01f, 0.0f, 10.0f);
+
 								ImGui::PopID();
 								ImGui::TreePop();
 							}

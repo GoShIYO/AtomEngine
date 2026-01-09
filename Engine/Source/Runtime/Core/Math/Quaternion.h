@@ -28,8 +28,6 @@ namespace AtomEngine
 
 		void FromRotationMatrix(const Matrix3x3& rotation);
         void FromRotationMatrix(const Matrix4x4& rotation);
-		void ToRotationMatrix(Matrix3x3& rotation) const;
-		void ToRotationMatrix(Matrix4x4& rotation) const;
 
 		void FromAngleAxis(const Radian& angle, const Vector3& axis);
 
