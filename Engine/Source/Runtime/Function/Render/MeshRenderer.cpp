@@ -222,7 +222,7 @@ namespace AtomEngine
 
 			pso.SetRootSignature(sRootSig);
 
-			pso.SetRasterizerState(RasterizerDefault);
+			pso.SetRasterizerState(RasterizerDefaultCw);
 			pso.SetBlendState(gBlendModeTable[(BlendMode)i]);
 			pso.SetDepthStencilState(DepthStateReadOnly);
 			pso.SetInputLayout(_countof(layout), layout);

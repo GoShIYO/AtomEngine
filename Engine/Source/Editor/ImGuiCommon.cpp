@@ -56,7 +56,7 @@ namespace AtomEngine
 		ImGui_ImplDX12_Init(&init_info);
 	}
 
-	void ImGuiCommon::Bengin()
+	void ImGuiCommon::Begin()
 	{
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();

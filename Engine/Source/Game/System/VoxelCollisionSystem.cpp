@@ -720,19 +720,11 @@ void VoxelCollisionSystem::ProcessEntity(World& world, Entity entity)
 	}
 }
 
-void VoxelCollisionSystem::ProcessMovement(World& world, Entity entity, float deltaTime)
+Vector3 VoxelCollisionSystem::ComputeMovementVector(World& world,
+	Entity entity,
+	const VoxelColliderComponent& collider,
+	float deltaTime) const
 {
-	auto& transform = world.GetComponent<TransformComponent>(entity);
-	auto& collider = world.GetComponent<VoxelColliderComponent>(entity);
-
-	if (!collider.enableCollision) return;
-
-	if (collider.isClimbing && collider.smoothStepClimbing)
-	{
-		return;
-	}
-
-	Vector3 currentPos = transform.transition + collider.offset;
 	Vector3 movement = Vector3::ZERO;
 
 	if (world.HasComponent<VelocityComponent>(entity))
@@ -746,20 +738,11 @@ void VoxelCollisionSystem::ProcessMovement(World& world, Entity entity, float de
 		movement.y += collider.verticalVelocity * deltaTime;
 	}
 
-	if (movement.LengthSqr() < 0.00001f)
-	{
-		return;
-	}
+	return movement;
+}
 
-	Vector3 horizontalMovement = movement;
-	horizontalMovement.y = 0;
-
-	float effectiveMaxStepHeight = collider.maxStepHeight;
-	if (collider.useAutoStepHeight)
-	{
-		effectiveMaxStepHeight = collider.halfExtents.y;
-	}
-
+int VoxelCollisionSystem::CalculateSubSteps(const Vector3& movement) const
+{
 	float maxMovePerFrame = mVoxelWorld->voxelSize * 0.9f;
 	float movementLength = movement.Length();
 	int subSteps = 1;
@@ -770,265 +753,311 @@ void VoxelCollisionSystem::ProcessMovement(World& world, Entity entity, float de
 		subSteps = std::min(subSteps, 8);
 	}
 
+	return subSteps;
+}
+
+void VoxelCollisionSystem::HandleCollisionResponse(World& world,
+	Entity entity,
+	VoxelColliderComponent& collider,
+	const Vector3& blockedMovement)
+{
+	collider.wasColliding = true;
+
+	Vector3 blockedDir = blockedMovement.NormalizedCopy();
+	collider.lastCollisionNormal = blockedDir;
+
+	// 垂直方向の衝突応答
+	if (std::abs(blockedDir.y) > 0.5f)
+	{
+		if (blockedDir.y > 0 && collider.verticalVelocity < 0)
+		{
+			collider.verticalVelocity = 0.0f;
+		}
+		else if (blockedDir.y < 0 && collider.verticalVelocity > 0)
+		{
+			collider.verticalVelocity = 0.0f;
+		}
+	}
+
+	// 水平方向の速度調整
+	if (world.HasComponent<VelocityComponent>(entity))
+	{
+		auto& velocity = world.GetComponent<VelocityComponent>(entity);
+
+		Vector3 horizontalBlockedDir = blockedDir;
+		horizontalBlockedDir.y = 0;
+		if (horizontalBlockedDir.LengthSqr() > 0.0001f)
+		{
+			horizontalBlockedDir.Normalize();
+			float normalComponent = velocity.velocity.Dot(horizontalBlockedDir);
+			if (normalComponent > 0)
+			{
+				velocity.velocity = velocity.velocity - horizontalBlockedDir * normalComponent;
+			}
+		}
+	}
+}
+
+Vector3 VoxelCollisionSystem::ProcessSlidingMovement(World& world,
+	Entity entity,
+	const Vector3& currentPos,
+	const Vector3& stepMovement,
+	const Vector3& stepHorizontalMovement,
+	VoxelColliderComponent& collider)
+{
+	Vector3 newPos = mVoxelWorld->MoveAndSlide(
+		currentPos,
+		collider.halfExtents,
+		stepMovement,
+		collider.maxSlideIterations
+	);
+
+	Vector3 actualMovement = newPos - currentPos;
+	Vector3 blockedMovement = stepMovement - actualMovement;
+
+	if (blockedMovement.LengthSqr() > 0.0001f)
+	{
+		HandleCollisionResponse(world, entity, collider, blockedMovement);
+	}
+	else
+	{
+		collider.wasColliding = false;
+	}
+
+	return newPos;
+}
+
+Vector3 VoxelCollisionSystem::ProcessSweepMovement(World& world,
+	Entity entity,
+	const Vector3& currentPos,
+	const Vector3& stepMovement,
+	const Vector3& stepHorizontalMovement,
+	VoxelColliderComponent& collider)
+{
+	Vector3 boxMin = currentPos - collider.halfExtents;
+	Vector3 boxMax = currentPos + collider.halfExtents;
+
+	VoxelSweepResult sweep = mVoxelWorld->SweepAABB(boxMin, boxMax, stepMovement);
+
+	if (sweep.hit)
+	{
+		Vector3 newPos = currentPos + stepMovement * sweep.time;
+
+		// 垂直速度の調整
+		if (std::abs(sweep.normal.y) > 0.5f)
+		{
+			collider.verticalVelocity = 0.0f;
+		}
+
+		// 水平方向の速度調整
+		if (world.HasComponent<VelocityComponent>(entity))
+		{
+			auto& velocity = world.GetComponent<VelocityComponent>(entity);
+			Vector3 horizontalNormal = sweep.normal;
+			horizontalNormal.y = 0;
+			
+			if (horizontalNormal.LengthSqr() > 0.0001f)
+			{
+				horizontalNormal.Normalize();
+				float normalComponent = velocity.velocity.Dot(horizontalNormal);
+				if (normalComponent < 0)
+				{
+					velocity.velocity = velocity.velocity - horizontalNormal * normalComponent;
+				}
+			}
+		}
+
+		collider.wasColliding = true;
+		collider.lastCollisionNormal = sweep.normal;
+
+		return newPos;
+	}
+	else
+	{
+		collider.wasColliding = false;
+		return currentPos + stepMovement;
+	}
+}
+
+bool VoxelCollisionSystem::TryPerformStepClimb(World& world,
+	Entity entity,
+	const Vector3& currentPos,
+	const Vector3& stepHorizontalMovement,
+	VoxelColliderComponent& collider,
+	TransformComponent& transform,
+	float effectiveMaxStepHeight)
+{
+	Vector3 stepClimbPos;
+	Vector3 platformClimbPos;
+	bool voxelClimbSuccess = false;
+	bool platformClimbSuccess = false;
+
+	// ボクセルに対するステップクライミング試行
+	voxelClimbSuccess = TryStepClimb(currentPos, stepHorizontalMovement,
+		collider.halfExtents, effectiveMaxStepHeight,
+		collider.stepSearchOvershoot, collider.minStepDepth, stepClimbPos);
+
+	// プラットフォームに対するステップクライミング試行
+	platformClimbSuccess = TryStepClimbOnPlatform(world, entity, currentPos,
+		stepHorizontalMovement, collider.halfExtents,
+		effectiveMaxStepHeight, platformClimbPos);
+
+	Vector3 finalClimbPos;
+	bool climbSuccess = false;
+
+	// 両方成功した場合は、より低い位置を選択
+	if (voxelClimbSuccess && platformClimbSuccess)
+	{
+		float voxelHeightDiff = std::abs(stepClimbPos.y - currentPos.y);
+		float platformHeightDiff = std::abs(platformClimbPos.y - currentPos.y);
+
+		if (voxelHeightDiff <= platformHeightDiff)
+		{
+			finalClimbPos = stepClimbPos;
+		}
+		else
+		{
+			finalClimbPos = platformClimbPos;
+		}
+		climbSuccess = true;
+	}
+	else if (voxelClimbSuccess)
+	{
+		finalClimbPos = stepClimbPos;
+		climbSuccess = true;
+	}
+	else if (platformClimbSuccess)
+	{
+		finalClimbPos = platformClimbPos;
+		climbSuccess = true;
+	}
+
+	if (climbSuccess)
+	{
+		if (collider.smoothStepClimbing)
+		{
+			// スムーズクライミングモード
+			collider.isClimbing = true;
+			collider.climbTargetPos = finalClimbPos - collider.offset;
+			collider.verticalVelocity = 0.0f;
+			collider.isGrounded = true;
+			transform.transition = currentPos - collider.offset;
+		}
+		else
+		{
+			// 即座にクライミング
+			transform.transition = finalClimbPos - collider.offset;
+			collider.verticalVelocity = 0.0f;
+			collider.isGrounded = true;
+		}
+		return true;
+	}
+
+	return false;
+}
+
+void VoxelCollisionSystem::ProcessMovement(World& world, Entity entity, float deltaTime)
+{
+	auto& transform = world.GetComponent<TransformComponent>(entity);
+	auto& collider = world.GetComponent<VoxelColliderComponent>(entity);
+
+	if (!collider.enableCollision) return;
+
+	// スムーズステップクライミング中はスキップ
+	if (collider.isClimbing && collider.smoothStepClimbing)
+	{
+		return;
+	}
+
+	Vector3 currentPos = transform.transition + collider.offset;
+
+	// 移動ベクトルを計算
+	Vector3 movement = ComputeMovementVector(world, entity, collider, deltaTime);
+
+	if (movement.LengthSqr() < 0.00001f)
+	{
+		return;
+	}
+
+	Vector3 horizontalMovement = movement;
+	horizontalMovement.y = 0;
+
+	// 有効なステップ高さを計算
+	float effectiveMaxStepHeight = collider.maxStepHeight;
+	if (collider.useAutoStepHeight)
+	{
+		effectiveMaxStepHeight = collider.halfExtents.y;
+	}
+
+	// サブステップ数を計算
+	int subSteps = CalculateSubSteps(movement);
+
 	Vector3 stepMovement = movement / (float)subSteps;
 	Vector3 stepHorizontalMovement = horizontalMovement / (float)subSteps;
 
+	// サブステップループ
 	for (int step = 0; step < subSteps; ++step)
 	{
 		bool blockedHorizontally = false;
 
 		if (collider.enableSliding)
 		{
-			Vector3 newPos = mVoxelWorld->MoveAndSlide(
-				currentPos,
-				collider.halfExtents,
-				stepMovement,
-				collider.maxSlideIterations
-			);
+			// スライディング移動処理
+			Vector3 newPos = ProcessSlidingMovement(world, entity, currentPos, 
+				stepMovement, stepHorizontalMovement, collider);
 
 			Vector3 actualMovement = newPos - currentPos;
 			Vector3 blockedMovement = stepMovement - actualMovement;
 
-			if (blockedMovement.LengthSqr() > 0.0001f)
-			{
-				collider.wasColliding = true;
-
-				Vector3 blockedDir = blockedMovement.NormalizedCopy();
-				collider.lastCollisionNormal = blockedDir;
-
-				Vector3 horizontalBlocked = blockedMovement;
-				horizontalBlocked.y = 0;
-				blockedHorizontally = horizontalBlocked.LengthSqr() > 0.0001f;
-
-				if (std::abs(blockedDir.y) > 0.5f)
-				{
-					if (blockedDir.y > 0 && collider.verticalVelocity < 0)
-					{
-						collider.verticalVelocity = 0.0f;
-					}
-					else if (blockedDir.y < 0 && collider.verticalVelocity > 0)
-					{
-						collider.verticalVelocity = 0.0f;
-					}
-				}
-
-				if (world.HasComponent<VelocityComponent>(entity))
-				{
-					auto& velocity = world.GetComponent<VelocityComponent>(entity);
-
-					Vector3 horizontalBlockedDir = blockedDir;
-					horizontalBlockedDir.y = 0;
-					if (horizontalBlockedDir.LengthSqr() > 0.0001f)
-					{
-						horizontalBlockedDir.Normalize();
-						float normalComponent = velocity.velocity.Dot(horizontalBlockedDir);
-						if (normalComponent > 0)
-						{
-							velocity.velocity = velocity.velocity - horizontalBlockedDir * normalComponent;
-						}
-					}
-				}
-			}
-			else
-			{
-				collider.wasColliding = false;
-			}
+			// 水平方向がブロックされたか判定
+			Vector3 horizontalBlocked = blockedMovement;
+			horizontalBlocked.y = 0;
+			blockedHorizontally = horizontalBlocked.LengthSqr() > 0.0001f;
 
 			currentPos = newPos;
-
-			bool shouldCheckStepClimb = collider.enableStepClimbing &&
-				collider.isGrounded &&
-				stepHorizontalMovement.LengthSqr() > 0.0001f;
-
-			if (shouldCheckStepClimb && (blockedHorizontally || true))
-			{
-				Vector3 stepClimbPos;
-				Vector3 platformClimbPos;
-				bool voxelClimbSuccess = false;
-				bool platformClimbSuccess = false;
-
-				voxelClimbSuccess = TryStepClimb(currentPos, stepHorizontalMovement,
-					collider.halfExtents, effectiveMaxStepHeight,
-					collider.stepSearchOvershoot, collider.minStepDepth, stepClimbPos);
-
-				platformClimbSuccess = TryStepClimbOnPlatform(world, entity, currentPos,
-					stepHorizontalMovement, collider.halfExtents,
-					effectiveMaxStepHeight, platformClimbPos);
-
-				Vector3 finalClimbPos;
-				bool climbSuccess = false;
-
-				if (voxelClimbSuccess && platformClimbSuccess)
-				{
-					float voxelHeightDiff = std::abs(stepClimbPos.y - currentPos.y);
-					float platformHeightDiff = std::abs(platformClimbPos.y - currentPos.y);
-
-					if (voxelHeightDiff <= platformHeightDiff)
-					{
-						finalClimbPos = stepClimbPos;
-					}
-					else
-					{
-						finalClimbPos = platformClimbPos;
-					}
-					climbSuccess = true;
-				}
-				else if (voxelClimbSuccess)
-				{
-					finalClimbPos = stepClimbPos;
-					climbSuccess = true;
-				}
-				else if (platformClimbSuccess)
-				{
-					finalClimbPos = platformClimbPos;
-					climbSuccess = true;
-				}
-
-				if (climbSuccess)
-				{
-					if (collider.smoothStepClimbing)
-					{
-						collider.isClimbing = true;
-						collider.climbTargetPos = finalClimbPos - collider.offset;
-						collider.verticalVelocity = 0.0f;
-						collider.isGrounded = true;
-						transform.transition = currentPos - collider.offset;
-						return;
-					}
-					else
-					{
-						currentPos = finalClimbPos;
-						collider.verticalVelocity = 0.0f;
-						collider.isGrounded = true;
-					}
-				}
-			}
 		}
 		else
 		{
-			Vector3 boxMin = currentPos - collider.halfExtents;
-			Vector3 boxMax = currentPos + collider.halfExtents;
+			// スイープ移動処理
+			Vector3 newPos = ProcessSweepMovement(world, entity, currentPos,
+				stepMovement, stepHorizontalMovement, collider);
 
-			VoxelSweepResult sweep = mVoxelWorld->SweepAABB(boxMin, boxMax, stepMovement);
-
-			if (sweep.hit)
+			Vector3 horizontalMovementDiff = (newPos - currentPos);
+			horizontalMovementDiff.y = 0;
+			
+			if (horizontalMovementDiff.LengthSqr() < stepHorizontalMovement.LengthSqr() * 0.5f)
 			{
-				Vector3 newPos = currentPos + stepMovement * sweep.time;
-
-				Vector3 horizontalNormal = sweep.normal;
-				horizontalNormal.y = 0;
-				blockedHorizontally = horizontalNormal.LengthSqr() > 0.5f;
-
-				currentPos = newPos;
-
-				if (std::abs(sweep.normal.y) > 0.5f)
-				{
-					collider.verticalVelocity = 0.0f;
-				}
-
-				if (world.HasComponent<VelocityComponent>(entity))
-				{
-					auto& velocity = world.GetComponent<VelocityComponent>(entity);
-					if (horizontalNormal.LengthSqr() > 0.0001f)
-					{
-						horizontalNormal.Normalize();
-						float normalComponent = velocity.velocity.Dot(horizontalNormal);
-						if (normalComponent < 0)
-						{
-							velocity.velocity = velocity.velocity - horizontalNormal * normalComponent;
-						}
-					}
-				}
-
-				collider.wasColliding = true;
-				collider.lastCollisionNormal = sweep.normal;
-
-				bool shouldCheckStepClimb = collider.enableStepClimbing &&
-					collider.isGrounded &&
-					stepHorizontalMovement.LengthSqr() > 0.0001f;
-
-				if (shouldCheckStepClimb && (blockedHorizontally || true))
-				{
-					Vector3 stepClimbPos;
-					Vector3 platformClimbPos;
-					bool voxelClimbSuccess = false;
-					bool platformClimbSuccess = false;
-
-					voxelClimbSuccess = TryStepClimb(currentPos, stepHorizontalMovement,
-						collider.halfExtents, effectiveMaxStepHeight,
-						collider.stepSearchOvershoot, collider.minStepDepth, stepClimbPos);
-
-					platformClimbSuccess = TryStepClimbOnPlatform(world, entity, currentPos,
-						stepHorizontalMovement, collider.halfExtents,
-						effectiveMaxStepHeight, platformClimbPos);
-
-					Vector3 finalClimbPos;
-					bool climbSuccess = false;
-
-					if (voxelClimbSuccess && platformClimbSuccess)
-					{
-						float voxelHeightDiff = std::abs(stepClimbPos.y - currentPos.y);
-						float platformHeightDiff = std::abs(platformClimbPos.y - currentPos.y);
-
-						if (voxelHeightDiff <= platformHeightDiff)
-						{
-							finalClimbPos = stepClimbPos;
-						}
-						else
-						{
-							finalClimbPos = platformClimbPos;
-						}
-						climbSuccess = true;
-					}
-					else if (voxelClimbSuccess)
-					{
-						finalClimbPos = stepClimbPos;
-						climbSuccess = true;
-					}
-					else if (platformClimbSuccess)
-					{
-						finalClimbPos = platformClimbPos;
-						climbSuccess = true;
-					}
-
-					if (climbSuccess)
-					{
-						if (collider.smoothStepClimbing)
-						{
-							collider.isClimbing = true;
-							collider.climbTargetPos = finalClimbPos - collider.offset;
-							collider.verticalVelocity = 0.0f;
-							collider.isGrounded = true;
-							transform.transition = currentPos - collider.offset;
-							return;
-						}
-						else
-						{
-							currentPos = finalClimbPos;
-							collider.verticalVelocity = 0.0f;
-							collider.isGrounded = true;
-						}
-					}
-					else
-					{
-						break;
-					}
-				}
-				else
-				{
-					break;
-				}
+				blockedHorizontally = true;
 			}
-			else
+
+			currentPos = newPos;
+		}
+
+		// ステップクライミング判定
+		bool shouldCheckStepClimb = collider.enableStepClimbing &&
+			collider.isGrounded &&
+			stepHorizontalMovement.LengthSqr() > 0.0001f;
+
+		if (shouldCheckStepClimb && (blockedHorizontally || true))
+		{
+			if (TryPerformStepClimb(world, entity, currentPos, stepHorizontalMovement,
+				collider, transform, effectiveMaxStepHeight))
 			{
-				currentPos += stepMovement;
-				collider.wasColliding = false;
+				// スムーズクライミングの場合は処理を終了
+				if (collider.smoothStepClimbing)
+				{
+					return;
+				}
+				// 即座クライミングの場合は現在位置を更新して続行
+				currentPos = transform.transition + collider.offset;
 			}
 		}
 	}
 
+	// ワールド境界内にクランプ
 	currentPos = ClampToWorldBounds(currentPos, collider.halfExtents);
 
+	// 最終的な位置を設定
 	transform.transition = currentPos - collider.offset;
 }
 

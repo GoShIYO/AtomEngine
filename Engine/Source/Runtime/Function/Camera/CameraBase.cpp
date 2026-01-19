@@ -67,17 +67,17 @@ namespace AtomEngine
 		SetPosition(xform.transition);
 	}
 
-	Camera::Camera() : m_ReverseZ(false), m_InfiniteZ(false)
+	Camera::Camera() : mReverseZ(true), mInfiniteZ(false)
 	{
 		SetPerspectiveMatrix(Math::PIDiv4, 9.0f / 16.0f, 0.05f, 1000.0f);
 	}
 
 	void Camera::SetPerspectiveMatrix(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip)
 	{
-		m_VerticalFOV = verticalFovRadians;
-		m_AspectRatio = aspectHeightOverWidth;
-		m_NearClip = nearZClip;
-		m_FarClip = farZClip;
+		mVerticalFOV = verticalFovRadians;
+		mAspectRatio = aspectHeightOverWidth;
+		mNearClip = nearZClip;
+		mFarClip = farZClip;
 
 		UpdateProjMatrix();
 
@@ -85,35 +85,35 @@ namespace AtomEngine
 	}
 	void Camera::UpdateProjMatrix(void)
 	{
-		float Y = 1.0f / std::tanf(m_VerticalFOV * 0.5f);
-		float X = Y * m_AspectRatio;
+		float Y = 1.0f / std::tanf(mVerticalFOV * 0.5f);
+		float X = Y * mAspectRatio;
 
 		float Q1, Q2;
 
-		if (m_ReverseZ)
+		if (mReverseZ)
 		{
-			if (m_InfiniteZ)
+			if (mInfiniteZ)
 			{
 				Q1 = 0.0f;
-				Q2 = m_NearClip;
+				Q2 = mNearClip;
 			}
 			else
 			{
-				Q1 = m_NearClip / (m_FarClip - m_NearClip);
-				Q2 = Q1 * m_FarClip;
+				Q1 = mNearClip / (mNearClip - mFarClip);
+				Q2 = -Q1 * mFarClip;
 			}
 		}
 		else
 		{
-			if (m_InfiniteZ)
+			if (mInfiniteZ)
 			{
 				Q1 = -1.0f;
-				Q2 = -m_NearClip;
+				Q2 = -mNearClip;
 			}
 			else
 			{
-				Q1 = m_FarClip / (m_FarClip - m_NearClip);
-				Q2 = -Q1 * m_NearClip;
+				Q1 = mFarClip / (mFarClip - mNearClip);
+				Q2 = -Q1 * mNearClip;
 			}
 		}
 

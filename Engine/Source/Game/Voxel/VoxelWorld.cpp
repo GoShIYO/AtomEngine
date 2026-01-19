@@ -1,6 +1,6 @@
 #include "VoxelWorld.h"
 #define OGT_VOX_IMPLEMENTATION
-#include "ogt_vox.h"
+#include "External/vox/ogt_vox.h"
 #include <fstream>
 #include <cmath>
 #include "Runtime/Core/LogSystem/LogSystem.h"

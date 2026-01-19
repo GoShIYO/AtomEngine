@@ -1,7 +1,7 @@
 #pragma once
 #include "ParticleCommon.h"
 #include "Runtime/Platform/DirectX12/Buffer/GpuBuffer.h"
-#include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
+#include "Runtime/Platform/DirectX12/Pipeline/PipelineState.h"
 #include "Runtime/Platform/DirectX12/Core/GraphicsCommon.h"
 #include "Runtime/Platform/DirectX12/Context/ComputeContext.h"
 #include "Runtime/Resource/TextureRef.h"

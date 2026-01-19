@@ -1,7 +1,7 @@
 #pragma once
 #include "Runtime/Core/Math/MathInclude.h"
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
-#include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
+#include "Runtime/Platform/DirectX12/Pipeline/PipelineState.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
 #include "Runtime/Platform/DirectX12/Core/GraphicsCommon.h"
 #include "Runtime/Resource/TextureRef.h"

@@ -13,7 +13,7 @@ namespace AtomEngine
 	public:
 
 		void Initialize(HWND hwnd);
-		void Bengin();
+		void Begin();
 		void Render(GraphicsContext& Context);
 		void Shutdown();
 

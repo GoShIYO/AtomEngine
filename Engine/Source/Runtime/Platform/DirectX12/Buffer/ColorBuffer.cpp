@@ -11,7 +11,7 @@ namespace AtomEngine
     {
         ASSERT(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on mTexture arrays");
 
-        m_NumMipMaps = NumMips - 1;
+        mNumMipMaps = NumMips - 1;
 
         D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
         D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
@@ -40,7 +40,7 @@ namespace AtomEngine
             SRVDesc.Texture2DArray.FirstArraySlice = 0;
             SRVDesc.Texture2DArray.ArraySize = (UINT)ArraySize;
         }
-        else if (m_FragmentCount > 1)
+        else if (mFragmentCount > 1)
         {
             RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
             SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMS;
@@ -58,30 +58,30 @@ namespace AtomEngine
             SRVDesc.Texture2D.MostDetailedMip = 0;
         }
 
-        if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+        if (mSRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
         {
-            m_RTVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-            m_SRVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            mRTVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+            mSRVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
         }
 
         ID3D12Resource* Resource = mResource.Get();
 
         // rtvを作成
-        Device->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandle);
+        Device->CreateRenderTargetView(Resource, &RTVDesc, mRTVHandle);
 
         // rtvを作成
-        Device->CreateShaderResourceView(Resource, &SRVDesc, m_SRVHandle);
+        Device->CreateShaderResourceView(Resource, &SRVDesc, mSRVHandle);
 
-        if (m_FragmentCount > 1)
+        if (mFragmentCount > 1)
             return;
 
         // Create the UAVs for each mip level (RWTexture2D)
         for (uint32_t i = 0; i < NumMips; ++i)
         {
-            if (m_UAVHandle[i].ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
-                m_UAVHandle[i] = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            if (mUAVHandle[i].ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+                mUAVHandle[i] = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-            Device->CreateUnorderedAccessView(Resource, nullptr, &UAVDesc, m_UAVHandle[i]);
+            Device->CreateUnorderedAccessView(Resource, nullptr, &UAVDesc, mUAVHandle[i]);
 
             UAVDesc.Texture2D.MipSlice++;
         }
@@ -91,8 +91,8 @@ namespace AtomEngine
     {
         AssociateWithResource(Name, BaseResource, D3D12_RESOURCE_STATE_PRESENT);
 
-        m_RTVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        gDevice->CreateRenderTargetView(mResource.Get(), nullptr, m_RTVHandle);
+        mRTVHandle = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+        gDevice->CreateRenderTargetView(mResource.Get(), nullptr, mRTVHandle);
     }
 
     void ColorBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips,
@@ -102,15 +102,15 @@ namespace AtomEngine
         D3D12_RESOURCE_FLAGS Flags = CombineResourceFlags();
         D3D12_RESOURCE_DESC ResourceDesc = DescribeTex2D(Width, Height, 1, NumMips, Format, Flags);
 
-        ResourceDesc.SampleDesc.Count = m_FragmentCount;
+        ResourceDesc.SampleDesc.Count = mFragmentCount;
         ResourceDesc.SampleDesc.Quality = 0;
 
         D3D12_CLEAR_VALUE ClearValue = {};
         ClearValue.Format = Format;
-        ClearValue.Color[0] = m_ClearColor.r;
-        ClearValue.Color[1] = m_ClearColor.g;
-        ClearValue.Color[2] = m_ClearColor.b;
-        ClearValue.Color[3] = m_ClearColor.a;
+        ClearValue.Color[0] = mClearColor.r;
+        ClearValue.Color[1] = mClearColor.g;
+        ClearValue.Color[2] = mClearColor.b;
+        ClearValue.Color[3] = mClearColor.a;
 
         CreateTextureResource(gDevice.Get(), Name, ResourceDesc, ClearValue, VidMem);
         CreateDerivedViews(gDevice.Get(), Format, 1, NumMips);
@@ -124,10 +124,10 @@ namespace AtomEngine
 
         D3D12_CLEAR_VALUE ClearValue = {};
         ClearValue.Format = Format;
-        ClearValue.Color[0] = m_ClearColor.r;
-        ClearValue.Color[1] = m_ClearColor.g;
-        ClearValue.Color[2] = m_ClearColor.b;
-        ClearValue.Color[3] = m_ClearColor.a;
+        ClearValue.Color[0] = mClearColor.r;
+        ClearValue.Color[1] = mClearColor.g;
+        ClearValue.Color[2] = mClearColor.b;
+        ClearValue.Color[3] = mClearColor.a;
 
         CreateTextureResource(gDevice.Get(), Name, ResourceDesc, ClearValue, VidMem);
         CreateDerivedViews(gDevice.Get(), Format, ArrayCount, 1);

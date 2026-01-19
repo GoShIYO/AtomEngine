@@ -1,7 +1,7 @@
 #pragma once
 #include "RenderPass.h"
 #include "Runtime/Function/Render/Particle/ParticleSystem.h"
-#include "Runtime/Platform/DirectX12/Pipline/RootSignature.h"
+#include "Runtime/Platform/DirectX12/Pipeline/RootSignature.h"
 #include "../GridRenderer.h"
 
 namespace AtomEngine

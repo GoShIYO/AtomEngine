@@ -32,13 +32,14 @@ void InGameCameraController::UpdateInput(float dt)
 	if (mInput->IsContactGamePad())
 	{
 		const PadStick& stick = mInput->GetGamePadStick();
+		constexpr float kDeadZone = 0.15f;
 
-		if (std::abs(stick.rightStickX) > 0.15f)
+		if (std::abs(stick.rightStickX) > kDeadZone)
 		{
 			mInputYaw = -stick.rightStickX;
 		}
 
-		if (std::abs(stick.rightStickY) > 0.15f)
+		if (std::abs(stick.rightStickY) > kDeadZone)
 		{
 			mInputPitch = -stick.rightStickY;
 		}

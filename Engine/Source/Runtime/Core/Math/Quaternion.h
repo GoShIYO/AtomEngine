@@ -6,7 +6,7 @@ namespace AtomEngine
 	class Quaternion
 	{
 	public:
-		float x, y, z, w;
+		float x{ 0.0f }, y{ 0.0f }, z{ 0.0f }, w{ 1.0f };
 		Quaternion() = default;
 		Quaternion(float x_, float y_, float z_, float w_) : x{ x_ }, y{ y_ }, z{ z_ }, w{ w_ } {}
 

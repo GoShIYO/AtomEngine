@@ -26,6 +26,9 @@ extern void SetClearSceneGameResult(AtomEngine::Scene* scene, int collected, int
 namespace
 {
 	const Vector3 kPlayerStartPosition = Vector3(-8, 8, -8);
+	Color kLightColor = Color(0.5f, 0.5f, 0.5f);
+	Vector3 lightPosition = Vector3::ZERO;
+	float lightRadius = 8.0f;
 }
 
 GameScene::GameScene(std::string_view name, SceneManager& manager)
@@ -40,7 +43,8 @@ bool GameScene::Initialize()
 	mDebugCamera.reset(new DebugCamera(mGameCamera));
 
 	const float kWorldScale = 20.0f;
-
+	kLightColor = Color(0.5f, 0.5f, 0.5f);
+	LightManager::AddPointLight(lightPosition, kLightColor, lightRadius);
 	// ゲーム状態初期化
 	mGameTime = 0.0f;
 	mIsGameClear = false;
@@ -447,4 +451,16 @@ void GameScene::ImGuiHandleObjects()
 	}
 
 	ImGui::End();
+
+	bool light = false;
+	ImGui::Begin("Light");
+	light |= ImGui::ColorEdit3("Color", kLightColor.ptr());
+    light |= ImGui::DragFloat3("Position", lightPosition.ptr(), 0.01f);
+	light |= ImGui::DragFloat("Radius", &lightRadius, 0.01f, 0.1f);
+	ImGui::End();
+	if (light)
+	{
+		LightManager::UpdatePointLight(0, lightPosition, kLightColor, lightRadius);
+	}
+
 }

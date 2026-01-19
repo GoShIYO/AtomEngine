@@ -6,7 +6,7 @@
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Buffer/ColorBuffer.h"
 
-#include "../Pipline/PiplineState.h"
+#include "../Pipeline/PipelineState.h"
 
 namespace AtomEngine
 {
@@ -106,7 +106,8 @@ namespace AtomEngine
         SamplerAnisoWrap = SamplerAnisoWrapDesc.CreateDescriptor();
 
         SamplerShadowDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-        SamplerShadowDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+        // Reverse Z: Change comparison from LESS_EQUAL to GREATER_EQUAL
+        SamplerShadowDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
         SamplerShadowDesc.SetTextureAddressMode(D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
         SamplerShadow = SamplerShadowDesc.CreateDescriptor();
 
@@ -176,8 +177,8 @@ namespace AtomEngine
 
         RasterizerShadow = RasterizerDefault;
         //RasterizerShadow.CullMode = D3D12_CULL_FRONT;  // Hacked here rather than fixing the content
-        RasterizerShadow.SlopeScaledDepthBias = 1.5f;
-        RasterizerShadow.DepthBias = 100;
+        RasterizerShadow.SlopeScaledDepthBias = -1.5f;
+        RasterizerShadow.DepthBias = -100;
 
         RasterizerShadowTwoSided = RasterizerShadow;
         RasterizerShadowTwoSided.CullMode = D3D12_CULL_MODE_NONE;
@@ -200,13 +201,13 @@ namespace AtomEngine
         DepthStateReadWrite = DepthStateDisabled;
         DepthStateReadWrite.DepthEnable = TRUE;
         DepthStateReadWrite.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-        DepthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+        DepthStateReadWrite.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
         DepthStateReadOnly = DepthStateReadWrite;
         DepthStateReadOnly.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 
         DepthStateReadOnlyReversed = DepthStateReadOnly;
-        DepthStateReadOnlyReversed.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+        DepthStateReadOnlyReversed.DepthFunc = D3D12_COMPARISON_FUNC_GREATER;
 
         DepthStateTestEqual = DepthStateReadOnly;
         DepthStateTestEqual.DepthFunc = D3D12_COMPARISON_FUNC_EQUAL;

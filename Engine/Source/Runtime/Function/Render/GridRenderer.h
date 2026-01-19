@@ -1,7 +1,7 @@
 #pragma once
 #include "Runtime/Function/Camera/CameraBase.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
-#include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
+#include "Runtime/Platform/DirectX12/Pipeline/PipelineState.h"
 
 namespace AtomEngine
 {

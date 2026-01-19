@@ -8,8 +8,8 @@
 #include "Runtime/Platform/DirectX12/D3dUtility/d3dInclude.h"
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
-#include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
-#include "Runtime/Platform/DirectX12/Pipline/RootSignature.h"
+#include "Runtime/Platform/DirectX12/Pipeline/PipelineState.h"
+#include "Runtime/Platform/DirectX12/Pipeline/RootSignature.h"
 #include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
 #include "Runtime/Function/Scene/SceneManager.h"
 

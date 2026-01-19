@@ -99,7 +99,7 @@ namespace Engine
 	}
 	void AtomEngine::Tick(GameApp& app, float deltaTime)
 	{
-		gContext.imgui->Bengin();
+		gContext.imgui->Begin();
 
 		LogicalTick(app,deltaTime);
 		CalculateFPS(deltaTime);

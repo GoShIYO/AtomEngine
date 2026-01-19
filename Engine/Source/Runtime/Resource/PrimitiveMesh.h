@@ -39,8 +39,8 @@ namespace AtomEngine
 		BlendMode GetBlendMode() const { return mBlendMode; }
 		uint64_t GetSortKey()const;
 
-		void SetVisid(bool flag) { isValid = flag; }
-		bool IsValid() const { return isValid; }
+		void SetVisible(bool flag) { mIsVisible = flag; }
+		bool IsVisible() const { return mIsVisible; }
 
 		void SetPrimitiveType(PrimitiveMeshType type) { mPrimitiveType = type; }
 		PrimitiveMeshType GetPrimitiveType() const { return mPrimitiveType; }
@@ -52,7 +52,7 @@ namespace AtomEngine
 		TextureRef mTexture;
 		BlendMode mBlendMode = BlendMode::kBlendNormal;
 		float toCameraDistance = 0.0f;
-		bool isValid = true;
+		bool mIsVisible = true;
 		PrimitiveMeshType mPrimitiveType = PrimitiveMeshType::Quad;
 	};
 

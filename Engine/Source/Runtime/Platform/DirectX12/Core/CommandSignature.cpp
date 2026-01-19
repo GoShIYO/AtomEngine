@@ -1,5 +1,5 @@
 #include "CommandSignature.h"
-#include "../Pipline/RootSignature.h"
+#include "../Pipeline/RootSignature.h"
 #include "../Core/DirectX12Core.h"
 
 namespace AtomEngine

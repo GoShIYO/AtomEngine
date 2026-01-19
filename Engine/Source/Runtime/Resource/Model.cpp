@@ -48,9 +48,14 @@ namespace AtomEngine
 					sphereWS.GetRadius() + 1.0f
 				);
 
-				if (!frustum.IntersectSphere(sphereVS))
-					continue;
-
+				// TODO: ReverseZ 対応
+				//if (!frustum.IntersectSphere(sphereVS))
+				//	continue;
+				
+				// 距離計算。Reverse Z の場合は注意が必要かもしれないが、
+				// z はView空間のz座標なので、通常は負値のはず。GetCenter().z はカメラ前方の距離。
+				// 単純なソート用距離としては、Z値をそのまま使うか、カメラからの距離を使う。
+				// ここではView空間のZ値と半径を足している。
 				float distance = sphereVS.GetCenter().z + sphereVS.GetRadius();
 
 				D3D12_GPU_VIRTUAL_ADDRESS meshCBV =

@@ -12,20 +12,20 @@ namespace AtomEngine
     void ContextManager::DestroyAllContexts(void)
     {
         for (uint32_t i = 0; i < 4; ++i)
-            sm_ContextPool[i].clear();
+            mContextPool[i].clear();
     }
 
     CommandContext* ContextManager::AllocateContext(D3D12_COMMAND_LIST_TYPE Type)
     {
-        std::lock_guard<std::mutex> LockGuard(sm_ContextAllocationMutex);
+        std::lock_guard<std::mutex> LockGuard(mContextAllocationMutex);
 
-        auto& AvailableContexts = sm_AvailableContexts[Type];
+        auto& AvailableContexts = mAvailableContexts[Type];
 
         CommandContext* ret = nullptr;
         if (AvailableContexts.empty())
         {
             ret = new CommandContext(Type);
-            sm_ContextPool[Type].emplace_back(ret);
+            mContextPool[Type].emplace_back(ret);
             ret->Initialize();
         }
         else
@@ -44,8 +44,8 @@ namespace AtomEngine
     void ContextManager::FreeContext(CommandContext* UsedContext)
     {
         ASSERT(UsedContext != nullptr);
-        std::lock_guard<std::mutex> LockGuard(sm_ContextAllocationMutex);
-        sm_AvailableContexts[UsedContext->mType].push(UsedContext);
+        std::lock_guard<std::mutex> LockGuard(mContextAllocationMutex);
+        mAvailableContexts[UsedContext->mType].push(UsedContext);
     }
 
     void CommandContext::DestroyAllContexts(void)

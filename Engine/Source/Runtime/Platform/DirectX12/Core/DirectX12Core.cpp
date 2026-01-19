@@ -68,7 +68,7 @@ namespace AtomEngine
 
 		bool s_EnableVSync = true;	
 
-		void ResolutionToUINT(eResolution res, uint32_t& width, uint32_t& height)
+		static void ResolutionToUINT(eResolution res, uint32_t& width, uint32_t& height)
 		{
 			switch (res)
 			{

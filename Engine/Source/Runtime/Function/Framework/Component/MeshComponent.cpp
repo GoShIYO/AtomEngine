@@ -1,3 +1,10 @@
+/**
+ * @file MeshComponent.cpp
+ * @brief メッシュコンポーネントの実装
+ * 
+ * 3Dモデルの描画、アニメーション、マテリアル管理を担当する。
+ */
+
 #include "MeshComponent.h"
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
 #include "Runtime/Function/Render/RenderSystem.h"
@@ -28,11 +35,11 @@ namespace AtomEngine
 			mMaterialConstantsGPU.Create(L"Material Constants GPU", (uint32_t)mModel->mMaterials.size(), sizeof(MaterialConstants));
 
 			mBoundingSphereTransforms.resize(numSceneNode);
-			mSkeletonTransforms.reset(new JointXform[mModel->mNumJoints]);
+			mSkeletonTransforms = std::make_unique<JointXform[]>(mModel->mNumJoints);
 
 			if (!model->mAnimationData.empty())
 			{
-				mAnimGraph.reset(new GraphNode[numSceneNode]);
+				mAnimGraph = std::make_unique<GraphNode[]>(numSceneNode);
 				std::memcpy(mAnimGraph.get(), model->mSceneGraph.data(), model->mSceneGraph.size() * sizeof(GraphNode));
 				mAnimState.resize(model->mAnimationData.size());
 				LoopAllAnimations();

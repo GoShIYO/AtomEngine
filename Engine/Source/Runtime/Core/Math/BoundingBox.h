@@ -68,27 +68,27 @@ namespace AtomEngine
 		OrientedBox() {}
 
 		OrientedBox(const Matrix3x3& basis, const Vector3& translation) : 
-			m_basis(basis), m_translation(translation) {}
+			mBasis(basis), mTranslation(translation) {}
 		OrientedBox(const AxisAlignedBox& box)
 		{
-			m_basis = (Matrix3x3::MakeScale(box.GetMax() - box.GetMin()));
-			m_translation = box.GetMin();
+			mBasis = (Matrix3x3::MakeScale(box.GetMax() - box.GetMin()));
+			mTranslation = box.GetMin();
 		}
 
 		friend OrientedBox operator* (const Transform& xform, const OrientedBox& obb)
 		{
 			Matrix3x3 m = xform.GetMatrix3x3();
-			Matrix3x3 mat3 = m * obb.m_basis;
-			Vector3 translation = Math::TransformNormal(obb.m_translation, Matrix4x4(m)) + xform.transition;
+			Matrix3x3 mat3 = m * obb.mBasis;
+			Vector3 translation = Math::TransformNormal(obb.mTranslation, Matrix4x4(m)) + xform.transition;
 			return OrientedBox(mat3, translation);
 		}
 
-		Vector3 GetDimensions() const { return m_basis.GetX() + m_basis.GetY() + m_basis.GetZ(); }
-		Vector3 GetCenter() const { return m_translation + GetDimensions() * 0.5f; }
+		Vector3 GetDimensions() const { return mBasis.GetX() + mBasis.GetY() + mBasis.GetZ(); }
+		Vector3 GetCenter() const { return mTranslation + GetDimensions() * 0.5f; }
 
 	private:
-		Matrix3x3 m_basis;
-		Vector3 m_translation;
+		Matrix3x3 mBasis;
+		Vector3 mTranslation;
 	};
 
 	inline OrientedBox operator* (const Transform& xform, const AxisAlignedBox& aabb)

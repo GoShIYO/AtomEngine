@@ -1,6 +1,6 @@
 #pragma once
-#include "../Pipline/RootSignature.h"
-#include "../Pipline/PiplineState.h"
+#include "../Pipeline/RootSignature.h"
+#include "../Pipeline/PipelineState.h"
 #include "../Core/DynamicDescriptorHeap.h"
 #include "../Core/LinearAllocator.h"
 #include "../Core/GraphicsCommon.h"
@@ -53,9 +53,9 @@ namespace AtomEngine
 		void DestroyAllContexts();
 
 	private:
-		std::vector<std::unique_ptr<CommandContext> > sm_ContextPool[4];
-		std::queue<CommandContext*> sm_AvailableContexts[4];
-		std::mutex sm_ContextAllocationMutex;
+		std::vector<std::unique_ptr<CommandContext> > mContextPool[4];
+		std::queue<CommandContext*> mAvailableContexts[4];
+		std::mutex mContextAllocationMutex;
 	};
 
 	class CommandContext

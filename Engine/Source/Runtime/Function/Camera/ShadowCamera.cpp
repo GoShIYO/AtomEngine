@@ -3,35 +3,37 @@
 namespace AtomEngine
 {
 	void ShadowCamera::UpdateMatrix(
-		const Vector3& lightDir,
-		const Vector3& shadowCenter,
-		const Vector3& shadowBounds,
+		Vector3 lightDir,
+		Vector3 ShadowCenter,
+		Vector3 ShadowBounds,
 		uint32_t BufferWidth,
 		uint32_t BufferHeight
 	)
 	{
-		float radius = shadowBounds.Length();
+        SetLookDirection(-lightDir, Vector3::FORWARD);
 
-		Vector3 lightPos = -2.0f * radius * lightDir + shadowCenter;
-		mViewMatrix = Math::MakeLookAtMatrix(lightPos, shadowCenter, Vector3::UP);
+        // Converts world units to texel units so we can quantize the camera position to whole texel units
+        Vector3 RcpDimensions = 1.0f / (ShadowBounds);
+        Vector3 QuantizeScale = Vector3((float)BufferWidth, (float)BufferHeight, (float)((1 << 16) - 1)) * RcpDimensions;
 
-		Vector3 sphereCenterLS = shadowCenter * mViewMatrix;
+        //
+        // Recenter the camera at the quantized position
+        //
 
-		float l = sphereCenterLS.x - radius;
-		float r = sphereCenterLS.x + radius;
-		float b = sphereCenterLS.y - radius;
-		float t = sphereCenterLS.y + radius;
-		float n = sphereCenterLS.z - radius;
-		float f = sphereCenterLS.z + radius;
+        // Transform to view space
+        ShadowCenter = GetRotation().Conjugate() * ShadowCenter;
+        // Scale to texel units, truncate fractional part, and scale back to world units
+        ShadowCenter = Math::Floor(ShadowCenter * QuantizeScale) / QuantizeScale;
+        // Transform back into world space
+        ShadowCenter = GetRotation() * ShadowCenter;
 
-		SetProjMatrix(Math::MakeOrthographicProjectionMatrix(l, r, b, t, n, f));
-		mViewProjMatrix = mViewMatrix * mProjMatrix;
+        SetPosition(ShadowCenter);
 
-		Matrix4x4 ndcToUV = Matrix4x4(
-			Matrix3x3::MakeScale({ 0.5f, -0.5f, 1.0f }),
-			Vector3(0.5f, 0.5f, 0.0f)
-		);
+        SetProjMatrix(Matrix4x4::MakeScale(Vector3(2.0f, 2.0f, 1.0f) * RcpDimensions));
 
-		mShadowMatrix = mViewProjMatrix * ndcToUV;
+        Update();
+
+        // Transform from clip space to texture space
+        mShadowMatrix = mViewProjMatrix * Matrix4x4(Matrix3x3::MakeScale({ 0.5f, -0.5f, 1.0f }), Vector3(0.5f, 0.5f, 0.0f));
 	}
 }

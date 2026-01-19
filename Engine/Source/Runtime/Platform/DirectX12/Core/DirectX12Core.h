@@ -1,7 +1,7 @@
 #pragma once
 #include "DescriptorAllocator.h"
 #include "DescriptorHeap.h"
-#include "../Pipline/RootSignature.h"
+#include "../Pipeline/RootSignature.h"
 
 namespace AtomEngine
 {

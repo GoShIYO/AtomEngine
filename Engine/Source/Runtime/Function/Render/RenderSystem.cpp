@@ -3,7 +3,7 @@
 #include "SpriteRenderer.h"
 
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
-#include "Runtime/Platform/DirectX12/Pipline/PiplineState.h"
+#include "Runtime/Platform/DirectX12/Pipeline/PipelineState.h"
 #include "Runtime/Platform/DirectX12/Buffer/ColorBuffer.h"
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"

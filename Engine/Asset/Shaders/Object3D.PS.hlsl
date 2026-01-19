@@ -62,7 +62,7 @@ float3 ComputeNormal(VSOutput intput, float2 uv)
 // Diffuse IBL
 float3 Diffuse_IBL(float3 diffuseAlbedo, float roughness,float3 N,float3 V)
 {
-    float3 irradiance = irradianceIBLTexture.Sample(anisotropicSampler, N).rgb;
+    float3 irradiance = irradianceIBLTexture.Sample(defaultSampler, N).rgb;
 
     float LdotH_ibl = saturate(dot(N, normalize(N + V)));
     float fd90 = 0.5 + 2.0 * roughness * LdotH_ibl * LdotH_ibl;
@@ -74,7 +74,7 @@ float3 Specular_IBL(float3 specularAlbedo, float3 V, float3 N, float roughness)
 {
     float3 R = reflect(-V, N);
     float lod = saturate(roughness) * IBLRange + IBLBias;
-    float3 prefiltered = radianceIBLTexture.SampleLevel(anisotropicSampler, R, lod).rgb;
+    float3 prefiltered = radianceIBLTexture.SampleLevel(defaultSampler, R, lod).rgb;
     float3 F = Fresnel_Schlick(specularAlbedo, saturate(dot(N, V)));
     return prefiltered * F;
 }

@@ -20,7 +20,7 @@ namespace AtomEngine
         inline size_t Size() { return mAllocatorPool.size(); }
 
     private:
-        const D3D12_COMMAND_LIST_TYPE m_cCommandListType;
+        const D3D12_COMMAND_LIST_TYPE mCommandListType;
 
         ID3D12Device* mDevice;
         std::vector<ID3D12CommandAllocator*> mAllocatorPool;

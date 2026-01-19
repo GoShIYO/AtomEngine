@@ -13,7 +13,7 @@ namespace AtomEngine
 
 	void PrimitiveMesh::Render(const Camera& camera)
 	{
-		if (!isValid)return;
+		if (!mIsVisible)return;
 
 		toCameraDistance = camera.GetPosition().Distance(mTransform.transition);
 

@@ -22,21 +22,21 @@ namespace AtomEngine
 	ShadowBuffer LightManager::gLightShadowTempBuffer;
 	Matrix4x4 LightManager::gLightShadowMatrix[MAX_LIGHTS];
 
-	RootSignature m_FillLightRootSig;
-	ComputePSO m_FillLightGridCS_8(L"Fill Light Grid 8 CS");
-	ComputePSO m_FillLightGridCS_16(L"Fill Light Grid 16 CS");
-	ComputePSO m_FillLightGridCS_24(L"Fill Light Grid 24 CS");
-	ComputePSO m_FillLightGridCS_32(L"Fill Light Grid 32 CS");
+	RootSignature gFillLightRootSig;
+	ComputePSO gFillLightGridCS_8(L"Fill Light Grid 8 CS");
+	ComputePSO gFillLightGridCS_16(L"Fill Light Grid 16 CS");
+	ComputePSO gFillLightGridCS_24(L"Fill Light Grid 24 CS");
+	ComputePSO gFillLightGridCS_32(L"Fill Light Grid 32 CS");
 
 	bool LightManager::dirty = true;
 
 	void LightManager::Initialize()
 	{
-		m_FillLightRootSig.Reset(3, 0);
-		m_FillLightRootSig[0].InitAsConstantBuffer(0);
-		m_FillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
-		m_FillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2);
-		m_FillLightRootSig.Finalize(L"FillLightRS");
+		gFillLightRootSig.Reset(3, 0);
+		gFillLightRootSig[0].InitAsConstantBuffer(0);
+		gFillLightRootSig[1].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, 2);
+		gFillLightRootSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 2);
+		gFillLightRootSig.Finalize(L"FillLightRS");
 
 		auto fillLightCS_8 = ShaderCompiler::CompileBlob(L"Light/FillLightGridCS_8.hlsl",
 			L"cs_6_2", L"CSMain");
@@ -47,21 +47,21 @@ namespace AtomEngine
 		auto fillLightCS_32 = ShaderCompiler::CompileBlob(L"Light/FillLightGridCS_32.hlsl",
 			L"cs_6_2", L"CSMain");
 
-		m_FillLightGridCS_8.SetRootSignature(m_FillLightRootSig);
-		m_FillLightGridCS_8.SetComputeShader(fillLightCS_8.Get());
-		m_FillLightGridCS_8.Finalize();
+		gFillLightGridCS_8.SetRootSignature(gFillLightRootSig);
+		gFillLightGridCS_8.SetComputeShader(fillLightCS_8.Get());
+		gFillLightGridCS_8.Finalize();
 
-		m_FillLightGridCS_16.SetRootSignature(m_FillLightRootSig);
-		m_FillLightGridCS_16.SetComputeShader(fillLightCS_16.Get());
-		m_FillLightGridCS_16.Finalize();
+		gFillLightGridCS_16.SetRootSignature(gFillLightRootSig);
+		gFillLightGridCS_16.SetComputeShader(fillLightCS_16.Get());
+		gFillLightGridCS_16.Finalize();
 
-		m_FillLightGridCS_24.SetRootSignature(m_FillLightRootSig);
-		m_FillLightGridCS_24.SetComputeShader(fillLightCS_24.Get());
-		m_FillLightGridCS_24.Finalize();
+		gFillLightGridCS_24.SetRootSignature(gFillLightRootSig);
+		gFillLightGridCS_24.SetComputeShader(fillLightCS_24.Get());
+		gFillLightGridCS_24.Finalize();
 
-		m_FillLightGridCS_32.SetRootSignature(m_FillLightRootSig);
-		m_FillLightGridCS_32.SetComputeShader(fillLightCS_32.Get());
-		m_FillLightGridCS_32.Finalize();
+		gFillLightGridCS_32.SetRootSignature(gFillLightRootSig);
+		gFillLightGridCS_32.SetComputeShader(fillLightCS_32.Get());
+		gFillLightGridCS_32.Finalize();
 
 		// Assumes max resolution of 3840x2160
 		uint32_t lightGridCells = DivideByMultiple(3840, kMinLightGridDim) * DivideByMultiple(2160, kMinLightGridDim);
@@ -212,14 +212,14 @@ namespace AtomEngine
 	{
 		ComputeContext& Context = gfxContext.GetComputeContext();
 
-		Context.SetRootSignature(m_FillLightRootSig);
+		Context.SetRootSignature(gFillLightRootSig);
 
 		switch (LightGridDim)
 		{
-		case  8: Context.SetPipelineState(m_FillLightGridCS_8); break;
-		case 16: Context.SetPipelineState(m_FillLightGridCS_16); break;
-		case 24: Context.SetPipelineState(m_FillLightGridCS_24); break;
-		case 32: Context.SetPipelineState(m_FillLightGridCS_32); break;
+		case  8: Context.SetPipelineState(gFillLightGridCS_8); break;
+		case 16: Context.SetPipelineState(gFillLightGridCS_16); break;
+		case 24: Context.SetPipelineState(gFillLightGridCS_24); break;
+		case 32: Context.SetPipelineState(gFillLightGridCS_32); break;
 		default: ASSERT(false); break;
 		}
 
@@ -240,30 +240,29 @@ namespace AtomEngine
 		uint32_t tileCountX = DivideByMultiple(gSceneColorBuffer.GetWidth(), LightGridDim);
 		uint32_t tileCountY = DivideByMultiple(gSceneColorBuffer.GetHeight(), LightGridDim);
 
+		float FarClipDist = camera.GetFarClip();
+		float NearClipDist = camera.GetNearClip();
+		const float RcpZMagic = NearClipDist / (FarClipDist - NearClipDist);
+
 		struct CSConstants
 		{
-			Matrix4x4 ProjMatrix;
-			Matrix4x4 InvProjMatrix;
-			Matrix4x4 ViewMatrix;
 			uint32_t ViewportWidth, ViewportHeight;
+			float InvTileDim;
+			float RcpZMagic;
 			uint32_t TileCount;
-			float NearClip;
-			float FarClip;
+			Matrix4x4 ViewProjMatrix;
 		} csConstants;
-
+		// todo: assumes 1920x1080 resolution
 		csConstants.ViewportWidth = gSceneColorBuffer.GetWidth();
 		csConstants.ViewportHeight = gSceneColorBuffer.GetHeight();
-		csConstants.NearClip = camera.GetNearClip();
-        csConstants.FarClip = camera.GetFarClip();
+		csConstants.InvTileDim = 1.0f / LightGridDim;
+		csConstants.RcpZMagic = RcpZMagic;
 		csConstants.TileCount = tileCountX;
-		const auto& proj =  camera.GetProjMatrix();
-		csConstants.ProjMatrix = proj;
-		csConstants.InvProjMatrix = proj.Inverse();
-		csConstants.ViewMatrix  = camera.GetViewMatrix();
-
+		csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
 		Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
 
 		Context.Dispatch(tileCountX, tileCountY, 1);
+
 
 		Context.TransitionResource(gLightBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		Context.TransitionResource(gLightGrid, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

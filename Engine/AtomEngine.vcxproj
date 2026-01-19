@@ -189,14 +189,13 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Game\System\ItemSystem.h" />
     <ClInclude Include="Source\Game\System\LadderSystem.h" />
     <ClInclude Include="Source\Game\System\PlatformSystem.h" />
-    <ClInclude Include="Source\Game\System\UiSystem.h" />
     <ClInclude Include="Source\Game\System\VoxelCollisionSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Audio\Audio.h" />
     <ClInclude Include="Source\Runtime\Function\Render\GridRenderer.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\GamePadCamera.h" />
     <ClInclude Include="Source\Game\System\PlayerSystem.h" />
     <ClInclude Include="Source\Game\EasingFunctions.h" />
-    <ClInclude Include="Source\Game\Voxel\ogt_vox.h" />
+    <ClInclude Include="External\vox\ogt_vox.h" />
     <ClInclude Include="Source\Game\System\CollisionSystem.h" />
     <ClInclude Include="Source\Game\System\MoveSystem.h" />
     <ClInclude Include="Source\Runtime\Function\Render\MeshRenderer.h" />
@@ -224,10 +223,10 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Framework\Component\MeshComponent.h" />
     <ClInclude Include="Source\Runtime\Function\Framework\ECS\GUID.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\DebugCamera.h" />
-    <ClInclude Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.h" />
     <ClInclude Include="Source\Runtime\Function\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Function\Scene\SceneManager.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\D3dUtility\d3dx12.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\RayTrace\RayTracedShadow.h" />
     <ClInclude Include="Source\Runtime\Resource\GeometryGenerator.h" />
     <ClInclude Include="Source\Runtime\Resource\PrimitiveMesh.h" />
     <ClInclude Include="Source\Runtime\Resource\Skeleton.h" />
@@ -268,8 +267,8 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipeline\PipelineState.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Pipeline\RootSignature.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandAllocatorPool.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandListManager.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DescriptorHeap.h" />
@@ -320,7 +319,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Game\System\ItemSystem.cpp" />
     <ClCompile Include="Source\Game\System\LadderSystem.cpp" />
     <ClCompile Include="Source\Game\System\PlatformSystem.cpp" />
-    <ClCompile Include="Source\Game\System\UiSystem.cpp" />
     <ClCompile Include="Source\Game\System\VoxelCollisionSystem.cpp" />
     <ClCompile Include="Source\Runtime\Function\Audio\Audio.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\GridRenderer.cpp" />
@@ -347,9 +345,9 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Runtime\Function\Framework\Component\MeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Function\Framework\ECS\GUID.cpp" />
     <ClCompile Include="Source\Runtime\Function\Camera\DebugCamera.cpp" />
-    <ClCompile Include="Source\Runtime\Function\Framework\Component\AnimatorComponent.cpp" />
     <ClCompile Include="Source\Runtime\Function\Scene\Scene.cpp" />
     <ClCompile Include="Source\Runtime\Function\Scene\SceneManager.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\RayTrace\RayTracedShadow.cpp" />
     <ClCompile Include="Source\Runtime\Resource\GeometryGenerator.cpp" />
     <ClCompile Include="Source\Runtime\Resource\PrimitiveMesh.cpp" />
     <ClCompile Include="Source\Runtime\Resource\Skeleton.cpp" />
@@ -464,11 +462,11 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\PiplineState.cpp">
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipeline\PipelineState.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipline\RootSignature.cpp">
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Pipeline\RootSignature.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>

@@ -156,7 +156,7 @@ namespace AtomEngine
 		return outNode;
 	}
 
-	std::map<std::string, uint16_t> m_JointNameToIndex;
+	std::map<std::string, uint16_t> mJointNameToIndex;
 	Mesh ModelLoader::ProcessMesh(ModelData& model, aiMesh* mesh)
 	{
 		Mesh outMesh;

@@ -10,12 +10,12 @@ namespace AtomEngine
     {
     public:
         ColorBuffer(Color ClearColor = Color(0.0f, 0.0f, 0.0f, 0.0f))
-            : m_ClearColor(ClearColor), m_NumMipMaps(0), m_FragmentCount(1), m_SampleCount(1)
+            : mClearColor(ClearColor), mNumMipMaps(0), mFragmentCount(1), mSampleCount(1)
         {
-            m_RTVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-            m_SRVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
-            for (int i = 0; i < _countof(m_UAVHandle); ++i)
-                m_UAVHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+            mRTVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+            mSRVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+            for (int i = 0; i < _countof(mUAVHandle); ++i)
+                mUAVHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
         }
 
         // スワップチェーンバッファからカラーバッファを作成します。順序なしのアクセスは制限されています。
@@ -30,20 +30,20 @@ namespace AtomEngine
             DXGI_FORMAT Format, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN);
 
         // CPUからスワップチェインのリソースを参照するためのハンドル
-        const D3D12_CPU_DESCRIPTOR_HANDLE& GetSRV(void) const { return m_SRVHandle; }
-        const D3D12_CPU_DESCRIPTOR_HANDLE& GetRTV(void) const { return m_RTVHandle; }
-        const D3D12_CPU_DESCRIPTOR_HANDLE& GetUAV(void) const { return m_UAVHandle[0]; }
+        const D3D12_CPU_DESCRIPTOR_HANDLE& GetSRV(void) const { return mSRVHandle; }
+        const D3D12_CPU_DESCRIPTOR_HANDLE& GetRTV(void) const { return mRTVHandle; }
+        const D3D12_CPU_DESCRIPTOR_HANDLE& GetUAV(void) const { return mUAVHandle[0]; }
 
-        void SetClearColor(Color ClearColor) { m_ClearColor = ClearColor; }
+        void SetClearColor(Color ClearColor) { mClearColor = ClearColor; }
 
         void SetMsaaMode(uint32_t NumColorSamples, uint32_t NumCoverageSamples)
         {
             ASSERT(NumCoverageSamples >= NumColorSamples);
-            m_FragmentCount = NumColorSamples;
-            m_SampleCount = NumCoverageSamples;
+            mFragmentCount = NumColorSamples;
+            mSampleCount = NumCoverageSamples;
         }
 
-        Color GetClearColor(void) const { return m_ClearColor; }
+        Color GetClearColor(void) const { return mClearColor; }
 
         //void GenerateMipMaps(CommandContext& Context);
 
@@ -53,7 +53,7 @@ namespace AtomEngine
         {
             D3D12_RESOURCE_FLAGS Flags = D3D12_RESOURCE_FLAG_NONE;
 
-            if (Flags == D3D12_RESOURCE_FLAG_NONE && m_FragmentCount == 1)
+            if (Flags == D3D12_RESOURCE_FLAG_NONE && mFragmentCount == 1)
                 Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
             return D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | Flags;
@@ -71,12 +71,12 @@ namespace AtomEngine
 
         void CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, uint32_t ArraySize, uint32_t NumMips = 1);
 
-        Color m_ClearColor;
-        D3D12_CPU_DESCRIPTOR_HANDLE m_SRVHandle;
-        D3D12_CPU_DESCRIPTOR_HANDLE m_RTVHandle;
-        D3D12_CPU_DESCRIPTOR_HANDLE m_UAVHandle[12];
-        uint32_t m_NumMipMaps; // number of texture sublevels
-        uint32_t m_FragmentCount;
-        uint32_t m_SampleCount;
+        Color mClearColor;
+        D3D12_CPU_DESCRIPTOR_HANDLE mSRVHandle;
+        D3D12_CPU_DESCRIPTOR_HANDLE mRTVHandle;
+        D3D12_CPU_DESCRIPTOR_HANDLE mUAVHandle[12];
+        uint32_t mNumMipMaps; // number of texture sublevels
+        uint32_t mFragmentCount;
+        uint32_t mSampleCount;
     };
 }
