@@ -10,11 +10,18 @@ namespace AtomEngine
 
 	Quaternion Quaternion::operator*(const Quaternion& q) const
 	{
-		return Quaternion(
-			x * q.w + w * q.x + y * q.z - z * q.y,
-			y * q.w + w * q.y + z * q.x - x * q.z,
-			z * q.w + w * q.z + x * q.y - y * q.x,
-			w * q.w - x * q.x - y * q.y - z * q.z);
+		Vector3 v1 = Vector3(x, y, z);
+		Vector3 v2 = Vector3(q.x, q.y, q.z);
+
+		float w1 = w;
+		float w2 = q.w;
+
+		float dot = Math::Dot(v1, v2);
+		Vector3 cross = Math::Cross(v1, v2);
+
+		float w_ = w1 * w2 - dot;
+		Vector3 v = cross + v1 * w2 + v2 * w1;
+		return Quaternion(v.x, v.y, v.z, w_);
 	}
 
 	void Quaternion::FromRotationMatrix(const Matrix3x3& rotation)

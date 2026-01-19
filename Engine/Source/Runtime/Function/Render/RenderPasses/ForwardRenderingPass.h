@@ -22,7 +22,7 @@ namespace AtomEngine
 		float mSunLightIntensity = 1.0f;
 		Vector3 mSunDirection = { -0.003f,-0.988f,0.156f };
 		Vector3 mShadowCenter = { 0.0f,0,0.0f };
-		Vector3 mShadowDim = { 45, 45, 45 };
+		Vector3 mShadowDim = { 160, 160, 160 };
 		float mIBLBias = 2.0f;
 		float mIBLFactor = 1.0f;
 		float mShadowBias = 0.001f;
