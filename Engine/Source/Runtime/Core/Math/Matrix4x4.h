@@ -260,7 +260,7 @@ namespace AtomEngine
 
 		Matrix4x4(const Quaternion& rot)
 		{
-			*this = Matrix4x4(rot,Vector3::ZERO);
+			*this = Matrix4x4(rot, Vector3::ZERO);
 		}
 
 		float* operator[](size_t row_index)
@@ -707,16 +707,12 @@ namespace AtomEngine
 
 		friend Vector3 operator*(const Vector3& v, const Matrix4x4& m)
 		{
-			Vector3 r = {
-				m.mat[0][0] * v.x + m.mat[1][0] * v.y + m.mat[2][0] * v.z + m.mat[3][0],
-				m.mat[0][1] * v.x + m.mat[1][1] * v.y + m.mat[2][1] * v.z + m.mat[3][1],
-				m.mat[0][2] * v.x + m.mat[1][2] * v.y + m.mat[2][2] * v.z + m.mat[3][2],
+			return {
+				m.mat[0][0] * v.x + m.mat[1][0] * v.y + m.mat[2][0] * v.z,
+				m.mat[0][1] * v.x + m.mat[1][1] * v.y + m.mat[2][1] * v.z,
+				m.mat[0][2] * v.x + m.mat[1][2] * v.y + m.mat[2][2] * v.z
 			};
 
-			float w = v.x * m.mat[0][3] + v.y * m.mat[1][3] + v.z * m.mat[2][3] + m.mat[3][3];
-			assert(w != 0);
-			r /= w;
-			return r;
 		}
 
 		Matrix4x4 Inverse() const
@@ -810,14 +806,11 @@ namespace AtomEngine
 
 	Vector4 operator*(const Vector4& v, const Matrix4x4& mat);
 
-	inline Vector3 Math::Transform(const Vector3& v, const Matrix4x4& mat)
+	inline Vector3 Math::Transform(const Vector3& v, const Matrix4x4& m)
 	{
-		Vector4 temp(v, 1.0f);
-		Vector4 result = temp * mat;
-		return Vector3(result.x / result.w,
-			result.y / result.w,
-			result.z / result.w);
+		return v * m;
 	}
+
 
 	inline Vector3 Math::TransformNormal(const Vector3& v, const Matrix4x4& mat)
 	{
@@ -827,11 +820,15 @@ namespace AtomEngine
 
 	inline Vector3 Math::TransformCoord(const Vector3& v, const Matrix4x4& mat)
 	{
-		Vector4 temp(v, 1.0f);
-		Vector4 result = temp * mat;
-		return Vector3(result.x / result.w,
-			result.y / result.w,
-			result.z / result.w);
+		Vector3 result{};
+		result.x = v.x * mat.mat[0][0] + v.y * mat.mat[1][0] + v.z * mat.mat[2][0] + mat.mat[3][0];
+		result.y = v.x * mat.mat[0][1] + v.y * mat.mat[1][1] + v.z * mat.mat[2][1] + mat.mat[3][1];
+		result.z = v.x * mat.mat[0][2] + v.y * mat.mat[1][2] + v.z * mat.mat[2][2] + mat.mat[3][2];
+		float w = v.x * mat.mat[0][3] + v.y * mat.mat[1][3] + v.z * mat.mat[2][3] + mat.mat[3][3];
+		assert(w != 0);
+		result /= w;
+
+		return result;
 	}
 
 	inline Matrix4x4 Math::InverseTranspose(const Matrix4x4& mat)

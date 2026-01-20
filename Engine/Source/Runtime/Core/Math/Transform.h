@@ -62,13 +62,10 @@ namespace AtomEngine
 			return BoundingSphere(*this * sphere.GetCenter(), GetScale() * sphere.GetRadius());
 		}
 
-		//MIYAG
 		inline Vector3 GetWorldPosition()
 		{
 			Matrix4x4 tmp = GetMatrix();
-			return tmp.GetTrans();
+			return GetMatrix().GetTrans();
 		}
-
-
 	};
 }
