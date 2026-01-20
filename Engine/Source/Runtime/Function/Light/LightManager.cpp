@@ -208,6 +208,118 @@ namespace AtomEngine
 		dirty = true;
 	}
 
+	void LightManager::CreateRandomLights(const Vector3 minBound, const Vector3 maxBound)
+	{
+		Vector3 posScale = maxBound - minBound;
+		Vector3 posBias = minBound;
+
+		// todo: replace this with MT
+		srand(12645);
+		auto randUint = []() -> uint32_t
+			{
+				return rand(); // [0, RAND_MAX]
+			};
+		auto randFloat = [randUint]() -> float
+			{
+				return randUint() * (1.0f / RAND_MAX); // convert [0, RAND_MAX] to [0, 1]
+			};
+		auto randVecUniform = [randFloat]() -> Vector3
+			{
+				return Vector3(randFloat(), randFloat(), randFloat());
+			};
+		auto randGaussian = [randFloat]() -> float
+			{
+				// polar box-muller
+				static bool gaussianPair = true;
+				static float y2;
+
+				if (gaussianPair)
+				{
+					gaussianPair = false;
+
+					float x1, x2, w;
+					do
+					{
+						x1 = 2 * randFloat() - 1;
+						x2 = 2 * randFloat() - 1;
+						w = x1 * x1 + x2 * x2;
+					} while (w >= 1);
+
+					w = sqrtf(-2 * logf(w) / w);
+					y2 = x2 * w;
+					return x1 * w;
+				}
+				else
+				{
+					gaussianPair = true;
+					return y2;
+				}
+			};
+		auto randVecGaussian = [randGaussian]() -> Vector3
+			{
+				return Math::Normalize(Vector3(randGaussian(), randGaussian(), randGaussian()));
+			};
+
+		const float pi = 3.14159265359f;
+		gLights.resize(MAX_LIGHTS);
+		
+		// Clear existing ID mappings
+		gLightIDToIndex.clear();
+		
+		for (uint32_t n = 0; n < MAX_LIGHTS; n++)
+		{
+			Vector3 pos = randVecUniform() * posScale + posBias;
+			float lightRadius = randFloat() * 8.0f + 2.0f;
+
+			Vector3 color = randVecUniform();
+			float colorScale = randFloat() * .3f + .3f;
+			color = color * colorScale;
+
+			uint32_t type;
+			// force types to match 32-bit boundaries for the BIT_MASK_SORTED case
+			if (n < 32 * 1)
+				type = 0;
+			else if (n < 32 * 3)
+				type = 1;
+			else
+				type = 2;
+
+			Vector3 coneDir = randVecGaussian();
+			float coneInner = (randFloat() * .2f + .025f) * pi;
+			float coneOuter = coneInner + randFloat() * .1f * pi;
+
+			if (type == 1 || type == 2)
+			{
+				// emphasize cone lights
+				color = color * 5.0f;
+			}
+
+			Camera shadowCamera;
+			shadowCamera.SetLookAt(pos, pos + coneDir, Vector3(0, 1, 0));
+			shadowCamera.SetPerspectiveMatrix(coneOuter * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
+			shadowCamera.Update();
+			gLightShadowMatrix[n] = shadowCamera.GetViewProjMatrix();
+			Matrix4x4 shadowTextureMatrix = gLightShadowMatrix[n] * Matrix4x4(Matrix3x3::MakeScale({ 0.5f, -0.5f, 1.0f }), Vector3({ 0.5f, 0.5f, 0.0f }));
+
+			gLights[n].position = pos;
+			gLights[n].radiusSq = lightRadius * lightRadius;
+			gLights[n].color = color;
+			gLights[n].type = type;
+			gLights[n].direction = coneDir;
+			gLights[n].innerCos = cosf(coneInner);
+			gLights[n].outerCos = cosf(coneOuter);
+			gLights[n].isActive = true;
+			std::memcpy(&gLights[n].shadowMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
+			
+			// Update ID mapping
+			uint32_t lightID = gNextLightID++;
+			gLightIDToIndex[lightID] = n;
+		}
+		
+		CommandContext::InitializeBuffer(gLightBuffer, gLights.data(), MAX_LIGHTS * sizeof(LightData));
+		dirty = false;
+	}
+
 	void LightManager::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	{
 		ComputeContext& Context = gfxContext.GetComputeContext();

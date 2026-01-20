@@ -34,6 +34,8 @@ namespace AtomEngine
 		static void UpdateLight(uint32_t lightID, const LightDesc& desc);
 		static void UpdatePointLight(uint32_t lightID, const Vector3& position, const Color& color, float radius);
 
+		static void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound);
+
 		static void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
 
 		static void Shutdown();

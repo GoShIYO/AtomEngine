@@ -1,6 +1,5 @@
 #pragma once
 #include "Runtime/Core/Math/MathInclude.h"
-#include<array>
 
 namespace AtomEngine
 {

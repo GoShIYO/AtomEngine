@@ -14,13 +14,13 @@ namespace AtomEngine
 	ForwardRenderingPass::ForwardRenderingPass()
 	{
 		mSkybox.Initialize();
-		//mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvHDR.dds");
-		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KBrdf.dds");
-		mSkybox.SetIBLTextures(
-			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KDiffuseHDR.dds",
-			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KSpecularHDR.dds");
-		mGpuHandle = Renderer::GetTextureHeap().Alloc();
-		DX12Core::gDevice->CopyDescriptorsSimple(1, mGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		//mSkybox.SetEnvironmentMap(L"Asset/Textures/Environment/SkyEnv/SkyEnvHDR.dds");
+		 mSkybox.SetBRDF_LUT(L"Asset/Textures/Environment/NightSkyHDRI004_4K/NightSkyHDRI004_4KBrdf.dds");
+		 mSkybox.SetIBLTextures(
+		 	L"Asset/Textures/Environment/NightSkyHDRI004_4K/NightSkyHDRI004_4KDiffuseHDR.dds",
+		 	L"Asset/Textures/Environment/NightSkyHDRI004_4K/NightSkyHDRI004_4KSpecularHDR.dds");
+		mShadowSrvGpuHandle = Renderer::GetTextureHeap().Alloc();
+		DX12Core::gDevice->CopyDescriptorsSimple(1, mShadowSrvGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	}
 
@@ -49,7 +49,7 @@ namespace AtomEngine
 		ImGui::End();
 
 		ImGui::Begin("Shadow Srv");
-		ImGui::Image((ImTextureID)mGpuHandle.GetGpuPtr(), ImVec2(512, 512));
+		ImGui::Image((ImTextureID)mShadowSrvGpuHandle.GetGpuPtr(), ImVec2(512, 512));
 		ImGui::End();
 #endif
 		mSunDirection.Normalize();
@@ -79,20 +79,23 @@ namespace AtomEngine
 		gfxContext.ClearDepth(gSceneDepthBuffer);
 
 		RenderQueue queue(RenderQueue::kDefault);
-		queue.SetCamera(*mCamera);
-		queue.SetViewportAndScissor(viewport, scissor);
-		queue.SetDepthStencilTarget(gSceneDepthBuffer);
-		queue.AddRenderTarget(gSceneColorBuffer);
+		//zPrePass
+		{
+			queue.SetCamera(*mCamera);
+			queue.SetViewportAndScissor(viewport, scissor);
+			queue.SetDepthStencilTarget(gSceneDepthBuffer);
+			queue.AddRenderTarget(gSceneColorBuffer);
 
-		RenderObjects(queue);
+			RenderObjects(queue);
 
-		queue.Sort();
+			queue.Sort();
+			queue.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
+		}
 
-		queue.RenderMeshes(RenderQueue::kZPass, gfxContext, globals);
-		
 		
 		LightManager::FillLightGrid(gfxContext, *mCamera);
 
+		//Shadow
 		{
 			RenderQueue shadowSorter(RenderQueue::kShadows);
 			shadowSorter.SetCamera(mShadowCamera);
@@ -106,6 +109,7 @@ namespace AtomEngine
 
 		gfxContext.TransitionResource(gSceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		gfxContext.ClearColor(gSceneColorBuffer);
+		//Main
 		{
 			gfxContext.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 			gfxContext.SetRenderTarget(gSceneColorBuffer.GetRTV(), gSceneDepthBuffer.GetDSV_DepthReadOnly());

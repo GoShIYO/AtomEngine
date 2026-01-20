@@ -77,7 +77,9 @@ namespace AtomEngine
 			aiProcess_GenSmoothNormals |
 			aiProcess_JoinIdenticalVertices |
 			aiProcess_PopulateArmatureData |
-			aiProcess_GenUVCoords;
+			aiProcess_GenUVCoords | 
+			aiProcess_OptimizeGraph | 
+			aiProcess_OptimizeMeshes;
 
 		Assimp::Importer importer;
 		//いらない情報を削除

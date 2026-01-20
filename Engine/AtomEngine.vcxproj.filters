@@ -148,9 +148,6 @@
     <Filter Include="Source\Runtime\Core\Color">
       <UniqueIdentifier>{74caf297-295f-4cd4-89ec-a1624c3ae11d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Runtime\Core\Json">
-      <UniqueIdentifier>{9ad6056f-6d1f-4504-9b3c-79232c665088}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Runtime\Core\LogSystem">
       <UniqueIdentifier>{9012d794-c285-4708-a37f-4e98806b8151}</UniqueIdentifier>
     </Filter>

@@ -16,7 +16,7 @@ namespace AtomEngine
 
 		windowManager = WindowManager::GetInstance();
 		WindowCreateInfo windowCreateInfo;
-		windowCreateInfo.title = L"P and Advance";
+		windowCreateInfo.title = L"AtomEngine";
 		windowManager->Initialize(windowCreateInfo);
 
 		imgui = std::make_unique<ImGuiCommon>();

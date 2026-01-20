@@ -1,10 +1,9 @@
 #include "AssetManager.h"
 #include "ModelLoader.h"
-#include "DirectXTex.h"
 #include "Runtime/Function/Render/RenderSystem.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
-
+#include "Runtime/Platform/DirectX12/Buffer/UploadBuffer.h"
 #include <map>
 #include <mutex>
 

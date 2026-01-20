@@ -216,7 +216,7 @@ namespace AtomEngine
 			{
 				auto& joint = mModel->mSkeleton.joints[curve.targetJoint];
 				joint.transform.scale = CalculateValue(curve.scale, time);
-				joint.transform.rotation = CaculateRotation(curve.rotation, time);
+				joint.transform.rotation = CalculateRotation(curve.rotation, time);
 				joint.transform.transition = CalculateValue(curve.translation, time);
 			}
 		}

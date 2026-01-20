@@ -27,7 +27,7 @@ namespace AtomEngine
 		float mIBLFactor = 1.0f;
 		float mShadowBias = 0.001f;
 		bool mEnableIBL = true;
-		DescriptorHandle mGpuHandle;
+		DescriptorHandle mShadowSrvGpuHandle;
 			
 	private:
 		void RenderObjects(RenderQueue& queue);

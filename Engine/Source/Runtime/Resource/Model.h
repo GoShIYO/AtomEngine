@@ -6,13 +6,10 @@
 #include "Skeleton.h"
 
 #include "../Platform/DirectX12/Buffer/GpuBuffer.h"
-#include "../Platform/DirectX12/Buffer/UploadBuffer.h"
-#include "../Platform/DirectX12/Context/GraphicsContext.h"
 
 #include "../Core/Math/BoundingBox.h"
 #include "../Core/Math/BoundingSphere.h"
 
-#include <span>
 #include <map>
 
 namespace AtomEngine
