@@ -14,11 +14,11 @@ namespace AtomEngine
 	ForwardRenderingPass::ForwardRenderingPass()
 	{
 		mSkybox.Initialize();
-		//mSkybox.SetEnvironmentMap(L"Asset/Textures/EnvironmentMaps/SkyEnv/SkyEnvHDR.dds");
-		mSkybox.SetBRDF_LUT(L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KBrdf.dds");
+		//mSkybox.SetEnvironmentMap(L"Asset/Textures/Environment/SkyEnv/SkyEnvHDR.dds");
+		mSkybox.SetBRDF_LUT(L"Asset/Textures/Environment/NightSkyHDRI004_4K/NightSkyHDRI004_4KBrdf.dds");
 		mSkybox.SetIBLTextures(
-			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KDiffuseHDR.dds",
-			L"Asset/Textures/EnvironmentMaps/NightSkyHDRI004_4K/NightSkyHDRI004_4KSpecularHDR.dds");
+			L"Asset/Textures/Environment/NightSkyHDRI004_4K/NightSkyHDRI004_4KDiffuseHDR.dds",
+			L"Asset/Textures/Environment/NightSkyHDRI004_4K/NightSkyHDRI004_4KSpecularHDR.dds");
 		mGpuHandle = Renderer::GetTextureHeap().Alloc();
 		DX12Core::gDevice->CopyDescriptorsSimple(1, mGpuHandle, gShadowBuffer.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
