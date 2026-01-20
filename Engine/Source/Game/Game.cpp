@@ -30,7 +30,7 @@ void Game::Initialize()
 {
 	Sound::LoadSounds();
 
-	auto titleScene = std::make_unique<TitleScene>("TitleScene", mSceneManager);
+	auto titleScene = std::make_unique<GameScene>("GameScene", mSceneManager);
 	mSceneManager.PushScene(std::move(titleScene));
 }
 
