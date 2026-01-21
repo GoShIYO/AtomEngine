@@ -52,7 +52,15 @@ namespace AtomEngine
 
 	void Matrix4x4::MakeAffine(const Vector3& scale, const Quaternion& orientation, const Vector3& position)
 	{
-		Matrix4x4 rot(orientation);
+		// orientation をローカルコピーして正規化（ガード）
+		Quaternion q = orientation;
+		if (q.IsNaN())
+		{
+			q = Quaternion::IDENTITY;
+		}
+		q.Normalize();
+
+		Matrix4x4 rot(q);
 
 		mat[0][0] = scale.x * rot.mat[0][0];
 		mat[0][1] = scale.y * rot.mat[0][1];

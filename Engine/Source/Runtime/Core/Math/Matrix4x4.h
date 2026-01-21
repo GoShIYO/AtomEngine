@@ -226,16 +226,23 @@ namespace AtomEngine
 
 		Matrix4x4(const Quaternion& rot, const Vector3& position)
 		{
-			float xx = rot.x * rot.x;
-			float yy = rot.y * rot.y;
-			float zz = rot.z * rot.z;
-			float xy = rot.x * rot.y;
-			float xz = rot.x * rot.z;
-			float yz = rot.y * rot.z;
-			float wx = rot.w * rot.x;
-			float wy = rot.w * rot.y;
-			float wz = rot.w * rot.z;
-			float ww = rot.w * rot.w;
+			Quaternion r = rot;
+			if (r.IsNaN())
+			{
+				r = Quaternion::IDENTITY;
+			}
+			r.Normalize();
+
+			float xx = r.x * r.x;
+			float yy = r.y * r.y;
+			float zz = r.z * r.z;
+			float xy = r.x * r.y;
+			float xz = r.x * r.z;
+			float yz = r.y * r.z;
+			float wx = r.w * r.x;
+			float wy = r.w * r.y;
+			float wz = r.w * r.z;
+			float ww = r.w * r.w;
 
 			mat[0][0] = ww + xx - yy - zz;
 			mat[0][1] = 2.0f * (xy + wz);
