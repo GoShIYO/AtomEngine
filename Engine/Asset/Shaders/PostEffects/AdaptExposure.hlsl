@@ -28,7 +28,7 @@ void main(uint GroupIndex : SV_GroupIndex)
         GroupMemoryBarrierWithGroupSync();              // Sync
     }
 
-    //����ȫ�夬�\�Έ��Ϥ�¶�����{�����ʤ��Ǥ�������
+    //画像全体が黒の場合は露出を調整しないでください
     if (WeightedSum == 0.0)
         return;
 
@@ -37,8 +37,8 @@ void main(uint GroupIndex : SV_GroupIndex)
     float LogRange = Exposure[6];
     float RcpLogRange = Exposure[7];
 
-    // ƽ���ҥ��ȥ�������ϡ����٤ƤΥԥ�����μ��غ�Ӌ��ԥ�����t���Ǹ�ä���
-    // ���ؤ��뤨�ʤ��ä��ԥ����루�Ĥޤ��\�ԥ����룩���������
+    // 平均ヒストグラム値は、すべてのピクセルの加重合計をピクセル総数で割った値
+    // 加重を与えなかったピクセル（つまり黒ピクセル）を除いた値
     float weightedHistAvg = WeightedSum / (max(1, PixelCount - Histogram.Load(0))) - 1.0;
     float logAvgLuminance = exp2(weightedHistAvg / 254.0 * LogRange + MinLog);
     float targetExposure = TargetLuminance / logAvgLuminance;
@@ -55,7 +55,7 @@ void main(uint GroupIndex : SV_GroupIndex)
         Exposure[2] = exposure;
         Exposure[3] = weightedHistAvg;
 
-        //�ҥ��ȥ�������ƽ�������Ĥ������Ļ����������ԇ��
+        //ヒストグラムを対数平均を中心に再中心化する最初の試み
         float biasToCenter = (floor(weightedHistAvg) - 128.0) / 255.0;
         if (abs(biasToCenter) > 0.1)
         {
@@ -63,11 +63,11 @@ void main(uint GroupIndex : SV_GroupIndex)
             MaxLog += biasToCenter * RcpLogRange;
         }
 
-        //TODO: ���ι���˺Ϥ��褦�ˡ���������򉈜p���ޤ���
-        //(�����ǥ�) �^С�ޤ����^��˴��������O�ˤʾ���ˤĤ��Ƥϡ�
-        //���g�Ό������غ�Ӌ��_�J���ޤ���
-        //�Ĥޤꡢfor ��`�פ�2�Ĥ˷ָ�ơ�16 ���Υ���`�פκ�Ӌ��Ӌ�㤷��
-        //�I�ˤΥ���`�פ�����å����Ƥ��顢�َ���Ӌ�����ˤ��ޤ���
+        //TODO: 値の範囲に合うように、対数範囲を増減します。
+        //(アイデア) 過小または過大に代表される極端な境界については、
+        //中間の対数加重合計を確認します。
+        //つまり、for ループを2つに分割して、16 個のグループの合計を計算し、
+        //両端のグループをチェックしてから、再帰合計を完了します。
         Exposure[4] = MinLog;
         Exposure[5] = MaxLog;
         Exposure[6] = LogRange;

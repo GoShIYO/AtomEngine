@@ -40,6 +40,9 @@ namespace AtomEngine
 
 		static void Shutdown();
 
+		static void EnableRandomMotion(bool enable);
+		static void UpdateRandomMotion(float deltaTime);
+
 		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightSrv(){return gLightBuffer.GetSRV();}
 		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightShadowSrv(){return gLightShadowArray.GetSRV();}
 		static D3D12_CPU_DESCRIPTOR_HANDLE GetLightGridSrv(){return gLightGrid.GetSRV();}
@@ -64,6 +67,13 @@ namespace AtomEngine
 		static std::unordered_map<uint32_t, uint32_t> gLightIDToIndex;
 		static uint32_t gNextLightID;
 		static bool dirty;
+
+		// ランダムモーション用データ
+		static std::vector<Vector3> gLightVelocities;    // 移動速度（ワールド単位/秒）
+		static std::vector<Vector3> gLightAngularVel;    // 角速度ベクトル（軸 * rad/s）
+		static Vector3 gMotionMinBound;
+		static Vector3 gMotionMaxBound;
+		static bool gMotionEnabled;
 	};
 }
 

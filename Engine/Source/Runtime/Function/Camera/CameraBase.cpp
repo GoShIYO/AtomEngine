@@ -69,7 +69,7 @@ namespace AtomEngine
 
 	Camera::Camera() : mReverseZ(true), mInfiniteZ(false)
 	{
-		SetPerspectiveMatrix(Math::PIDiv4, 9.0f / 16.0f, 1.0f, 1000.0f);
+		SetPerspectiveMatrix(Math::PIDiv4, 9.0f / 16.0f, 0.03f, 1000.0f);
 	}
 
 	void Camera::SetPerspectiveMatrix(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip)

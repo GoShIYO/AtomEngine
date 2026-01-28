@@ -1,16 +1,3 @@
-//
-// Copyright (c) Microsoft. All rights reserved.
-// This code is licensed under the MIT License (MIT).
-// THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
-// IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
-// PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
-//
-// Developed by Minigraph
-//
-// Author(s):	Alex Nankervis
-//
-
 #include "LightGrid.hlsli"
 
 // outdated warning about for-loop variable scope
@@ -23,11 +10,13 @@
 
 cbuffer CSConstants : register(b0)
 {
+    float4x4 ViewMatrix;
+    float4x4 ProjMatrix;
+    float4x4 ProjInverse;
     uint ViewportWidth, ViewportHeight;
     float InvTileDim;
     float RcpZMagic;
     uint TileCountX;
-    float4x4 ViewProjMatrix;
 };
 
 StructuredBuffer<LightData> lightBuffer : register(t0);
@@ -54,13 +43,27 @@ groupshared uint4 tileLightBitMask;
     "DescriptorTable(SRV(t0, numDescriptors = 2))," \
     "DescriptorTable(UAV(u0, numDescriptors = 2))"
 
-[RootSignature(_RootSig)]
-[numthreads(8, 8, 1)]
-void CSMain(
-    uint2 Gid : SV_GroupID,
-    uint2 GTid : SV_GroupThreadID,
-    uint GI : SV_GroupIndex)
+float3 ComputePositionInCamera(uint2 globalCoords)
 {
+    float2 st = ((float2) globalCoords + 0.5) * rcp(float2(ViewportWidth, ViewportHeight));
+    st = st * float2(2.0, -2.0) - float2(1.0, -1.0);
+    float3 screenPos;
+    screenPos.xy = st.xy;
+    screenPos.z = depthTex.Load(uint3(globalCoords, 0.0f));
+    float4 cameraPos = mul(float4(screenPos, 1.0f),ProjInverse);
+
+    return cameraPos.xyz / cameraPos.w;
+}
+
+[RootSignature(_RootSig)]
+[numthreads(TILE_WIDTH, TILE_HEIGHT, 1)]
+void CSMain(
+     uint3 Gid : SV_GroupID,
+    uint3 DTid : SV_DispatchThreadID,
+    uint3 GTid : SV_GroupThreadID)
+{
+    uint GI = GTid.y * TILE_WIDTH + GTid.x;
+
     // initialize shared data
     if (GI == 0)
     {
@@ -68,68 +71,47 @@ void CSMain(
         tileLightCountCone = 0;
         tileLightCountConeShadowed = 0;
         tileLightBitMask = 0;
-        minDepthUInt = 0xffffffff;
+        minDepthUInt = 0x7F7FFFFF;
         maxDepthUInt = 0;
     }
-    GroupMemoryBarrierWithGroupSync();
-
-    // Read all depth values for this tile and compute the tile min and max values
-    for (uint dx = GTid.x; dx < TILE_WIDTH; dx += 8)
-    {
-        for (uint dy = GTid.y; dy < TILE_HEIGHT; dy += 8)
-        {
-            uint2 DTid = Gid * uint2(TILE_WIDTH, TILE_HEIGHT) + uint2(dx, dy);
-
-            // If pixel coordinates are in bounds...
-            if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
-            {
-                // Load and compare depth
-                uint depthUInt = asuint(depthTex[DTid.xy]);
-                InterlockedMin(minDepthUInt, depthUInt);
-                InterlockedMax(maxDepthUInt, depthUInt);
-            }
-        }
-    }
-
-    GroupMemoryBarrierWithGroupSync();
-    //float tileMinDepth = asfloat(minDepthUInt);
-    //float tileMaxDepth = asfloat(maxDepthUInt);
-    float tileMinDepth = (rcp(asfloat(maxDepthUInt)) - 1.0) * RcpZMagic;
-    float tileMaxDepth = (rcp(asfloat(minDepthUInt)) - 1.0) * RcpZMagic;
-    float tileDepthRange = tileMaxDepth - tileMinDepth;
-    tileDepthRange = max(tileDepthRange, FLT_MIN); // don't allow a depth range of 0
-    float invTileDepthRange = rcp(tileDepthRange);
-    // TODO: near/far clipping planes seem to be falling apart at or near the max depth with infinite projections
-
-    // construct transform from world space to tile space (projection space constrained to tile area)
-    float2 invTileSize2X = float2(ViewportWidth, ViewportHeight) * InvTileDim;
-    // D3D-specific [0, 1] depth range ortho projection
-    // (but without negation of Z, since we already have that from the projection matrix)
-    float3 tileBias = float3(
-        -2.0 * float(Gid.x) + invTileSize2X.x - 1.0,
-        -2.0 * float(Gid.y) + invTileSize2X.y - 1.0,
-        -tileMinDepth * invTileDepthRange);
-    float4x4 projToTile = float4x4(
-        invTileSize2X.x, 0, 0, 0,
-        0, -invTileSize2X.y, 0, 0,
-        0, 0, invTileDepthRange, 0,
-        tileBias.x, tileBias.y, tileBias.z, 1
-        );
-    float4x4 tileMVP = mul(ViewProjMatrix,projToTile);
     
-    // extract frustum planes (these will be in world space)
-    float4 frustumPlanes[6];
-    frustumPlanes[0] = tileMVP[3] + tileMVP[0];
-    frustumPlanes[1] = tileMVP[3] - tileMVP[0];
-    frustumPlanes[2] = tileMVP[3] + tileMVP[1];
-    frustumPlanes[3] = tileMVP[3] - tileMVP[1];
-    frustumPlanes[4] = tileMVP[3] + tileMVP[2];
-    frustumPlanes[5] = tileMVP[3] - tileMVP[2];
-    for (int n = 0; n < 6; n++)
+    uint2 frameUV = DTid.xy;
+
+    float3 posInView = ComputePositionInCamera(frameUV);
+
+    GroupMemoryBarrierWithGroupSync();
+
+    if (DTid.x < ViewportWidth && DTid.y < ViewportHeight)
     {
-        frustumPlanes[n] *= rsqrt(dot(frustumPlanes[n].xyz, frustumPlanes[n].xyz));
+        InterlockedMin(minDepthUInt, asuint(posInView.z));
+        InterlockedMax(maxDepthUInt, asuint(posInView.z));
     }
 
+    GroupMemoryBarrierWithGroupSync();
+    float minTileZ = asfloat(minDepthUInt);
+    float maxTileZ = asfloat(maxDepthUInt);
+
+    float2 tileScale = float2(ViewportWidth, ViewportHeight) * rcp(float(2 * TILE_WIDTH));
+    float2 tileBias = tileScale - float2(Gid.xy);
+
+    float4 c1 = float4(ProjMatrix._11 * tileScale.x, 0.0, tileBias.x, 0.0);
+    float4 c2 = float4(0.0, -ProjMatrix._22 * tileScale.y, tileBias.y, 0.0);
+    float4 c4 = float4(0.0, 0.0, 1.0, 0.0);
+
+    float4 frustumPlanes[6];
+    frustumPlanes[0] = c4 - c1;
+    frustumPlanes[1] = c4 + c1;
+    frustumPlanes[2] = c4 - c2;
+    frustumPlanes[3] = c4 + c2;
+    frustumPlanes[4] = float4(0.0, 0.0, 1.0, -minTileZ);
+    frustumPlanes[5] = float4(0.0, 0.0, -1.0, maxTileZ);
+
+    [unroll]
+    for (uint i = 0; i < 4; ++i)
+    {
+        frustumPlanes[i] *= rcp(length(frustumPlanes[i].xyz));
+    }
+    
     uint tileIndex = GetTileIndex(Gid.xy, TileCountX);
     uint tileOffset = GetTileOffset(tileIndex);
 
@@ -141,15 +123,19 @@ void CSMain(
         LightData lightData = lightBuffer[lightIndex];
         if (!lightData.isActive)
             continue;
-        float lightCullRadius = sqrt(lightData.radiusSq);
-
+        float lightRadius = sqrt(lightData.radiusSq);
+        float3 lightPosVS = mul(float4(lightData.position.xyz, 1.0), ViewMatrix).xyz;
         bool overlapping = true;
+        [unroll]
         for (int p = 0; p < 6; p++)
         {
-            float d = dot(lightData.position, frustumPlanes[p].xyz) + frustumPlanes[p].w;
-            if (d < -lightCullRadius)
+            float d = dot(frustumPlanes[p].xyz, lightPosVS)
+            + frustumPlanes[p].w;
+
+            if (d + lightRadius < 0.0)
             {
                 overlapping = false;
+                break;
             }
         }
         

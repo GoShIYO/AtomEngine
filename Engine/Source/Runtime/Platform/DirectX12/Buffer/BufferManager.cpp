@@ -14,6 +14,25 @@ namespace AtomEngine
 
 	ColorBuffer gSSAOFullScreen(Color(1.0f, 1.0f, 1.0f));
 	ColorBuffer gLinearDepth[2];
+	ColorBuffer gDepthDownsize1;
+	ColorBuffer gDepthDownsize2;
+	ColorBuffer gDepthDownsize3;
+	ColorBuffer gDepthDownsize4;
+	ColorBuffer gDepthTiled1;
+	ColorBuffer gDepthTiled2;
+	ColorBuffer gDepthTiled3;
+	ColorBuffer gDepthTiled4;
+	ColorBuffer gAOMerged1;
+	ColorBuffer gAOMerged2;
+	ColorBuffer gAOMerged3;
+	ColorBuffer gAOMerged4;
+	ColorBuffer gAOSmooth1;
+	ColorBuffer gAOSmooth2;
+	ColorBuffer gAOSmooth3;
+	ColorBuffer gAOHighQuality1;
+	ColorBuffer gAOHighQuality2;
+	ColorBuffer gAOHighQuality3;
+	ColorBuffer gAOHighQuality4;
 
 	ColorBuffer gLumaBuffer;
 	ColorBuffer gBloomUAV1[2];	// 640x384 (1/3)
@@ -27,6 +46,19 @@ namespace AtomEngine
 
 	void InitializeBuffers(uint32_t bufferWidth, uint32_t bufferHeight)
 	{
+		const uint32_t bufferWidth1 = (bufferWidth + 1) / 2;
+		const uint32_t bufferWidth2 = (bufferWidth + 3) / 4;
+		const uint32_t bufferWidth3 = (bufferWidth + 7) / 8;
+		const uint32_t bufferWidth4 = (bufferWidth + 15) / 16;
+		const uint32_t bufferWidth5 = (bufferWidth + 31) / 32;
+		const uint32_t bufferWidth6 = (bufferWidth + 63) / 64;
+		const uint32_t bufferHeight1 = (bufferHeight + 1) / 2;
+		const uint32_t bufferHeight2 = (bufferHeight + 3) / 4;
+		const uint32_t bufferHeight3 = (bufferHeight + 7) / 8;
+		const uint32_t bufferHeight4 = (bufferHeight + 15) / 16;
+		const uint32_t bufferHeight5 = (bufferHeight + 31) / 32;
+		const uint32_t bufferHeight6 = (bufferHeight + 63) / 64;
+
 		gSceneColorBuffer.SetClearColor(Color(0x314D79FF));
 		gSceneColorBuffer.Create(L"Main Color Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
 
@@ -40,26 +72,53 @@ namespace AtomEngine
 		gShadowBuffer.Create(L"Shadow Map", 2048, 2048);
 		gRayTracedShadowBuffer.Create(L"Ray Traced Shadow Map", bufferWidth, bufferHeight);
 
-		gSSAOFullScreen.Create(L"SSAO Full Screen", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
-		gLinearDepth[0].Create(L"Linear Depth 0", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
-		gLinearDepth[1].Create(L"Linear Depth 1", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
+		//SSAO
+		{
+			gSSAOFullScreen.Create(L"SSAO Full Screen", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
+			gLinearDepth[0].Create(L"Linear Depth 0", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
+			gLinearDepth[1].Create(L"Linear Depth 1", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16_UNORM);
+			gDepthDownsize1.Create(L"Depth Down-Sized 1", bufferWidth1, bufferHeight1, 1, DXGI_FORMAT_R32_FLOAT);
+			gDepthDownsize2.Create(L"Depth Down-Sized 2", bufferWidth2, bufferHeight2, 1, DXGI_FORMAT_R32_FLOAT);
+			gDepthDownsize3.Create(L"Depth Down-Sized 3", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R32_FLOAT);
+			gDepthDownsize4.Create(L"Depth Down-Sized 4", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_FLOAT);
+			gDepthTiled1.CreateArray(L"Depth De-Interleaved 1", bufferWidth3, bufferHeight3, 16, DXGI_FORMAT_R16_FLOAT);
+			gDepthTiled2.CreateArray(L"Depth De-Interleaved 2", bufferWidth4, bufferHeight4, 16, DXGI_FORMAT_R16_FLOAT);
+			gDepthTiled3.CreateArray(L"Depth De-Interleaved 3", bufferWidth5, bufferHeight5, 16, DXGI_FORMAT_R16_FLOAT);
+			gDepthTiled4.CreateArray(L"Depth De-Interleaved 4", bufferWidth6, bufferHeight6, 16, DXGI_FORMAT_R16_FLOAT);
+			gAOMerged1.Create(L"AO Re-Interleaved 1", bufferWidth1, bufferHeight1, 1, DXGI_FORMAT_R8_UNORM);
+			gAOMerged2.Create(L"AO Re-Interleaved 2", bufferWidth2, bufferHeight2, 1, DXGI_FORMAT_R8_UNORM);
+			gAOMerged3.Create(L"AO Re-Interleaved 3", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R8_UNORM);
+			gAOMerged4.Create(L"AO Re-Interleaved 4", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R8_UNORM);
+			gAOSmooth1.Create(L"AO Smoothed 1", bufferWidth1, bufferHeight1, 1, DXGI_FORMAT_R8_UNORM);
+			gAOSmooth2.Create(L"AO Smoothed 2", bufferWidth2, bufferHeight2, 1, DXGI_FORMAT_R8_UNORM);
+			gAOSmooth3.Create(L"AO Smoothed 3", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R8_UNORM);
+			gAOHighQuality1.Create(L"AO High Quality 1", bufferWidth1, bufferHeight1, 1, DXGI_FORMAT_R8_UNORM);
+			gAOHighQuality2.Create(L"AO High Quality 2", bufferWidth2, bufferHeight2, 1, DXGI_FORMAT_R8_UNORM);
+			gAOHighQuality3.Create(L"AO High Quality 3", bufferWidth3, bufferHeight3, 1, DXGI_FORMAT_R8_UNORM);
+			gAOHighQuality4.Create(L"AO High Quality 4", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R8_UNORM);
 
-		gLumaBuffer.Create(L"Luminance", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
-		uint32_t kBloomWidth = bufferWidth > 2560 ? 1280 : 640;
-		uint32_t kBloomHeight = bufferHeight > 1440 ? 768 : 384;
-		gLumaLR.Create(L"Luma Buffer", kBloomWidth, kBloomHeight, 1, DXGI_FORMAT_R8_UINT);
-		gBloomUAV1[0].Create(L"Bloom Buffer 1a", kBloomWidth, kBloomHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV1[1].Create(L"Bloom Buffer 1b", kBloomWidth, kBloomHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV2[0].Create(L"Bloom Buffer 2a", kBloomWidth / 2, kBloomHeight / 2, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV2[1].Create(L"Bloom Buffer 2b", kBloomWidth / 2, kBloomHeight / 2, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV3[0].Create(L"Bloom Buffer 3a", kBloomWidth / 4, kBloomHeight / 4, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV3[1].Create(L"Bloom Buffer 3b", kBloomWidth / 4, kBloomHeight / 4, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV4[0].Create(L"Bloom Buffer 4a", kBloomWidth / 8, kBloomHeight / 8, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV4[1].Create(L"Bloom Buffer 4b", kBloomWidth / 8, kBloomHeight / 8, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV5[0].Create(L"Bloom Buffer 5a", kBloomWidth / 16, kBloomHeight / 16, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-		gBloomUAV5[1].Create(L"Bloom Buffer 5b", kBloomWidth / 16, kBloomHeight / 16, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+		}
 
-		gHistogram.Create(L"Histogram", 256, 4);
+		//Luminance
+		{
+			gLumaBuffer.Create(L"Luminance", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
+			uint32_t kBloomWidth = bufferWidth > 2560 ? 1280 : 640;
+			uint32_t kBloomHeight = bufferHeight > 1440 ? 768 : 384;
+			gLumaLR.Create(L"Luma Buffer", kBloomWidth, kBloomHeight, 1, DXGI_FORMAT_R8_UINT);
+			gBloomUAV1[0].Create(L"Bloom Buffer 1a", kBloomWidth, kBloomHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV1[1].Create(L"Bloom Buffer 1b", kBloomWidth, kBloomHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV2[0].Create(L"Bloom Buffer 2a", kBloomWidth / 2, kBloomHeight / 2, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV2[1].Create(L"Bloom Buffer 2b", kBloomWidth / 2, kBloomHeight / 2, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV3[0].Create(L"Bloom Buffer 3a", kBloomWidth / 4, kBloomHeight / 4, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV3[1].Create(L"Bloom Buffer 3b", kBloomWidth / 4, kBloomHeight / 4, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV4[0].Create(L"Bloom Buffer 4a", kBloomWidth / 8, kBloomHeight / 8, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV4[1].Create(L"Bloom Buffer 4b", kBloomWidth / 8, kBloomHeight / 8, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV5[0].Create(L"Bloom Buffer 5a", kBloomWidth / 16, kBloomHeight / 16, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+			gBloomUAV5[1].Create(L"Bloom Buffer 5b", kBloomWidth / 16, kBloomHeight / 16, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
+
+			gHistogram.Create(L"Histogram", 256, 4);
+		}
+
 	}
 	void DestroyBuffers()
 	{
@@ -95,7 +154,8 @@ namespace AtomEngine
 	}
 	void ResizeBuffers(uint32_t Width, uint32_t Height)
 	{
-		gOverlayBuffer.Create(L"UI Overlay", DX12Core::gBackBufferWidth, DX12Core::gBackBufferHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+		if (DX12Core::gBackBufferWidth != 0 && DX12Core::gBackBufferHeight != 0)
+			gOverlayBuffer.Create(L"UI Overlay", DX12Core::gBackBufferWidth, DX12Core::gBackBufferHeight, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 	}
 }

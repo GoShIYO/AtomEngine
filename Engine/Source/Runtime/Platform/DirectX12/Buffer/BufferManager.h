@@ -18,6 +18,25 @@ namespace AtomEngine
 
     extern ColorBuffer gSSAOFullScreen;
     extern ColorBuffer gLinearDepth[2];
+    extern ColorBuffer gDepthDownsize1;
+    extern ColorBuffer gDepthDownsize2;
+    extern ColorBuffer gDepthDownsize3;
+    extern ColorBuffer gDepthDownsize4;
+    extern ColorBuffer gDepthTiled1;
+    extern ColorBuffer gDepthTiled2;
+    extern ColorBuffer gDepthTiled3;
+    extern ColorBuffer gDepthTiled4;
+    extern ColorBuffer gAOMerged1;
+    extern ColorBuffer gAOMerged2;
+    extern ColorBuffer gAOMerged3;
+    extern ColorBuffer gAOMerged4;
+    extern ColorBuffer gAOSmooth1;
+    extern ColorBuffer gAOSmooth2;
+    extern ColorBuffer gAOSmooth3;
+    extern ColorBuffer gAOHighQuality1;
+    extern ColorBuffer gAOHighQuality2;
+    extern ColorBuffer gAOHighQuality3;
+    extern ColorBuffer gAOHighQuality4;
 
     extern ColorBuffer gLumaBuffer;
     extern ColorBuffer gBloomUAV1[2];	// 640x384 (1/3)

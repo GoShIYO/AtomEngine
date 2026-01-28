@@ -8,18 +8,12 @@
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
 #include "Runtime/Function/Camera/CameraBase.h"
-#include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
-#include "Runtime/Function/Render/RenderQueue.h"
-#include "Runtime/Resource/AssetManager.h"
 #include "Runtime/Function/Light/LightManager.h"
-#include "Runtime/Resource/Model.h"
-#include "Runtime/Core/Utility/Utility.h"
 #include "Runtime/Function/Framework/Component/MeshComponent.h"
 #include "Runtime/Function/Render/RenderPasses/RenderPassManager.h"
 #include "Runtime/Function/Render/RenderPasses/RenderPassesInclude.h"
 #include "Runtime/Function/Render/MeshRenderer.h"
-
-#include "imgui.h"
+#include "Runtime/Function/Render/PostEffect/SSAO.h"
 
 namespace AtomEngine
 {
@@ -218,8 +212,8 @@ namespace AtomEngine
 			GetDefaultTexture(kBlackCubeMap),
 			GetDefaultTexture(kBlackCubeMap),
 			GetDefaultTexture(kDefaultBRDFLUT),
-			gShadowBuffer.GetSRV(),
 			gSSAOFullScreen.GetSRV(),
+			gShadowBuffer.GetSRV(),
 			LightManager::GetLightSrv(),
 			LightManager::GetLightShadowSrv(),
 			LightManager::GetLightGridSrv(),
@@ -235,6 +229,7 @@ namespace AtomEngine
 		Primitive::Initialize();
 		SpriteRenderer::Initialize();
 		MeshRenderer::Initialize();
+		SSAO::Initialize();
 
 		InitializeRenderPasses();
 	}
@@ -293,8 +288,8 @@ namespace AtomEngine
 			return;
 		}
 
-		uint32_t DestCount = 1;
-		std::vector<uint32_t>SourceCounts(DestCount, 1);
+		uint32_t DestCount = 2;
+		uint32_t SourceCounts[] = { 1, 1 };
 
 		D3D12_CPU_DESCRIPTOR_HANDLE SourceTextures[] =
 		{
@@ -302,11 +297,9 @@ namespace AtomEngine
 			gShadowBuffer.GetSRV(),
 		};
 
-		DescriptorHandle dest = gCommonTextures + gTextureHeap.GetDescriptorSize();
+		DescriptorHandle dest = gCommonTextures + 2 * gTextureHeap.GetDescriptorSize();
 
-		DX12Core::gDevice->CopyDescriptors(1, &dest, &DestCount,
-			DestCount, SourceTextures, SourceCounts.data(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
+		DX12Core::gDevice->CopyDescriptors(1, &dest, &DestCount, DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		SSAOFullScreenID = gSSAOFullScreen.GetVersionID();
 		ShadowBufferID = gShadowBuffer.GetVersionID();
@@ -333,6 +326,7 @@ namespace AtomEngine
 		Primitive::Shutdown();
 		SpriteRenderer::Shutdown();
 		MeshRenderer::Shutdown();
+		SSAO::Shutdown();
 	}
 
 	const GraphicsPSO& Renderer::GetPSO(uint16_t psoFlags)

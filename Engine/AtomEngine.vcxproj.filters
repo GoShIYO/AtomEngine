@@ -148,6 +148,9 @@
     <Filter Include="Source\Runtime\Core\Color">
       <UniqueIdentifier>{74caf297-295f-4cd4-89ec-a1624c3ae11d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Runtime\Core\Json">
+      <UniqueIdentifier>{9ad6056f-6d1f-4504-9b3c-79232c665088}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Runtime\Core\LogSystem">
       <UniqueIdentifier>{9012d794-c285-4708-a37f-4e98806b8151}</UniqueIdentifier>
     </Filter>
@@ -234,6 +237,9 @@
     </Filter>
     <Filter Include="Config">
       <UniqueIdentifier>{79edf7b0-a084-4b8e-b66d-d15dc0197461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Function\Render\PostEffect">
+      <UniqueIdentifier>{7f4c83bb-d471-45ee-9623-6d217ded090a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -417,15 +423,6 @@
     <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp">
       <Filter>Source\Runtime\Function\Render</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\Particle\Particle.cpp">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleEditor.cpp">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.cpp">
       <Filter>Source\Runtime\Function\Render\RenderPasses</Filter>
     </ClCompile>
@@ -551,6 +548,21 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
       <Filter>Source\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\PostEffect\PostEffect.cpp">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\PostEffect\SSAO.cpp">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\Particle.cpp">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleEditor.cpp">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -794,18 +806,6 @@
     <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h">
       <Filter>Source\Runtime\Function\Render</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\Particle.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleEditor.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleSystem.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.h">
       <Filter>Source\Runtime\Function\Render\RenderPasses</Filter>
     </ClInclude>
@@ -959,6 +959,24 @@
     <ClInclude Include="Source\Runtime\Resource\TexUtil.h">
       <Filter>Source\Runtime\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\PostEffect\PostEffect.h">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\PostEffect\SSAO.h">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\Particle.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleEditor.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleSystem.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shaders\BufferCopyPS.hlsl">
@@ -974,18 +992,6 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Asset\Shaders\DepthViewVS.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_8.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_16.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_24.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_32.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Asset\Shaders\FullScreenQuad.hlsl">
@@ -1012,12 +1018,6 @@
     <FxCompile Include="Asset\Shaders\Object3DSkinned.VS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shaders\Particle\ParticleDispatchIndirectArgs.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Particle\ParticleEmitCS.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Asset\Shaders\PresentPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
@@ -1042,6 +1042,61 @@
     <FxCompile Include="Asset\Shaders\SpriteVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\AdaptExposure.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ApplyBloom.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ApplyBloom2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\BloomExtractAndDownsampleLdr.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\Blur.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\DownsampleBloom.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ExtractLuma.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\GenerateHistogram.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMap.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMap2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMapHDR.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMapHDR2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\UpsampleAndBlur.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceHdr.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceHdr2.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceLdr.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceLdr2.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\CopyBackPostBuffer.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\BloomExtractAndDownsampleHdr.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoPrepareDepthBuffers1.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoPrepareDepthBuffers2.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\LinearizeDepth.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\DebugSSAO.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoRender1.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoRender2.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsampleBlendOut.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsamplePreMinBlendOut.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsample.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsamplePreMin.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">
@@ -1086,5 +1141,7 @@
     <None Include="Asset\Particles\wavering.json">
       <Filter>Config</Filter>
     </None>
+    <None Include="Asset\Shaders\PostEffects\SSAO\AoBlurAndUpsampleCS.hlsli" />
+    <None Include="Asset\Shaders\PostEffects\SSAO\AoRender.hlsli" />
   </ItemGroup>
 </Project>

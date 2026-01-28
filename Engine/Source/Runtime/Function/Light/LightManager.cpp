@@ -1,7 +1,7 @@
 #include "LightManager.h"
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
 #include "Runtime/Platform/DirectX12/Context/ComputeContext.h"
-#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+#include "Runtime/Core/Math/Random.h"
 
 namespace AtomEngine
 {
@@ -29,6 +29,12 @@ namespace AtomEngine
 	ComputePSO gFillLightGridCS_32(L"Fill Light Grid 32 CS");
 
 	bool LightManager::dirty = true;
+
+	std::vector<Vector3> LightManager::gLightVelocities;
+	std::vector<Vector3> LightManager::gLightAngularVel;
+	Vector3 LightManager::gMotionMinBound = Vector3::ZERO;
+	Vector3 LightManager::gMotionMaxBound = Vector3::ZERO;
+	bool LightManager::gMotionEnabled = false;
 
 	void LightManager::Initialize()
 	{
@@ -214,7 +220,7 @@ namespace AtomEngine
 		Vector3 posBias = minBound;
 
 		// todo: replace this with MT
-		srand(12645);
+		srand((uint32_t)time(0));
 		auto randUint = []() -> uint32_t
 			{
 				return rand(); // [0, RAND_MAX]
@@ -260,16 +266,25 @@ namespace AtomEngine
 				return Math::Normalize(Vector3(randGaussian(), randGaussian(), randGaussian()));
 			};
 
-		const float pi = 3.14159265359f;
 		gLights.resize(MAX_LIGHTS);
-		
+
 		// Clear existing ID mappings
 		gLightIDToIndex.clear();
-		
+
+		// Prepare motion arrays
+		gLightVelocities.clear();
+		gLightAngularVel.clear();
+		gLightVelocities.resize(MAX_LIGHTS);
+		gLightAngularVel.resize(MAX_LIGHTS);
+
+		// store bounds
+		gMotionMinBound = minBound;
+		gMotionMaxBound = maxBound;
+
 		for (uint32_t n = 0; n < MAX_LIGHTS; n++)
 		{
 			Vector3 pos = randVecUniform() * posScale + posBias;
-			float lightRadius = randFloat() * 8.0f + 2.0f;
+			float lightRadius = randFloat() * 800.0f + 200.0f;
 
 			Vector3 color = randVecUniform();
 			float colorScale = randFloat() * .3f + .3f;
@@ -285,8 +300,8 @@ namespace AtomEngine
 				type = 2;
 
 			Vector3 coneDir = randVecGaussian();
-			float coneInner = (randFloat() * .2f + .025f) * pi;
-			float coneOuter = coneInner + randFloat() * .1f * pi;
+			float coneInner = (randFloat() * .2f + .025f) * Math::PI;
+			float coneOuter = coneInner + randFloat() * .1f * Math::PI;
 
 			if (type == 1 || type == 2)
 			{
@@ -310,12 +325,19 @@ namespace AtomEngine
 			gLights[n].outerCos = cosf(coneOuter);
 			gLights[n].isActive = true;
 			std::memcpy(&gLights[n].shadowMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
-			
+
 			// Update ID mapping
 			uint32_t lightID = gNextLightID++;
 			gLightIDToIndex[lightID] = n;
+
+			// 初期速度（単位: world units / sec）・角速度（軸 * rad/sec）
+			float speed = randFloat() * 400.0f + 50.0f; // 0.5 〜 4.5
+			gLightVelocities[n] = randVecGaussian() * speed;
+
+			float angSpeed = randFloat() * 1.2f; // 0 〜 ~1.2 rad/s
+			gLightAngularVel[n] = randVecGaussian() * angSpeed;
 		}
-		
+
 		CommandContext::InitializeBuffer(gLightBuffer, gLights.data(), MAX_LIGHTS * sizeof(LightData));
 		dirty = false;
 	}
@@ -358,11 +380,13 @@ namespace AtomEngine
 
 		struct CSConstants
 		{
+			Matrix4x4 ViewMatrix;
+			Matrix4x4 ProjMatrix;
+			Matrix4x4 ProjInverse;
 			uint32_t ViewportWidth, ViewportHeight;
 			float InvTileDim;
 			float RcpZMagic;
 			uint32_t TileCount;
-			Matrix4x4 ViewProjMatrix;
 		} csConstants;
 		// todo: assumes 1920x1080 resolution
 		csConstants.ViewportWidth = gSceneColorBuffer.GetWidth();
@@ -370,7 +394,10 @@ namespace AtomEngine
 		csConstants.InvTileDim = 1.0f / LightGridDim;
 		csConstants.RcpZMagic = RcpZMagic;
 		csConstants.TileCount = tileCountX;
-		csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+		csConstants.ViewMatrix = camera.GetViewMatrix();
+		const auto& proj = camera.GetProjMatrix();
+		csConstants.ProjMatrix = proj;
+		csConstants.ProjInverse = proj.Inverse();
 		Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
 
 		Context.Dispatch(tileCountX, tileCountY, 1);
@@ -391,6 +418,81 @@ namespace AtomEngine
 
 		gLightShadowArray.Destroy();
 		gLightShadowTempBuffer.Destroy();
+	}
+	void LightManager::EnableRandomMotion(bool enable)
+	{
+		gMotionEnabled = enable;
+	}
+
+	void LightManager::UpdateRandomMotion(float deltaTime)
+	{
+		if (!gMotionEnabled) return;
+		if (gLights.empty()) return;
+
+		for (size_t i = 0; i < gLights.size(); ++i)
+		{
+			// ポイントライトは位置を移動してバウンド内で反射
+			if (gLights[i].type == static_cast<uint32_t>(LightType::Point))
+			{
+				Vector3 pos = gLights[i].position;
+				Vector3 vel = (i < gLightVelocities.size()) ? gLightVelocities[i] : Vector3::ZERO;
+
+				pos += vel * deltaTime;
+
+				// バウンドチェックと反射
+				if (pos.x < gMotionMinBound.x)
+				{
+					pos.x = gMotionMinBound.x;
+					vel.x = -vel.x;
+				}
+				else if (pos.x > gMotionMaxBound.x)
+				{
+					pos.x = gMotionMaxBound.x;
+					vel.x = -vel.x;
+				}
+				if (pos.y < gMotionMinBound.y)
+				{
+					pos.y = gMotionMinBound.y;
+					vel.y = -vel.y;
+				}
+				else if (pos.y > gMotionMaxBound.y)
+				{
+					pos.y = gMotionMaxBound.y;
+					vel.y = -vel.y;
+				}
+				if (pos.z < gMotionMinBound.z)
+				{
+					pos.z = gMotionMinBound.z;
+					vel.z = -vel.z;
+				}
+				else if (pos.z > gMotionMaxBound.z)
+				{
+					pos.z = gMotionMaxBound.z;
+					vel.z = -vel.z;
+				}
+
+				gLights[i].position = pos;
+				if (i < gLightVelocities.size()) gLightVelocities[i] = vel;
+				dirty = true;
+			}
+			else
+			{
+				// スポット系: 角速度ベクトルを用いて方向を回転
+				if (i >= gLightAngularVel.size()) continue;
+				Vector3 ang = gLightAngularVel[i];
+				float angMag = ang.Length();
+				if (angMag > 1e-6f)
+				{
+					Vector3 axis = ang / angMag;
+					float angle = angMag * deltaTime; // ラジアン
+					Quaternion q(axis, angle);
+					Vector3 newDir = q * gLights[i].direction;
+					newDir.Normalize();
+					gLights[i].direction = newDir;
+					dirty = true;
+				}
+			}
+		}
 	}
 }
 

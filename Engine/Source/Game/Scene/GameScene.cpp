@@ -8,12 +8,13 @@
 
 namespace
 {
-	const Vector3 kPlayerStartPosition = Vector3(-8, 8, -8);
-	Color kLightColor = Color(0.5f, 0.5f, 0.5f);
-	Vector3 lightPosition = Vector3::ZERO;
-	float lightRadius = 8.0f;
-	Vector3 center = 0.0f;
-	Vector3 size = 0.0f;
+	Entity helmatEntity = entt::null;
+	Radian helmatRotation = Radian(0.0f);
+	
+	Entity bunnyEntity = entt::null;
+	Radian bunnyRotation = Radian(0.0f);
+
+	bool lightMotionEnabled = true;
 }
 
 GameScene::GameScene(std::string_view name, SceneManager& manager)
@@ -27,19 +28,52 @@ bool GameScene::Initialize()
 	mGameCamera.SetPosition({ 0.0f, 0.0f, -20.0f });
 	mDebugCamera.reset(new DebugCamera(mGameCamera));
 
-	//kLightColor = Color(0.5f, 0.5f, 0.5f);
-	//LightManager::AddPointLight(lightPosition, kLightColor, lightRadius);
-
 	auto sponza = AssetManager::LoadModel("Asset/Models/Sponza/Sponza.gltf");
-    auto obj = mWorld.CreateGameObject("CornellBox");
+
+    auto obj = mWorld.CreateGameObject("sponza");
 	obj->AddComponent<MeshComponent>(sponza);
 	obj->AddComponent<MaterialComponent>(sponza);
 	obj->AddComponent<TransformComponent>();
-	LightManager::CreateRandomLights(sponza->mBoundingBox.GetMin(), sponza->mBoundingBox.GetMax());
+	obj->GetComponent<TransformComponent>().SetScale(100.0f);
 
-	center = (sponza->mBoundingBox.GetMax() + sponza->mBoundingBox.GetMin()) * 0.5f;
-	size = sponza->mBoundingBox.GetMax() - sponza->mBoundingBox.GetMin();
+	auto helmat = AssetManager::LoadModel("Asset/Models/DamagedHelmet/DamagedHelmet.gltf");
 
+	auto obj1 = mWorld.CreateGameObject("DamagedHelmet");
+	obj1->AddComponent<MeshComponent>(helmat);
+	obj1->AddComponent<MaterialComponent>(helmat);
+	obj1->AddComponent<TransformComponent>();
+	auto& transform1 = obj1->GetComponent<TransformComponent>();
+	transform1.SetScale(100.0f);
+	transform1.transition.y += 100.0f;
+	transform1.transition.z += 30.0f;
+
+	helmatEntity = obj1->GetHandle();
+
+	auto suzanne = AssetManager::LoadModel("Asset/Models/suzanne/suzanne.gltf");
+
+	auto obj2 = mWorld.CreateGameObject("suzanne");
+	obj2->AddComponent<MeshComponent>(suzanne);
+	obj2->AddComponent<MaterialComponent>(suzanne);
+	obj2->AddComponent<TransformComponent>();
+	auto& transform2 = obj2->GetComponent<TransformComponent>();
+	transform2.SetScale(100.0f);
+	transform2.transition.x += 300.0f;
+	transform2.transition.y += 100.0f;
+	bunnyEntity = obj2->GetHandle();
+
+	auto Chimera = AssetManager::LoadModel("Asset/Models/Chimera/Chimera.gltf");
+	auto obj3 = mWorld.CreateGameObject("Chimera");
+	obj3->AddComponent<MeshComponent>(Chimera);
+	obj3->AddComponent<MaterialComponent>(Chimera);
+	obj3->AddComponent<TransformComponent>();
+	auto& transform3 = obj3->GetComponent<TransformComponent>();
+	transform3.SetScale(200.0f);
+	transform3.transition.x -= 200.0f;
+	transform3.transition.z += 30.0f;
+	transform3.rotation.FromAngleAxis(Radian(Math::HalfPI), Vector3::UP);
+	LightManager::CreateRandomLights(sponza->mBoundingBox.GetMin() * 100, sponza->mBoundingBox.GetMax() * 100);
+
+	mGameCamera.SetZRange(0.1f, 10000.0f);
 	return Scene::Initialize();
 }
 
@@ -48,6 +82,11 @@ void GameScene::Update(float deltaTime)
 #ifndef RELEASE
 	gContext.imgui->ShowPerformanceWindow(deltaTime);
 #endif
+	LightManager::UpdateRandomMotion(deltaTime);
+	helmatRotation += Radian(Math::PIDiv4 * deltaTime);
+	mWorld.GetComponent<TransformComponent>(helmatEntity).rotation.FromAngleAxis(helmatRotation, Vector3::UP);
+	bunnyRotation += Radian(Math::HalfPI * deltaTime);
+	mWorld.GetComponent<TransformComponent>(bunnyEntity).rotation.FromAngleAxis(bunnyRotation, Vector3::UP);
 
 	if (mUseDebugCamera)
 	{
@@ -58,10 +97,9 @@ void GameScene::Update(float deltaTime)
 		mGameCamera.Update();
 	}
 
-#ifdef _DEBUG
+#ifndef RELEASE
 	ImGuiHandleObjects();
 #endif
-	Primitive::DrawCube(center, size, Vector4(1.0f, 0.0f, 0.0f, 1.0f), mCamera->GetViewProjMatrix());
 	DestroyGameObject();
 }
 
@@ -113,7 +151,6 @@ void GameScene::ImGuiHandleObjects()
 					ImGui::DragFloat3("Scale##A", transform.scale.ptr(), 0.01f);
 					transform.rotation.Normalize();
 
-					ImGui::Text("S:%.3f\n", transform.GetScale());
 					ImGui::TreePop();
 				}
 
@@ -143,16 +180,15 @@ void GameScene::ImGuiHandleObjects()
 			}
 		});
 	ImGui::End();
-
-	bool light = false;
 	ImGui::Begin("Light");
-	light |= ImGui::ColorEdit3("Color", kLightColor.ptr());
-	light |= ImGui::DragFloat3("Position", lightPosition.ptr(), 0.01f);
-	light |= ImGui::DragFloat("Radius", &lightRadius, 0.01f, 0.1f);
+	LightManager::EnableRandomMotion(lightMotionEnabled);
+	ImGui::Checkbox("Enable Light Motion", &lightMotionEnabled);
 	ImGui::End();
-	if (light)
-	{
-		LightManager::UpdatePointLight(0, lightPosition, kLightColor, lightRadius);
-	}
+	ImGui::Begin("Debug Camera");
+	ImGui::Text("Left Mouse Button: Rotate camera");
+	ImGui::Text("Middle Mouse Button: Pan (move target)");
+	ImGui::Text("Right Mouse Button: Zoom");
+	ImGui::Text("Mouse Wheel: Zoom");
+	ImGui::End(); 
 
 }
