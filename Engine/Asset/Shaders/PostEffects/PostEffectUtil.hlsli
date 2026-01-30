@@ -58,3 +58,15 @@ float3 Unpack_R11G11B10_FLOAT(uint rgb)
     float b = f16tof32((rgb >> 17) & 0x7FE0);
     return float3(r, g, b);
 }
+
+// A fast invertible tone map that preserves color (Reinhard)
+float3 TM(float3 rgb)
+{
+    return rgb / (1 + RGBToLuminance(rgb));
+}
+
+// Inverse of preceding function
+float3 ITM(float3 rgb)
+{
+    return rgb / (1 - RGBToLuminance(rgb));
+}

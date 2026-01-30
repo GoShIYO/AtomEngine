@@ -494,12 +494,6 @@ namespace AtomEngine
 			ResizeBuffers(gNativeWidth, gNativeHeight);
 		}
 
-		bool IsPIXDebug()
-		{
-			return (GetModuleHandleA("WinPixGpuCapturer.dll") != nullptr) ||
-				(GetModuleHandleA("WinPIX.dll") != nullptr);
-		}
-
 		void DX12Core::CompositeOverlays(GraphicsContext& Context)
 		{
 			Context.SetRootSignature(sPresentRS);
@@ -554,17 +548,12 @@ namespace AtomEngine
 			
 			Context.TransitionResource(gFrameBuffers[gCurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
 
-			bool isRunningUnderPIX = false;
-#ifdef _DEBUG
-			isRunningUnderPIX = IsPIXDebug();
-#endif
-			Context.Finish(isRunningUnderPIX);
-
 			if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 			{
 				ImGui::UpdatePlatformWindows();
 				ImGui::RenderPlatformWindowsDefault();
 			}
+			Context.Finish(true);
 
 			gSwapChain->Present(s_EnableVSync ? 1 : 0, 0);
 			gCurrentBuffer = gSwapChain->GetCurrentBackBufferIndex();

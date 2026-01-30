@@ -1,5 +1,7 @@
 #include "BufferManager.h"
 #include "../Core/DirectX12Core.h"
+#include "Runtime/Platform/DirectX12/Context/GraphicsContext.h"
+#include "Runtime/Function/Render/PostEffect/TemporalAA.h"
 
 namespace AtomEngine
 {
@@ -8,6 +10,7 @@ namespace AtomEngine
 	ColorBuffer gSceneNormalBuffer;
 	ColorBuffer gPostEffectsBuffer;
 	ColorBuffer gOverlayBuffer;
+	ColorBuffer gVelocityBuffer;
 
 	ShadowBuffer gShadowBuffer;
 	ShadowBuffer gRayTracedShadowBuffer;
@@ -34,7 +37,11 @@ namespace AtomEngine
 	ColorBuffer gAOHighQuality3;
 	ColorBuffer gAOHighQuality4;
 
+	ColorBuffer gMotionPrepBuffer;
 	ColorBuffer gLumaBuffer;
+	ColorBuffer gTemporalColor[2];
+	ColorBuffer gTemporalMinBound;
+	ColorBuffer gTemporalMaxBound;
 	ColorBuffer gBloomUAV1[2];	// 640x384 (1/3)
 	ColorBuffer gBloomUAV2[2];	// 320x192 (1/6) 
 	ColorBuffer gBloomUAV3[2];	// 160x96  (1/12)
@@ -46,6 +53,8 @@ namespace AtomEngine
 
 	void InitializeBuffers(uint32_t bufferWidth, uint32_t bufferHeight)
 	{
+		GraphicsContext& InitContext = GraphicsContext::Begin();
+
 		const uint32_t bufferWidth1 = (bufferWidth + 1) / 2;
 		const uint32_t bufferWidth2 = (bufferWidth + 3) / 4;
 		const uint32_t bufferWidth3 = (bufferWidth + 7) / 8;
@@ -61,7 +70,7 @@ namespace AtomEngine
 
 		gSceneColorBuffer.SetClearColor(Color(0x314D79FF));
 		gSceneColorBuffer.Create(L"Main Color Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R10G10B10A2_UNORM);
-
+		gVelocityBuffer.Create(L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 		gSceneNormalBuffer.Create(L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 		gPostEffectsBuffer.Create(L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT);
 
@@ -98,7 +107,17 @@ namespace AtomEngine
 			gAOHighQuality4.Create(L"AO High Quality 4", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R8_UNORM);
 
 		}
+		
+		//TAA
+		{
+			gTemporalColor[0].Create(L"Temporal Color 0", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			gTemporalColor[1].Create(L"Temporal Color 1", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+			TemporalAA::ClearHistory(InitContext);
 
+			gTemporalMinBound.Create(L"Temporal Min Color", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
+			gTemporalMaxBound.Create(L"Temporal Max Color", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
+
+		}
 		//Luminance
 		{
 			gLumaBuffer.Create(L"Luminance", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);
@@ -119,6 +138,7 @@ namespace AtomEngine
 			gHistogram.Create(L"Histogram", 256, 4);
 		}
 
+		InitContext.Finish();
 	}
 	void DestroyBuffers()
 	{
@@ -126,6 +146,7 @@ namespace AtomEngine
 		gSceneNormalBuffer.Destroy();
 		gPostEffectsBuffer.Destroy();
 		gOverlayBuffer.Destroy();
+		gVelocityBuffer.Destroy();
 
 		gSceneDepthBuffer.Destroy();
 
@@ -139,6 +160,12 @@ namespace AtomEngine
 		gLumaBuffer.Destroy();
 		gLumaLR.Destroy();
 
+		gMotionPrepBuffer.Destroy();
+		gLumaBuffer.Destroy();
+		gTemporalColor[0].Destroy();
+		gTemporalColor[1].Destroy();
+		gTemporalMinBound.Destroy();
+		gTemporalMaxBound.Destroy();
 		gBloomUAV1[0].Destroy();
 		gBloomUAV1[1].Destroy();
 		gBloomUAV2[0].Destroy();
@@ -149,7 +176,7 @@ namespace AtomEngine
 		gBloomUAV4[1].Destroy();
 		gBloomUAV5[0].Destroy();
 		gBloomUAV5[1].Destroy();
-
+		gLumaLR.Destroy();
 		gHistogram.Destroy();
 	}
 	void ResizeBuffers(uint32_t Width, uint32_t Height)

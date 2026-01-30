@@ -102,7 +102,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 </Command>
     </PostBuildEvent>
     <FxCompile>
-      <ShaderModel>6.2</ShaderModel>
+      <ShaderModel>6.6</ShaderModel>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/Runtime/Platform/DirectX12/Shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -135,7 +135,7 @@ copy "$(SolutionDir)assimp-vc143-mt.dll" "$(TargetDir)assimp-vc143-mt.dll"
 xcopy /E /Y /I "$(SolutionDir)Asset" "$(TargetDir)Asset\"</Command>
     </PostBuildEvent>
     <FxCompile>
-      <ShaderModel>6.2</ShaderModel>
+      <ShaderModel>6.6</ShaderModel>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/Runtime/Platform/DirectX12/Shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -170,7 +170,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
 </Command>
     </PostBuildEvent>
     <FxCompile>
-      <ShaderModel>6.2</ShaderModel>
+      <ShaderModel>6.6</ShaderModel>
       <AdditionalIncludeDirectories>$(ProjectDir)Source/Runtime/Platform/DirectX12/Shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </FxCompile>
   </ItemDefinitionGroup>
@@ -193,6 +193,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Game\System\LadderSystem.h" />
     <ClInclude Include="Source\Game\System\PlatformSystem.h" />
     <ClInclude Include="Source\Game\System\VoxelCollisionSystem.h" />
+    <ClInclude Include="Source\Runtime\Core\Utility\Random.h" />
     <ClInclude Include="Source\Runtime\Function\Audio\Audio.h" />
     <ClInclude Include="Source\Runtime\Function\Render\GridRenderer.h" />
     <ClInclude Include="Source\Runtime\Function\Camera\GamePadCamera.h" />
@@ -229,6 +230,15 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Camera\DebugCamera.h" />
     <ClInclude Include="Source\Runtime\Function\Scene\Scene.h" />
     <ClInclude Include="Source\Runtime\Function\Scene\SceneManager.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h" />
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\D3dUtility\d3dx12.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\RayTrace\RayTracedShadow.h" />
     <ClInclude Include="Source\Runtime\Resource\GeometryGenerator.h" />
@@ -257,17 +267,9 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Core\Math\MathInclude.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DirectX12Core.h" />
     <ClInclude Include="Source\Runtime\Function\Render\RenderSystem.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h" />
     <ClInclude Include="Source\Runtime\Core\Math\BoundingBox.h" />
     <ClInclude Include="Source\Runtime\Core\LogSystem\LogSystem.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\SamplerManager.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\CommandSignature.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\LinearAllocator.h" />
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Core\DynamicDescriptorHeap.h" />
@@ -302,7 +304,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Core\Utility\Utility.h" />
     <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h" />
     <ClInclude Include="Source\Runtime\Resource\Texture.h" />
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h" />
     <ClInclude Include="Source\Runtime\Resource\TexUtil.h" />
     <ClInclude Include="Source\Runtime\Resource\TextureRef.h" />
     <ClInclude Include="Source\Runtime\Function\Sprite\Sprite.h" />
@@ -312,6 +313,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Source\Runtime\Function\Render\SpriteRenderer.h" />
     <ClInclude Include="Source\Game\Voxel\VoxelWorld.h" />
     <ClInclude Include="Source\Runtime\Function\Render\PostEffect\SSAO.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Game\System\SoundManaged.cpp" />
@@ -325,6 +327,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Game\System\LadderSystem.cpp" />
     <ClCompile Include="Source\Game\System\PlatformSystem.cpp" />
     <ClCompile Include="Source\Game\System\VoxelCollisionSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Utility\Random.cpp" />
     <ClCompile Include="Source\Runtime\Function\Audio\Audio.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\GridRenderer.cpp" />
     <ClCompile Include="Source\Runtime\Function\Camera\GamePadCamera.cpp" />
@@ -353,6 +356,14 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Runtime\Function\Camera\DebugCamera.cpp" />
     <ClCompile Include="Source\Runtime\Function\Scene\Scene.cpp" />
     <ClCompile Include="Source\Runtime\Function\Scene\SceneManager.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp" />
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp" />
     <ClCompile Include="Source\Runtime\Platform\DirectX12\RayTrace\RayTracedShadow.cpp" />
     <ClCompile Include="Source\Runtime\Resource\GeometryGenerator.cpp" />
     <ClCompile Include="Source\Runtime\Resource\PrimitiveMesh.cpp" />
@@ -416,10 +427,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Core\LogSystem\LogSystem.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -429,30 +436,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Utility\Utility.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
@@ -576,10 +559,6 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
-      <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -599,6 +578,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Source\Game\Scene\TitleScene.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\SpriteRenderer.cpp" />
     <ClCompile Include="Source\Runtime\Function\Render\PostEffect\SSAO.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shaders\DepthOnlySkinVS.hlsl">
@@ -958,6 +938,50 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\BoundNeighborhood.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\ResolveTAA.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\SharpenTAA.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\TemporalBlend.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Development|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Asset\Shaders\PostEffects\ToneMap.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -1104,6 +1128,7 @@ copy "$(windowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="Asset\Shaders\Particle\ParticleUpdateCommon.hlsli" />
     <None Include="Asset\Shaders\PostEffects\SSAO\AoBlurAndUpsampleCS.hlsli" />
     <None Include="Asset\Shaders\PostEffects\SSAO\AoRender.hlsli" />
+    <None Include="Asset\Shaders\PostEffects\TAA\PixelPacking_Velocity.hlsli" />
     <None Include="Asset\Shaders\Utility.hlsli" />
     <None Include="packages.config" />
     <None Include="Source\Runtime\Function\Framework\ECS\GameObject.inl">
