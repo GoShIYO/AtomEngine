@@ -1,15 +1,8 @@
 #include "GameScene.h"
 #include "Runtime/Function/Scene/SceneManager.h"
-#include "Runtime/Function/Render/RenderSystem.h"
-#include "Runtime/Function/Render/Primitive.h"
 #include "Runtime/Function/Global/GlobalContext.h"
-#include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
 #include "Runtime/Function/Framework/Component/MeshComponent.h"
 
-#include "../Component/ColliderComponent.h"
-#include "../Component/VelocityComponent.h"
-
-#include "../Tag.h"
 
 #include "Runtime/Function/Render/Particle/ParticleSystem.h"
 #include "Runtime/Function/Render/Particle/ParticleEditor.h"
@@ -102,10 +95,6 @@ void GameScene::InitSystems()
 void GameScene::Render()
 {
 	ParticleEditor::Get().Render();
-	//Primitive::DrawLine(Vector3(0, 0, 0), Vector3(1, 1, 1), Color::Red, mCamera.GetViewProjMatrix());
-	//Primitive::DrawCube(Vector3(0, 0, 0), Vector3(1, 1, 1), testBoxTrans.GetMatrix(), Color::Red, mCamera.GetViewProjMatrix());
-	//Primitive::DrawSphere(Vector3(0, 0, 0), 1, Color::Green, mCamera.GetViewProjMatrix(),uint32_t(segment), uint32_t(segment));
-	//Primitive::DrawTriangle(Vector3(0, 0, 0), Vector3(1, 1, 1), Vector3(0, 1, 0), Color::Cyan, mCamera.GetViewProjMatrix());
 }
 
 void GameScene::Shutdown()
