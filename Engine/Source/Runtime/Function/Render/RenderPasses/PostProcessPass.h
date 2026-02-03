@@ -8,8 +8,6 @@ namespace AtomEngine
 	class PostProcessPass : public RenderPass
 	{
 	public:
-		PostProcessPass();
-		~PostProcessPass() = default;
 		void Initialize() override;
 		void Update(GraphicsContext& Context, float deltaTime) override;
 		void Render(GraphicsContext& gfxContext) override;

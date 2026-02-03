@@ -6,6 +6,7 @@
 #include "Runtime/Function/Render/RenderSystem.h"
 #include "Runtime/Function/Global/GlobalContext.h"
 #include "Runtime/Resource/AssetManager.h"
+#include "Runtime/Function/Render/PostEffect/TemporalAA.h"
 
 #include "../Context/GraphicsContext.h"
 #include "../Buffer/BufferManager.h"
@@ -559,6 +560,8 @@ namespace AtomEngine
 			gCurrentBuffer = gSwapChain->GetCurrentBackBufferIndex();
 
 			++gFrameIndex;
+
+			TemporalAA::Update(gFrameIndex);
 
 			SetNativeResolution();
 			SetWindowResolution();

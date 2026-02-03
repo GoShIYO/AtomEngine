@@ -567,7 +567,6 @@
     <ClCompile Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Core\Utility\Random.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\vox\ogt_vox.h">
@@ -984,7 +983,6 @@
     <ClInclude Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.h">
       <Filter>Shader</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Core\Utility\Random.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shaders\BufferCopyPS.hlsl">
@@ -1149,6 +1147,8 @@
     <FxCompile Include="Asset\Shaders\PostEffects\TAA\TemporalBlend.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\CameraVelocity.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\CameraVelocityLinearZ.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">

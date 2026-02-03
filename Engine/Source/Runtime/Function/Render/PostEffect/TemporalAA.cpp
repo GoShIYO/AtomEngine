@@ -6,10 +6,13 @@
 #include "Runtime/Platform/DirectX12/Core/GraphicsCommon.h"
 #include "Runtime/Platform/DirectX12/Shader/ShaderCompiler.h"
 #include "Runtime/Platform/DirectX12/Core/DirectX12Core.h"
+#include "Runtime/Function/Camera/CameraBase.h"
+
+#include "imgui.h"
 
 namespace AtomEngine
 {
-	bool EnableTAA = false;
+	bool EnableTAA = true;
 	float Sharpness = 0.5f;
 	float TemporalMaxLerp = 1.0f;
 	float TemporalSpeedLimit = 64.0f;
@@ -19,6 +22,7 @@ namespace AtomEngine
 	ComputePSO sBoundNeighborhoodCS(L"TAA: Bound Neighborhood CS");
 	ComputePSO sSharpenTAACS(L"TAA: Sharpen TAA CS");
 	ComputePSO sResolveTAACS(L"TAA: Resolve TAA CS");
+	ComputePSO sCameraVelocityCS[2] = { { L"TAA: Camera Velocity CS" },{ L"TAA: Camera Velocity Linear Z CS" } };
 
 	uint32_t sFrameIndex = 0;
 	uint32_t sFrameIndexMod2 = 0;
@@ -34,6 +38,8 @@ namespace AtomEngine
 		auto boundNeighborhood = ShaderCompiler::CompileBlob(L"PostEffects/TAA/BoundNeighborhood.hlsl", L"cs_6_6");
 		auto sharpenTAA = ShaderCompiler::CompileBlob(L"PostEffects/TAA/SharpenTAA.hlsl", L"cs_6_6");
 		auto resolveTAA = ShaderCompiler::CompileBlob(L"PostEffects/TAA/ResolveTAA.hlsl", L"cs_6_6");
+		auto cameraVelocity = ShaderCompiler::CompileBlob(L"PostEffects/TAA/CameraVelocity.hlsl", L"cs_6_6");
+		auto cameraVelocityLinearZ = ShaderCompiler::CompileBlob(L"PostEffects/TAA/CameraVelocityLinearZ.hlsl", L"cs_6_6");
 
 #define CreatePSO( ObjName, Shader ) \
 		ObjName.SetRootSignature(gCommonRS); \
@@ -44,10 +50,15 @@ namespace AtomEngine
 		CreatePSO(sBoundNeighborhoodCS, boundNeighborhood);
 		CreatePSO(sSharpenTAACS, sharpenTAA);
 		CreatePSO(sResolveTAACS, resolveTAA);
+		CreatePSO(sCameraVelocityCS[0], cameraVelocity);
+		CreatePSO(sCameraVelocityCS[1], cameraVelocityLinearZ);
 	}
+	
 	void TemporalAA::Shutdown()
 	{
+
 	}
+	
 	void TemporalAA::Update(uint64_t frameIndex)
 	{
 		sFrameIndex = static_cast<uint32_t>(frameIndex);
@@ -82,6 +93,53 @@ namespace AtomEngine
 			sJitterY = 0.5f;
 		}
 
+	}
+	void TemporalAA::GenerateVelocityBuffer(CommandContext& BaseContext, const Camera& camera, bool UseLinearZ)
+	{
+		const auto& reprojectionMatrix = camera.GetReprojectionMatrix();
+		const auto& nearClip = camera.GetNearClip();
+		const auto& farClip = camera.GetFarClip();
+
+		ComputeContext& Context = BaseContext.GetComputeContext();
+
+		Context.SetRootSignature(gCommonRS);
+
+		uint32_t Width = gSceneColorBuffer.GetWidth();
+		uint32_t Height = gSceneColorBuffer.GetHeight();
+
+		float RcpHalfDimX = Width * 0.5f;
+		float RcpHalfDimY = Height * 0.5f;
+		float RcpZMagic = nearClip / (farClip - nearClip);
+
+		Matrix4x4 preMult = Matrix4x4(
+			Vector4(RcpHalfDimX, 0.0f, 0.0f, 0.0f),
+			Vector4(0.0f, -RcpHalfDimY, 0.0f, 0.0f),
+			Vector4(0.0f, 0.0f, UseLinearZ ? RcpZMagic : 1.0f, 0.0f),
+			Vector4(-1.0f, 1.0f, UseLinearZ ? -RcpZMagic : 0.0f, 1.0f)
+		);
+
+		Matrix4x4 postMult = Matrix4x4(
+			Vector4(1.0f / RcpHalfDimX, 0.0f, 0.0f, 0.0f),
+			Vector4(0.0f, -1.0f / RcpHalfDimY, 0.0f, 0.0f),
+			Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+			Vector4(1.0f / RcpHalfDimX, 1.0f / RcpHalfDimY, 0.0f, 1.0f));
+
+
+		Matrix4x4 CurToPrevXForm = preMult * reprojectionMatrix * postMult;
+
+		Context.SetDynamicConstantBufferView(3, sizeof(CurToPrevXForm), &CurToPrevXForm);
+		Context.TransitionResource(gVelocityBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+		ColorBuffer& LinearDepth = gLinearDepth[sFrameIndexMod2];
+		if (UseLinearZ)
+			Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		else
+			Context.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+		Context.SetPipelineState(sCameraVelocityCS[UseLinearZ ? 1 : 0]);
+		Context.SetDynamicDescriptor(1, 0, UseLinearZ ? LinearDepth.GetSRV() : gSceneDepthBuffer.GetDepthSRV());
+		Context.SetDynamicDescriptor(2, 0, gVelocityBuffer.GetUAV());
+		Context.Dispatch2D(Width, Height);
 	}
 	void TemporalAA::GetJitterOffset(float& JitterX, float& JitterY)
 	{
@@ -121,6 +179,21 @@ namespace AtomEngine
 			SharpenImage(Context, gTemporalColor[Dst]);
 		}
 	}
+
+	void TemporalAA::ImGuiSettingsWindow()
+	{
+		ImGui::Begin("TAA");
+		ImGui::Checkbox("Enable TAA", &EnableTAA);
+		ImGui::DragFloat("Sharpness", &Sharpness, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Blend Factor", &TemporalMaxLerp, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat("Speed Limit", &TemporalSpeedLimit, 1.0f, 1.0f, 1024.0f);
+		if(ImGui::Button("Reset History"))
+		{
+			TriggerReset = true;
+		}
+		ImGui::End();
+	}
+
 	void TemporalAA::ApplyTemporalAA(ComputeContext& Context)
 	{
 		uint32_t Src = sFrameIndexMod2;

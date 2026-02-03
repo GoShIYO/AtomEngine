@@ -14,6 +14,7 @@
 #include "Runtime/Function/Render/RenderPasses/RenderPassesInclude.h"
 #include "Runtime/Function/Render/MeshRenderer.h"
 #include "Runtime/Function/Render/PostEffect/SSAO.h"
+#include "Runtime/Function/Render/PostEffect/TemporalAA.h"
 
 namespace AtomEngine
 {
@@ -230,6 +231,7 @@ namespace AtomEngine
 		SpriteRenderer::Initialize();
 		MeshRenderer::Initialize();
 		SSAO::Initialize();
+		TemporalAA::Initialize();
 
 		InitializeRenderPasses();
 	}
@@ -264,6 +266,8 @@ namespace AtomEngine
 		mRenderPassManager->Update(gfxContext,deltaTime);
 
 		gfxContext.Finish();
+
+		TemporalAA::GetJitterOffset(mViewport.TopLeftX, mViewport.TopLeftY);
 
 		mViewport.Width = (float)gSceneColorBuffer.GetWidth();
 		mViewport.Height = (float)gSceneColorBuffer.GetHeight();
@@ -327,6 +331,7 @@ namespace AtomEngine
 		SpriteRenderer::Shutdown();
 		MeshRenderer::Shutdown();
 		SSAO::Shutdown();
+		TemporalAA::Shutdown();
 	}
 
 	const GraphicsPSO& Renderer::GetPSO(uint16_t psoFlags)
