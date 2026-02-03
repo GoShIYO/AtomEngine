@@ -494,6 +494,11 @@ void VoxelCollisionSystem::UpdatePlatformRiders(World& world, float deltaTime)
 
 	for (auto entity : colliderView)
 	{
+		if (registry.any_of<ClimbingStateComponent>(entity))
+		{
+			continue;
+		}
+
 		auto& transform = colliderView.get<TransformComponent>(entity);
 		auto& collider = colliderView.get<VoxelColliderComponent>(entity);
 
@@ -677,6 +682,11 @@ void VoxelCollisionSystem::ApplyGravity(World& world, Entity entity, float delta
 
 void VoxelCollisionSystem::ProcessEntity(World& world, Entity entity)
 {
+	if (world.GetRegistry().any_of<ClimbingStateComponent>(entity))
+	{
+		return;
+	}
+
 	if (!mVoxelWorld) return;
 
 	if (!world.HasComponent<TransformComponent>(entity) ||
@@ -707,10 +717,10 @@ void VoxelCollisionSystem::ProcessEntity(World& world, Entity entity)
 		{
 			auto& coord = overlapping[0];
 			world.GetDispatcher().trigger<VoxelCollisionEvent>({
-		entity,
- result.correctedPosition,
-		  result.normal,
-		   coord.x, coord.y, coord.z
+				entity,
+				result.correctedPosition,
+				result.normal,
+				coord.x, coord.y, coord.z
 				});
 		}
 	}

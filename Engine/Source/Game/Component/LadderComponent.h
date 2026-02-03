@@ -19,6 +19,10 @@ struct LadderComponent
 	float topExitForwardOffset{ 0.5f };
 
 	float topExitUpOffset{ 0.1f };
+
+	float bottomExitForwardOffset{ 0.0f };
+	float bottomExitDownOffset{ 0.1f };
+	bool allowDescend{ true };
 };
 
 struct LadderCreateInfo

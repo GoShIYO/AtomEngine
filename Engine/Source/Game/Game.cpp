@@ -28,7 +28,7 @@ void SetClearSceneGameResult(AtomEngine::Scene* scene, int collected, int total,
 
 void Game::Initialize()
 {
-	auto titleScene = std::make_unique<GameScene>("GameScene", mSceneManager);
+	auto titleScene = std::make_unique<TitleScene>("TitleScene", mSceneManager);
 	mSceneManager.PushScene(std::move(titleScene));
 }
 

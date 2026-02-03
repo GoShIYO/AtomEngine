@@ -109,6 +109,11 @@ namespace AtomEngine
 		SampleThickness[9] = sqrtf(1.0f - 0.4f * 0.4f - 0.6f * 0.6f);
 		SampleThickness[10] = sqrtf(1.0f - 0.4f * 0.4f - 0.8f * 0.8f);
 		SampleThickness[11] = sqrtf(1.0f - 0.6f * 0.6f - 0.6f * 0.6f);
+	
+		//sNoiseFilterTolerance = -6.0f;
+		//sBlurTolerance = -5.0f;
+		//sUpsampleTolerance = -7.5f;
+		//sRejectionFalloff = 1.5f;
 	}
 	void SSAO::Shutdown()
 	{
