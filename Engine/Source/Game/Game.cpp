@@ -30,6 +30,8 @@ void Game::Initialize()
 {
 	auto titleScene = std::make_unique<TitleScene>("TitleScene", mSceneManager);
 	mSceneManager.PushScene(std::move(titleScene));
+
+	Sound::LoadSounds();
 }
 
 void Game::Update(float deltaTime)
