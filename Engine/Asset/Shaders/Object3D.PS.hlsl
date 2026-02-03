@@ -17,8 +17,8 @@ Texture2D<float3> emissiveTexture : register(t5);
 TextureCube<float3> radianceIBLTexture : register(t10);
 TextureCube<float3> irradianceIBLTexture : register(t11);
 Texture2D<float2> brdfLUT : register(t12);
-Texture2D<float> texSunShadow : register(t13);
-Texture2D<float> texSSAO : register(t14);
+Texture2D<float> texSSAO : register(t13);
+Texture2D<float> texSunShadow : register(t14);
 
 cbuffer MaterialConstants : register(b0)
 {
@@ -64,19 +64,19 @@ float3 Diffuse_IBL(float3 diffuseAlbedo, float roughness,float3 N,float3 V)
 {
     float3 irradiance = irradianceIBLTexture.Sample(defaultSampler, N).rgb;
 
-    float LdotH_ibl = saturate(dot(N, normalize(N + V)));
-    float fd90 = 0.5 + 2.0 * roughness * LdotH_ibl * LdotH_ibl;
-    float3 diffuseFresnel = Fresnel_Schlick_F90(1.0, fd90, saturate(dot(N, V)));
+    float LdotH = saturate(dot(N, normalize(N + V)));
+    float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
+    float3 diffuseFresnel = Fresnel_Shlick(1.0, fd90, saturate(dot(N, V)));
     return diffuseAlbedo * irradiance * diffuseFresnel;
 }
 // Specular IBL
 float3 Specular_IBL(float3 specularAlbedo, float3 V, float3 N, float roughness)
 {
     float3 R = reflect(-V, N);
-    float lod = saturate(roughness) * IBLRange + IBLBias;
-    float3 prefiltered = radianceIBLTexture.SampleLevel(defaultSampler, R, lod).rgb;
-    float3 F = Fresnel_Schlick(specularAlbedo, saturate(dot(N, V)));
-    return prefiltered * F;
+    float lod = roughness * IBLRange + IBLBias;
+    float3 specular = Fresnel_Shlick(specularAlbedo, 1, saturate(dot(N, V)));
+
+    return specular * radianceIBLTexture.SampleLevel(defaultSampler, reflect(-V, N), lod);
 }
 
 float4 main(VSOutput input) : SV_Target0
@@ -99,9 +99,8 @@ float4 main(VSOutput input) : SV_Target0
     float3 N = ComputeNormal(input, uv);
     #endif
 
-    float2 pixelPos = input.position.xy;
     
-    float3 V = normalize(ViewerPos - input.worldPos);
+    float3 V = normalize(CameraPos - input.worldPos);
 
     float3 F0 = lerp(FresnelF0, baseColor.rgb, metallic);
 
@@ -114,6 +113,9 @@ float4 main(VSOutput input) : SV_Target0
     //太陽光(平行光源)
     float3 dirLight = ApplyDirectionalLight(diffuseAlbedo, specularAlbedo, roughness, N, V, -SunDirection, SunIntensity, input.sunShadowCoord.xyz, texSunShadow);
 
+    uint2 pixelPos = uint2(input.position.xy);
+    float ssao = texSSAO.Load(int3(pixelPos, 0.0));
+    
     //間接光
     //拡散反射
     float3 diffuseIBL = Diffuse_IBL(diffuseAlbedo, roughness, N, V) * IBLFactor;
@@ -121,6 +123,9 @@ float4 main(VSOutput input) : SV_Target0
     float3 specularIBL = Specular_IBL(specularAlbedo, V, N, roughness) * IBLFactor;
     
 
+    diffuseIBL *= ssao;
+    specularIBL *= ssao;
+    
     //todo: tiled light
     float3 tiledLightColor = 0.0f;
     float3 color = 0.0f;
@@ -130,11 +135,10 @@ float4 main(VSOutput input) : SV_Target0
         dirLight = float3(0, 0, 0);
         tiledLightColor = float3(0, 0, 0);
         color += emissive + baseColor.rgb;
-
     }
     else
     {
-        color += emissive + dirLight + diffuseIBL + specularIBL + tiledLightColor;
+        color += emissive + dirLight + diffuseIBL  + specularIBL  + tiledLightColor;
     }
 
 

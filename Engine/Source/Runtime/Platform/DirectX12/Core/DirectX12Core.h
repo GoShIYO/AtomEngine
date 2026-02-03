@@ -1,7 +1,5 @@
 #pragma once
 #include "DescriptorAllocator.h"
-#include "DescriptorHeap.h"
-#include "../Pipeline/RootSignature.h"
 
 namespace AtomEngine
 {
@@ -17,8 +15,9 @@ namespace AtomEngine
 		extern CommandListManager gCommandManager;
 		extern ContextManager gContextManager;
 
-		extern bool gbTypedUAVLoadSupport_R11G11B10_FLOAT;
-		extern bool gbTypedUAVLoadSupport_R16G16B16A16_FLOAT;
+		extern bool gTypedUAVLoadSupport_R11G11B10_FLOAT;
+		extern bool gTypedUAVLoadSupport_R16G16B16A16_FLOAT;
+		extern bool gEnableHDROutput;
 
 		extern uint32_t gBackBufferWidth;
 		extern uint32_t gBackBufferHeight;

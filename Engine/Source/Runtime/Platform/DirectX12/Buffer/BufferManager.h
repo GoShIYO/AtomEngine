@@ -12,14 +12,38 @@ namespace AtomEngine
     extern ColorBuffer gSceneNormalBuffer; // R16G16B16A16_FLOAT
     extern ColorBuffer gPostEffectsBuffer; // R32_UINT (to support Read-Modify-Write with a UAV)
     extern ColorBuffer gOverlayBuffer;
-    
+    extern ColorBuffer gVelocityBuffer;
+
     extern ShadowBuffer gShadowBuffer;
     extern ShadowBuffer gRayTracedShadowBuffer;
 
     extern ColorBuffer gSSAOFullScreen;
     extern ColorBuffer gLinearDepth[2];
+    extern ColorBuffer gDepthDownsize1;
+    extern ColorBuffer gDepthDownsize2;
+    extern ColorBuffer gDepthDownsize3;
+    extern ColorBuffer gDepthDownsize4;
+    extern ColorBuffer gDepthTiled1;
+    extern ColorBuffer gDepthTiled2;
+    extern ColorBuffer gDepthTiled3;
+    extern ColorBuffer gDepthTiled4;
+    extern ColorBuffer gAOMerged1;
+    extern ColorBuffer gAOMerged2;
+    extern ColorBuffer gAOMerged3;
+    extern ColorBuffer gAOMerged4;
+    extern ColorBuffer gAOSmooth1;
+    extern ColorBuffer gAOSmooth2;
+    extern ColorBuffer gAOSmooth3;
+    extern ColorBuffer gAOHighQuality1;
+    extern ColorBuffer gAOHighQuality2;
+    extern ColorBuffer gAOHighQuality3;
+    extern ColorBuffer gAOHighQuality4;
 
+    extern ColorBuffer gMotionPrepBuffer;
     extern ColorBuffer gLumaBuffer;
+    extern ColorBuffer gTemporalColor[2];
+    extern ColorBuffer gTemporalMinBound;
+    extern ColorBuffer gTemporalMaxBound;
     extern ColorBuffer gBloomUAV1[2];	// 640x384 (1/3)
     extern ColorBuffer gBloomUAV2[2];	// 320x192 (1/6) 
     extern ColorBuffer gBloomUAV3[2];	// 160x96  (1/12)

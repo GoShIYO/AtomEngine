@@ -6,6 +6,7 @@
 #include "Runtime/Function/Render/RenderSystem.h"
 #include "Runtime/Function/Global/GlobalContext.h"
 #include "Runtime/Resource/AssetManager.h"
+#include "Runtime/Function/Render/PostEffect/TemporalAA.h"
 
 #include "../Context/GraphicsContext.h"
 #include "../Buffer/BufferManager.h"
@@ -35,9 +36,9 @@ namespace AtomEngine
 			D3D12_DESCRIPTOR_HEAP_TYPE_DSV
 		};
 
-		bool gbTypedUAVLoadSupport_R11G11B10_FLOAT = false;
-		bool gbTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
-
+		bool gTypedUAVLoadSupport_R11G11B10_FLOAT = false;
+		bool gTypedUAVLoadSupport_R16G16B16A16_FLOAT = false;
+		bool gEnableHDROutput = false;
 
 		constexpr uint32_t kSwapChainBufferCount = 3;
 
@@ -188,6 +189,28 @@ namespace AtomEngine
 				&fsSwapChainDesc,
 				nullptr,
 				reinterpret_cast<IDXGISwapChain1**>(gSwapChain.GetAddressOf())));
+
+#define CONDITIONALLY_ENABLE_HDR_OUTPUT 1
+
+#if CONDITIONALLY_ENABLE_HDR_OUTPUT
+			{
+				IDXGISwapChain4* swapChain = (IDXGISwapChain4*)gSwapChain.Get();
+				ComPtr<IDXGIOutput> output;
+				ComPtr<IDXGIOutput6> output6;
+				DXGI_OUTPUT_DESC1 outputDesc;
+				UINT colorSpaceSupport;
+
+				// Query support for ST.2084 on the display and set the color space accordingly
+				if (SUCCEEDED(swapChain->GetContainingOutput(&output)) && SUCCEEDED(output.As(&output6)) &&
+					SUCCEEDED(output6->GetDesc1(&outputDesc)) && outputDesc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020 &&
+					SUCCEEDED(swapChain->CheckColorSpaceSupport(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020, &colorSpaceSupport)) &&
+					(colorSpaceSupport & DXGI_SWAP_CHAIN_COLOR_SPACE_SUPPORT_FLAG_PRESENT) &&
+					SUCCEEDED(swapChain->SetColorSpace1(DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020)))
+				{
+					gEnableHDROutput = true;
+				}
+			}
+#endif 
 
 			for (uint32_t i = 0; i < kSwapChainBufferCount; ++i)
 			{
@@ -393,7 +416,7 @@ namespace AtomEngine
 					if (SUCCEEDED(gDevice->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &Support, sizeof(Support))) &&
 						(Support.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0)
 					{
-						gbTypedUAVLoadSupport_R11G11B10_FLOAT = true;
+						gTypedUAVLoadSupport_R11G11B10_FLOAT = true;
 					}
 
 					Support.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -401,7 +424,7 @@ namespace AtomEngine
 					if (SUCCEEDED(gDevice->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &Support, sizeof(Support))) &&
 						(Support.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0)
 					{
-						gbTypedUAVLoadSupport_R16G16B16A16_FLOAT = true;
+						gTypedUAVLoadSupport_R16G16B16A16_FLOAT = true;
 					}
 				}
 			}
@@ -472,12 +495,6 @@ namespace AtomEngine
 			ResizeBuffers(gNativeWidth, gNativeHeight);
 		}
 
-		bool IsPIXDebug()
-		{
-			return (GetModuleHandleA("WinPixGpuCapturer.dll") != nullptr) ||
-				(GetModuleHandleA("WinPIX.dll") != nullptr);
-		}
-
 		void DX12Core::CompositeOverlays(GraphicsContext& Context)
 		{
 			Context.SetRootSignature(sPresentRS);
@@ -489,6 +506,8 @@ namespace AtomEngine
 
 		void DX12Core::Present()
 		{
+			//TODO:: HDR present
+
 			GraphicsContext& Context = GraphicsContext::Begin(L"Present");
 			Context.SetRootSignature(sPresentRS);
 			Context.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -530,22 +549,19 @@ namespace AtomEngine
 			
 			Context.TransitionResource(gFrameBuffers[gCurrentBuffer], D3D12_RESOURCE_STATE_PRESENT);
 
-			bool isRunningUnderPIX = false;
-#ifdef _DEBUG
-			isRunningUnderPIX = IsPIXDebug();
-#endif
-			Context.Finish(isRunningUnderPIX);
-
 			if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 			{
 				ImGui::UpdatePlatformWindows();
 				ImGui::RenderPlatformWindowsDefault();
 			}
+			Context.Finish(true);
 
 			gSwapChain->Present(s_EnableVSync ? 1 : 0, 0);
 			gCurrentBuffer = gSwapChain->GetCurrentBackBufferIndex();
 
 			++gFrameIndex;
+
+			TemporalAA::Update(gFrameIndex);
 
 			SetNativeResolution();
 			SetWindowResolution();

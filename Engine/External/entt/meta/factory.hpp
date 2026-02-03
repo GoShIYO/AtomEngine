@@ -32,14 +32,18 @@ namespace internal {
 class basic_meta_factory {
     using invoke_type = std::remove_pointer_t<decltype(meta_func_node::invoke)>;
 
-    auto *find_member_or_assert() {
-        auto *member = find_member<&meta_data_node::id>(details->data, bucket);
+    [[nodiscard]] auto &fetch_node() noexcept {
+        return *meta_context::from(*ctx).value[parent];
+    }
+
+    [[nodiscard]] auto *find_member_or_assert() {
+        auto *member = find_member<&meta_data_node::id>(fetch_node().details->data, bucket);
         ENTT_ASSERT(member != nullptr, "Cannot find member");
         return member;
     }
 
-    auto *find_overload_or_assert() {
-        auto *overload = find_overload(find_member<&meta_func_node::id>(details->func, bucket), invoke);
+    [[nodiscard]] auto *find_overload_or_assert() {
+        auto *overload = find_overload(find_member<&meta_func_node::id>(fetch_node().details->func, bucket), invoke);
         ENTT_ASSERT(overload != nullptr, "Cannot find overload");
         return overload;
     }
@@ -52,7 +56,7 @@ class basic_meta_factory {
 protected:
     void type(const id_type id, const char *name) noexcept {
         reset_bucket(parent);
-        auto &&elem = meta_context::from(*ctx).value[parent];
+        auto &elem = fetch_node();
         ENTT_ASSERT(elem.id == id || !resolve(*ctx, id), "Duplicate identifier");
         elem.name = name;
         elem.id = id;
@@ -60,60 +64,65 @@ protected:
 
     template<typename Type>
     void insert_or_assign(Type node) {
+        auto &elem = fetch_node();
+
         reset_bucket(parent);
 
         if constexpr(std::is_same_v<Type, meta_base_node>) {
-            auto *member = find_member<&meta_base_node::type>(details->base, node.type);
-            member ? (*member = node) : details->base.emplace_back(node);
+            auto *member = find_member<&meta_base_node::type>(elem.details->base, node.type);
+            member ? (*member = node) : elem.details->base.emplace_back(node);
         } else if constexpr(std::is_same_v<Type, meta_conv_node>) {
-            auto *member = find_member<&meta_conv_node::type>(details->conv, node.type);
-            member ? (*member = node) : details->conv.emplace_back(node);
+            auto *member = find_member<&meta_conv_node::type>(elem.details->conv, node.type);
+            member ? (*member = node) : elem.details->conv.emplace_back(node);
         } else {
             static_assert(std::is_same_v<Type, meta_ctor_node>, "Unexpected type");
-            auto *member = find_member<&meta_ctor_node::id>(details->ctor, node.id);
-            member ? (*member = node) : details->ctor.emplace_back(node);
+            auto *member = find_member<&meta_ctor_node::id>(elem.details->ctor, node.id);
+            member ? (*member = node) : elem.details->ctor.emplace_back(node);
         }
     }
 
-    void dtor(meta_dtor_node node) {
-        reset_bucket(parent);
-        meta_context::from(*ctx).value[parent].dtor = node;
-    }
-
     void data(meta_data_node node) {
+        auto &elem = fetch_node();
+
         reset_bucket(node.id);
 
-        if(auto *member = find_member<&meta_data_node::id>(details->data, node.id); member == nullptr) {
-            details->data.emplace_back(std::move(node));
+        if(auto *member = find_member<&meta_data_node::id>(elem.details->data, node.id); member == nullptr) {
+            elem.details->data.emplace_back(std::move(node));
         } else if(member->set != node.set || member->get != node.get) {
             *member = std::move(node);
         }
     }
 
     void func(meta_func_node node) {
+        auto &elem = fetch_node();
+
         reset_bucket(node.id, node.invoke);
 
-        if(auto *member = find_member<&meta_func_node::id>(details->func, node.id); member == nullptr) {
-            details->func.emplace_back(std::move(node));
+        if(auto *member = find_member<&meta_func_node::id>(elem.details->func, node.id); member == nullptr) {
+            elem.details->func.emplace_back(std::move(node));
         } else if(auto *overload = find_overload(member, node.invoke); overload == nullptr) {
             while(member->next != nullptr) { member = member->next.get(); }
-            member->next = std::make_shared<meta_func_node>(std::move(node));
+            member->next = std::make_unique<meta_func_node>(std::move(node));
         }
     }
 
-    void traits(const meta_traits value) {
+    void traits(const meta_traits value, const bool unset) {
+        auto set_or_unset_on = [=](auto &node) {
+            node.traits = (unset ? (node.traits & ~value) : (node.traits | value));
+        };
+
         if(bucket == parent) {
-            meta_context::from(*ctx).value[bucket].traits |= value;
+            set_or_unset_on(fetch_node());
         } else if(invoke == nullptr) {
-            find_member_or_assert()->traits |= value;
+            set_or_unset_on(*find_member_or_assert());
         } else {
-            find_overload_or_assert()->traits |= value;
+            set_or_unset_on(*find_overload_or_assert());
         }
     }
 
     void custom(meta_custom_node node) {
         if(bucket == parent) {
-            meta_context::from(*ctx).value[bucket].custom = std::move(node);
+            fetch_node().custom = std::move(node);
         } else if(invoke == nullptr) {
             find_member_or_assert()->custom = std::move(node);
         } else {
@@ -125,12 +134,9 @@ public:
     basic_meta_factory(meta_ctx &area, meta_type_node node)
         : ctx{&area},
           parent{node.info->hash()},
-          bucket{parent},
-          details{node.details.get()} {
-        if(details == nullptr) {
-            node.details = std::make_shared<meta_type_descriptor>();
-            meta_context::from(*ctx).value[parent] = node;
-            details = node.details.get();
+          bucket{parent} {
+        if(auto *curr = meta_context::from(*ctx).value.try_emplace(parent, std::make_unique<meta_type_node>(std::move(node))).first->second.get(); curr->details == nullptr) {
+            curr->details = std::make_unique<meta_type_descriptor>();
         }
     }
 
@@ -139,7 +145,6 @@ private:
     id_type parent{};
     id_type bucket{};
     invoke_type *invoke{};
-    meta_type_descriptor *details{};
 };
 
 } // namespace internal
@@ -166,7 +171,7 @@ public:
      * @param area The context into which to construct meta types.
      */
     meta_factory(meta_ctx &area) noexcept
-        : internal::basic_meta_factory{area, internal::resolve<Type>(internal::meta_context::from(area))} {}
+        : internal::basic_meta_factory{area, internal::setup_node_for<Type>()} {}
 
     /**
      * @brief Assigns a custom unique identifier to a meta type.
@@ -174,7 +179,7 @@ public:
      * @return A meta factory for the given type.
      */
     meta_factory type(const char *name) noexcept {
-        return type(entt::hashed_string::value(name), name);
+        return type(hashed_string::value(name), name);
     }
 
     /**
@@ -218,7 +223,7 @@ public:
      */
     template<auto Candidate>
     auto conv() noexcept {
-        using conv_type = std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<decltype(Candidate), Type &>>>;
+        using conv_type = std::remove_const_t<std::remove_reference_t<std::invoke_result_t<decltype(Candidate), Type &>>>;
         auto *const op = +[](const meta_ctx &area, const void *instance) { return forward_as_meta(area, std::invoke(Candidate, *static_cast<const Type *>(instance))); };
         base_type::insert_or_assign(internal::meta_conv_node{type_id<conv_type>().hash(), op});
         return *this;
@@ -235,7 +240,7 @@ public:
      */
     template<typename To>
     meta_factory conv() noexcept {
-        using conv_type = std::remove_cv_t<std::remove_reference_t<To>>;
+        using conv_type = std::remove_const_t<std::remove_reference_t<To>>;
         auto *const op = +[](const meta_ctx &area, const void *instance) { return forward_as_meta(area, static_cast<To>(*static_cast<const Type *>(instance))); };
         base_type::insert_or_assign(internal::meta_conv_node{type_id<conv_type>().hash(), op});
         return *this;
@@ -254,11 +259,11 @@ public:
      * @tparam Policy Optional policy (no policy set by default).
      * @return A meta factory for the parent type.
      */
-    template<auto Candidate, typename Policy = as_is_t>
+    template<auto Candidate, typename Policy = as_value_t>
     meta_factory ctor() noexcept {
         using descriptor = meta_function_helper_t<Type, decltype(Candidate)>;
         static_assert(Policy::template value<typename descriptor::return_type>, "Invalid return type for the given policy");
-        static_assert(std::is_same_v<std::remove_cv_t<std::remove_reference_t<typename descriptor::return_type>>, Type>, "The function doesn't return an object of the required type");
+        static_assert(std::is_same_v<std::remove_const_t<std::remove_reference_t<typename descriptor::return_type>>, Type>, "The function doesn't return an object of the required type");
         base_type::insert_or_assign(internal::meta_ctor_node{type_id<typename descriptor::args_type>().hash(), descriptor::args_type::size, &meta_arg<typename descriptor::args_type>, &meta_construct<Type, Candidate, Policy>});
         return *this;
     }
@@ -285,41 +290,15 @@ public:
     }
 
     /**
-     * @brief Assigns a meta destructor to a meta type.
-     *
-     * Both free functions and member functions can be assigned to meta types in
-     * the role of destructors.<br/>
-     * The signature of a free function should be identical to the following:
-     *
-     * @code{.cpp}
-     * void(Type &);
-     * @endcode
-     *
-     * Member functions should not take arguments instead.<br/>
-     * The purpose is to give users the ability to free up resources that
-     * require special treatment before an object is actually destroyed.
-     *
-     * @tparam Func The actual function to use as a destructor.
-     * @return A meta factory for the parent type.
-     */
-    template<auto Func>
-    meta_factory dtor() noexcept {
-        static_assert(std::is_invocable_v<decltype(Func), Type &>, "The function doesn't accept an object of the type provided");
-        auto *const op = +[](void *instance) { std::invoke(Func, *static_cast<Type *>(instance)); };
-        base_type::dtor(internal::meta_dtor_node{op});
-        return *this;
-    }
-
-    /**
      * @brief Assigns a meta data to a meta type.
      * @tparam Data The actual variable to attach to the meta type.
      * @tparam Policy Optional policy (no policy set by default).
      * @param name A custom unique identifier as a **string literal**.
      * @return A meta factory for the given type.
      */
-    template<auto Data, typename Policy = as_is_t>
+    template<auto Data, typename Policy = as_value_t>
     meta_factory data(const char *name) noexcept {
-        return data<Data, Policy>(entt::hashed_string::value(name), name);
+        return data<Data, Policy>(hashed_string::value(name), name);
     }
 
     /**
@@ -336,7 +315,7 @@ public:
      * @param name An optional name for the meta data as a **string literal**.
      * @return A meta factory for the parent type.
      */
-    template<auto Data, typename Policy = as_is_t>
+    template<auto Data, typename Policy = as_value_t>
     meta_factory data(const id_type id, const char *name = nullptr) noexcept {
         if constexpr(std::is_member_object_pointer_v<decltype(Data)>) {
             using data_type = std::invoke_result_t<decltype(Data), Type &>;
@@ -349,8 +328,8 @@ public:
                     /* this is never static */
                     std::is_const_v<std::remove_reference_t<data_type>> ? internal::meta_traits::is_const : internal::meta_traits::is_none,
                     1u,
-                    &internal::resolve<std::remove_cv_t<std::remove_reference_t<data_type>>>,
-                    &meta_arg<type_list<std::remove_cv_t<std::remove_reference_t<data_type>>>>,
+                    &internal::resolve<std::remove_const_t<std::remove_reference_t<data_type>>>,
+                    &meta_arg<type_list<std::remove_const_t<std::remove_reference_t<data_type>>>>,
                     &meta_setter<Type, Data>,
                     &meta_getter<Type, Data, Policy>});
         } else {
@@ -368,8 +347,8 @@ public:
                     name,
                     ((!std::is_pointer_v<decltype(Data)> || std::is_const_v<data_type>) ? internal::meta_traits::is_const : internal::meta_traits::is_none) | internal::meta_traits::is_static,
                     1u,
-                    &internal::resolve<std::remove_cv_t<std::remove_reference_t<data_type>>>,
-                    &meta_arg<type_list<std::remove_cv_t<std::remove_reference_t<data_type>>>>,
+                    &internal::resolve<std::remove_const_t<std::remove_reference_t<data_type>>>,
+                    &meta_arg<type_list<std::remove_const_t<std::remove_reference_t<data_type>>>>,
                     &meta_setter<Type, Data>,
                     &meta_getter<Type, Data, Policy>});
         }
@@ -386,9 +365,9 @@ public:
      * @param name A custom unique identifier as a **string literal**.
      * @return A meta factory for the given type.
      */
-    template<auto Setter, auto Getter, typename Policy = as_is_t>
+    template<auto Setter, auto Getter, typename Policy = as_value_t>
     meta_factory data(const char *name) noexcept {
-        return data<Setter, Getter, Policy>(entt::hashed_string::value(name), name);
+        return data<Setter, Getter, Policy>(hashed_string::value(name), name);
     }
 
     /**
@@ -412,7 +391,7 @@ public:
      * @param name An optional name for the meta data as a **string literal**.
      * @return A meta factory for the parent type.
      */
-    template<auto Setter, auto Getter, typename Policy = as_is_t>
+    template<auto Setter, auto Getter, typename Policy = as_value_t>
     meta_factory data(const id_type id, const char *name = nullptr) noexcept {
         using descriptor = meta_function_helper_t<Type, decltype(Getter)>;
         static_assert(Policy::template value<typename descriptor::return_type>, "Invalid return type for the given policy");
@@ -425,7 +404,7 @@ public:
                     /* this is never static */
                     internal::meta_traits::is_const,
                     0u,
-                    &internal::resolve<std::remove_cv_t<std::remove_reference_t<typename descriptor::return_type>>>,
+                    &internal::resolve<std::remove_const_t<std::remove_reference_t<typename descriptor::return_type>>>,
                     &meta_arg<type_list<>>,
                     &meta_setter<Type, Setter>,
                     &meta_getter<Type, Getter, Policy>});
@@ -439,7 +418,7 @@ public:
                     /* this is never static nor const */
                     internal::meta_traits::is_none,
                     1u,
-                    &internal::resolve<std::remove_cv_t<std::remove_reference_t<typename descriptor::return_type>>>,
+                    &internal::resolve<std::remove_const_t<std::remove_reference_t<typename descriptor::return_type>>>,
                     &meta_arg<type_list<type_list_element_t<static_cast<std::size_t>(args_type::size != 1u), args_type>>>,
                     &meta_setter<Type, Setter>,
                     &meta_getter<Type, Getter, Policy>});
@@ -455,9 +434,9 @@ public:
      * @param name A custom unique identifier as a **string literal**.
      * @return A meta factory for the given type.
      */
-    template<auto Candidate, typename Policy = as_is_t>
+    template<auto Candidate, typename Policy = as_value_t>
     meta_factory func(const char *name) noexcept {
-        return func<Candidate, Policy>(entt::hashed_string::value(name), name);
+        return func<Candidate, Policy>(hashed_string::value(name), name);
     }
 
     /**
@@ -474,7 +453,7 @@ public:
      * @param name An optional name for the function as a **string literal**.
      * @return A meta factory for the parent type.
      */
-    template<auto Candidate, typename Policy = as_is_t>
+    template<auto Candidate, typename Policy = as_value_t>
     meta_factory func(const id_type id, const char *name = nullptr) noexcept {
         using descriptor = meta_function_helper_t<Type, decltype(Candidate)>;
         static_assert(Policy::template value<typename descriptor::return_type>, "Invalid return type for the given policy");
@@ -485,7 +464,7 @@ public:
                 name,
                 (descriptor::is_const ? internal::meta_traits::is_const : internal::meta_traits::is_none) | (descriptor::is_static ? internal::meta_traits::is_static : internal::meta_traits::is_none),
                 descriptor::args_type::size,
-                &internal::resolve<std::conditional_t<std::is_same_v<Policy, as_void_t>, void, std::remove_cv_t<std::remove_reference_t<typename descriptor::return_type>>>>,
+                &internal::resolve<std::conditional_t<std::is_same_v<Policy, as_void_t>, void, std::remove_const_t<std::remove_reference_t<typename descriptor::return_type>>>>,
                 &meta_arg<typename descriptor::args_type>,
                 &meta_invoke<Type, Candidate, Policy>});
 
@@ -499,12 +478,13 @@ public:
      *
      * @tparam Value Type of the traits value.
      * @param value Traits value.
+     * @param unset True to unset the given traits, false otherwise.
      * @return A meta factory for the parent type.
      */
     template<typename Value>
-    meta_factory traits(const Value value) {
+    meta_factory traits(const Value value, const bool unset = false) {
         static_assert(std::is_enum_v<Value>, "Invalid enum type");
-        base_type::traits(internal::user_to_meta_traits(value));
+        base_type::traits(internal::user_to_meta_traits(value), unset);
         return *this;
     }
 
@@ -535,10 +515,10 @@ public:
  * @param ctx The context from which to reset meta types.
  */
 inline void meta_reset(meta_ctx &ctx, const id_type id) noexcept {
-    auto &&context = internal::meta_context::from(ctx);
+    auto &context = internal::meta_context::from(ctx);
 
     for(auto it = context.value.begin(); it != context.value.end();) {
-        if(it->second.id == id) {
+        if(it->second->id == id) {
             it = context.value.erase(it);
         } else {
             ++it;

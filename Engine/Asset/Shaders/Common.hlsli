@@ -13,18 +13,16 @@ float Pow5(float x)
     return xSq * xSq * x;
 }
 
-float3 Fresnel_Schlick(float3 F0, float cosine)
+float3 Fresnel_Shlick(float3 F0, float cosine)
 {
     return F0 + (1.0 - F0) * Pow5(1.0 - cosine);
 }
 
-// Fresnel-Schlick
-float3 Fresnel_Schlick_F90(float3 F0, float3 F90, float cosine)
+float Fresnel_Shlick(float F0, float F90, float cosine)
 {
     return lerp(F0, F90, Pow5(1.0 - cosine));
 }
-
-float Fresnel_Schlick(float F0, float F90, float cosine)
+float3 Fresnel_Shlick(float3 F0, float3 F90, float cosine)
 {
     return lerp(F0, F90, Pow5(1.0 - cosine));
 }
@@ -52,8 +50,8 @@ float G_Smith(float NdotV, float NdotL, float roughness)
 float3 Diffuse_Burley(float3 albedo, float roughness, float NdotL, float NdotV, float LdotH)
 {
     float fd90 = 0.5 + 2.0 * roughness * LdotH * LdotH;
-    float3 F_L = Fresnel_Schlick(1, fd90, NdotL);
-    float3 F_V = Fresnel_Schlick(1, fd90, NdotV);
+    float3 F_L = Fresnel_Shlick(1, fd90, NdotL);
+    float3 F_V = Fresnel_Shlick(1, fd90, NdotV);
     return albedo * (F_L * F_V);
 }
 

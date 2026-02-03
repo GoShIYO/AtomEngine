@@ -238,6 +238,9 @@
     <Filter Include="Config">
       <UniqueIdentifier>{79edf7b0-a084-4b8e-b66d-d15dc0197461}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Runtime\Function\Render\PostEffect">
+      <UniqueIdentifier>{7f4c83bb-d471-45ee-9623-6d217ded090a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Editor\Editor.cpp">
@@ -420,15 +423,6 @@
     <ClCompile Include="Source\Runtime\Function\Render\WindowManager.cpp">
       <Filter>Source\Runtime\Function\Render</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\Particle\Particle.cpp">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleEditor.cpp">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.cpp">
       <Filter>Source\Runtime\Function\Render\RenderPasses</Filter>
     </ClCompile>
@@ -449,30 +443,6 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Function\Sprite\Sprite.cpp">
       <Filter>Source\Runtime\Function\Sprite</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.cpp">
       <Filter>Source\Runtime\Platform\DirectX12\Context</Filter>
@@ -554,6 +524,48 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Resource\TexUtil.cpp">
       <Filter>Source\Runtime\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\PostEffect\PostEffect.cpp">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\PostEffect\SSAO.cpp">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\Particle.cpp">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleEditor.cpp">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\Particle\ParticleSystem.cpp">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.cpp">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.cpp">
+      <Filter>Shader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -797,18 +809,6 @@
     <ClInclude Include="Source\Runtime\Function\Render\WindowManager.h">
       <Filter>Source\Runtime\Function\Render</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\Particle.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleEditor.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleSystem.h">
-      <Filter>Source\Runtime\Function\Render\Particle</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Function\Render\RenderPasses\ForwardRenderingPass.h">
       <Filter>Source\Runtime\Function\Render\RenderPasses</Filter>
     </ClInclude>
@@ -835,33 +835,6 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Function\Sprite\Sprite.h">
       <Filter>Source\Runtime\Function\Sprite</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h">
-      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Platform\DirectX12\Context\CommandContext.h">
       <Filter>Source\Runtime\Platform\DirectX12\Context</Filter>
@@ -962,6 +935,54 @@
     <ClInclude Include="Source\Runtime\Resource\TexUtil.h">
       <Filter>Source\Runtime\Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\PostEffect\PostEffect.h">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\PostEffect\SSAO.h">
+      <Filter>Source\Runtime\Function\Render\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\Particle.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleCommon.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleEditor.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\Particle\ParticleSystem.h">
+      <Filter>Source\Runtime\Function\Render\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuResource.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\GpuBuffer.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\DepthBuffer.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ColorBuffer.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\BufferManager.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\PixelBuffer.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ReadbackBuffer.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\ShadowBuffer.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Platform\DirectX12\Buffer\UploadBuffer.h">
+      <Filter>Source\Runtime\Platform\DirectX12\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shaders\BufferCopyPS.hlsl">
@@ -977,18 +998,6 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Asset\Shaders\DepthViewVS.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_8.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_16.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_24.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Light\FillLightGridCS_32.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="Asset\Shaders\FullScreenQuad.hlsl">
@@ -1015,12 +1024,6 @@
     <FxCompile Include="Asset\Shaders\Object3DSkinned.VS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shaders\Particle\ParticleDispatchIndirectArgs.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
-    <FxCompile Include="Asset\Shaders\Particle\ParticleEmitCS.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
     <FxCompile Include="Asset\Shaders\PresentPS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
@@ -1045,6 +1048,107 @@
     <FxCompile Include="Asset\Shaders\SpriteVS.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\AdaptExposure.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ApplyBloom.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ApplyBloom2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\BloomExtractAndDownsampleLdr.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\Blur.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\DownsampleBloom.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ExtractLuma.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\GenerateHistogram.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMap.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMap2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMapHDR.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\ToneMapHDR2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\UpsampleAndBlur.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsample.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsampleBlendOut.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsamplePreMin.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoBlurUpsamplePreMinBlendOut.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoPrepareDepthBuffers1.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoPrepareDepthBuffers2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoRender1.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\AoRender2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\BloomExtractAndDownsampleHdr.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\BoundNeighborhood.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\CopyBackPostBuffer.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceHdr.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceHdr2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceLdr.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\DebugLuminanceLdr2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\DebugSSAO.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\SSAO\LinearizeDepth.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\ResolveTAA.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\SharpenTAA.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\TemporalBlend.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\CameraVelocity.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\TAA\CameraVelocityLinearZ.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">
@@ -1088,6 +1192,15 @@
     </None>
     <None Include="Asset\Particles\wavering.json">
       <Filter>Config</Filter>
+    </None>
+    <None Include="Asset\Shaders\PostEffects\SSAO\AoBlurAndUpsampleCS.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Asset\Shaders\PostEffects\SSAO\AoRender.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Asset\Shaders\PostEffects\TAA\PixelPacking_Velocity.hlsli">
+      <Filter>Shader</Filter>
     </None>
   </ItemGroup>
 </Project>

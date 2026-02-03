@@ -450,24 +450,20 @@ public:
      * @brief Move constructor.
      * @param other The instance to move from.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
     basic_storage(basic_storage &&other) noexcept
-        : base_type{std::move(other)},
+        : base_type{static_cast<base_type &&>(other)},
           payload{std::move(other.payload)} {}
-    // NOLINTEND(bugprone-use-after-move)
 
     /**
      * @brief Allocator-extended move constructor.
      * @param other The instance to move from.
      * @param allocator The allocator to use.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
     basic_storage(basic_storage &&other, const allocator_type &allocator)
-        : base_type{std::move(other), allocator},
+        : base_type{static_cast<base_type &&>(other), allocator},
           payload{std::move(other.payload), allocator} {
         ENTT_ASSERT(alloc_traits::is_always_equal::value || get_allocator() == other.get_allocator(), "Copying a storage is not allowed");
     }
-    // NOLINTEND(bugprone-use-after-move)
 
     /*! @brief Default destructor. */
     // NOLINTNEXTLINE(bugprone-exception-escape)
@@ -909,12 +905,9 @@ public:
      * Attempting to use an entity that already belongs to the storage results
      * in undefined behavior.
      *
-     * @tparam Args Types of arguments to use to construct the object.
      * @param entt A valid identifier.
      */
-    template<typename... Args>
-    // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
-    void emplace(const entity_type entt, Args &&...) {
+    void emplace(const entity_type entt) {
         base_type::try_emplace(entt, false);
     }
 
@@ -933,13 +926,11 @@ public:
     /**
      * @brief Assigns entities to a storage.
      * @tparam It Type of input iterator.
-     * @tparam Args Types of optional arguments.
      * @param first An iterator to the first element of the range of entities.
      * @param last An iterator past the last element of the range of entities.
      */
-    template<typename It, typename... Args>
-    // NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
-    void insert(It first, It last, Args &&...) {
+    template<typename It>
+    void insert(It first, It last) {
         for(; first != last; ++first) {
             base_type::try_emplace(*first, true);
         }
@@ -1069,22 +1060,20 @@ public:
      * @brief Move constructor.
      * @param other The instance to move from.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
+    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     basic_storage(basic_storage &&other) noexcept
-        : base_type{std::move(other)},
+        : base_type{static_cast<base_type &&>(other)},
           placeholder{other.placeholder} {}
-    // NOLINTEND(bugprone-use-after-move)
 
     /**
      * @brief Allocator-extended move constructor.
      * @param other The instance to move from.
      * @param allocator The allocator to use.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
+    // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
     basic_storage(basic_storage &&other, const allocator_type &allocator)
-        : base_type{std::move(other), allocator},
+        : base_type{static_cast<base_type &&>(other), allocator},
           placeholder{other.placeholder} {}
-    // NOLINTEND(bugprone-use-after-move)
 
     /*! @brief Default destructor. */
     ~basic_storage() override = default;
@@ -1104,6 +1093,16 @@ public:
         placeholder = other.placeholder;
         base_type::operator=(std::move(other));
         return *this;
+    }
+
+    /**
+     * @brief Exchanges the contents with those of a given storage.
+     * @param other Storage to exchange the content with.
+     */
+    void swap(basic_storage &other) noexcept {
+        using std::swap;
+        swap(placeholder, other.placeholder);
+        base_type::swap(other);
     }
 
     /**

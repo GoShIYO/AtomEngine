@@ -37,14 +37,11 @@ __declspec(align(256)) struct GlobalConstants
 	float4x4 ViewProjMatrix;		// ビュー・プロジェクション行列
 	float4x4 SunShadowMatrix;		// light space行列
 	float3 CameraPos;				// カメラ位置
-	float pad0;
+	float IBLRange;					// IBLの範囲
 	float3 SunDirection;			// メイン平行光源の方向
-	float pad1;
+	float IBLBias;					// IBLのバイアス
 	float3 SunIntensity;			// メイン平行光源の強度
 	float IBLFactor;				// IBLの強度
-	float IBLRange;					// IBLの範囲
-	float IBLBias;					// IBLのバイアス
-	float ShadowBias;
 	float ShadowTexelSize[4];
 	float InvTileDim[4];
 	uint32_t TileCount[4];

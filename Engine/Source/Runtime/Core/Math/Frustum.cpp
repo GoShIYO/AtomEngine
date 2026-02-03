@@ -76,21 +76,18 @@ namespace AtomEngine
 		}
 		else
 		{
+			// Perspective
 			float NearClip, FarClip;
 
-			float Z_far_val = std::abs(M[14] * RcpZZ);
-
-			float Z_near_val = std::abs(Z_far_val / (1.0f - RcpZZ));
-
-			if (RcpZZ > 0.0f)
+			if (RcpZZ > 0.0f)	// Reverse Z
 			{
-				NearClip = std::min(Z_near_val, Z_far_val);
-				FarClip = std::max(Z_near_val, Z_far_val);
+				FarClip = M[14] * RcpZZ;
+				NearClip = FarClip / (RcpZZ + 1.0f);
 			}
 			else
 			{
-				NearClip = std::max(Z_near_val, Z_far_val);
-				FarClip = std::min(Z_near_val, Z_far_val);
+				NearClip = M[14] * RcpZZ;
+				FarClip = NearClip / (RcpZZ + 1.0f);
 			}
 
 			ConstructPerspectiveFrustum(RcpXX, RcpYY, NearClip, FarClip);

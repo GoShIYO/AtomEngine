@@ -60,7 +60,7 @@ namespace AtomEngine
 		return (*keyframes.rbegin()).value;
 	}
 
-	inline Quaternion CaculateRotation(const std::vector<KeyframeQuat>& keyframes, float time)
+	inline Quaternion CalculateRotation(const std::vector<KeyframeQuat>& keyframes, float time)
 	{
 		assert(!keyframes.empty());
 		if (keyframes.size() == 1 || time <= keyframes[0].time)
