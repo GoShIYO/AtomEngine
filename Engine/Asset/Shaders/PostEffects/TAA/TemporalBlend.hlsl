@@ -1,4 +1,4 @@
-#include "PixelPacking_Velocity.hlsli"
+#include "../MotionBlur/PixelPacking_Velocity.hlsli"
 #include "../PostEffectUtil.hlsli"
 
 static const uint kLdsPitch = 18;

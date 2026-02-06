@@ -3,6 +3,8 @@
 #include "BoundingPlane.h"
 #include "BoundingSphere.h"
 #include "BoundingBox.h"
+#include "Runtime/Core/Color/Color.h"
+#include "Runtime/Function/Render/Primitive.h"
 
 namespace AtomEngine
 {
@@ -31,6 +33,12 @@ namespace AtomEngine
 
 		bool IntersectBoundingBox(const AxisAlignedBox& aabb) const;
 
+		/// <summary>
+		/// デバッグ用に視錐体のエッジをラインで描画します。
+		/// viewProj は描画に用いるカメラの ViewProj 行列（通常はデバッグカメラの行列）です。
+		/// </summary>
+		void DebugDraw(const Matrix4x4& viewProj, const Color& color = Color::Cyan) const;
+
 		friend Frustum operator* (const Transform& xform, const Frustum& frustum);
 	private:
 
@@ -43,7 +51,6 @@ namespace AtomEngine
 		Vector3 m_FrustumCorners[8];		// 円錐台の角
 		BoundingPlane m_FrustumPlanes[6];	// 六面
 	};
-
 	inline bool Frustum::IntersectSphere(BoundingSphere sphere) const
 	{
 		float radius = sphere.GetRadius();

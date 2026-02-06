@@ -2,6 +2,8 @@
 #include "Runtime/Platform/DirectX12/Buffer/BufferManager.h"
 #include "Runtime/Function/Render/Particle/ParticleSystem.h"
 #include "Runtime/Function/Render/PostEffect/TemporalAA.h"
+#include "Runtime/Function/Render/PostEffect/MotionBlur.h"
+
 #include "imgui.h"
 
 namespace AtomEngine
@@ -20,16 +22,20 @@ namespace AtomEngine
 	void PostProcessPass::Update(GraphicsContext& Context, float deltaTime)
 	{
 		ParticleSystem::Update(Context.GetComputeContext(), deltaTime);
-		//TemporalAA::ImGuiSettingsWindow();
+		TemporalAA::ImGuiSettingsWindow();
 	}
 
 	void PostProcessPass::Render(GraphicsContext& gfxContext)
 	{
 
-		//TemporalAA::GenerateVelocityBuffer(gfxContext, *mCamera, true);
-		//TemporalAA::ResolveImage(gfxContext);
+		MotionBlur::GenerateCameraVelocityBuffer(gfxContext, *mCamera, true);
+
+		TemporalAA::ResolveImage(gfxContext);
 
 		ParticleSystem::Render(gfxContext, *mCamera, *mRTV, *mDSV);
+
+		MotionBlur::RenderCameraBlur(gfxContext, *mCamera);
+		MotionBlur::RenderObjectBlur(gfxContext, gVelocityBuffer);
 
 #ifdef _DEBUG
 		//mGridRenderer->Render(gfxContext, mCamera, *mRTV, *mDSV, mViewport, mScissor);

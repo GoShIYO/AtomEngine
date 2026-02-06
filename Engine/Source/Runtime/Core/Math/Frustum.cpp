@@ -24,8 +24,8 @@ namespace AtomEngine
 		const float NVy = 1.0f / std::sqrt(1.0f + VTan * VTan);
 		const float NVz = NVy * VTan;
 
-		m_FrustumPlanes[kNearPlane] = BoundingPlane(0.0f, 0.0f, 1.0f, -NearClip);
-		m_FrustumPlanes[kFarPlane] = BoundingPlane(0.0f, 0.0f, -1.0f, FarClip);
+		m_FrustumPlanes[kNearPlane] = BoundingPlane(0.0f, 0.0f, -1.0f, NearClip);
+		m_FrustumPlanes[kFarPlane] = BoundingPlane(0.0f, 0.0f, 1.0f, -FarClip);
 		m_FrustumPlanes[kLeftPlane] = BoundingPlane(NHx, 0.0f, NHz, 0.0f);
 		m_FrustumPlanes[kRightPlane] = BoundingPlane(-NHx, 0.0f, NHz, 0.0f);
 		m_FrustumPlanes[kTopPlane] = BoundingPlane(0.0f, -NVy, NVz, 0.0f);
@@ -43,8 +43,8 @@ namespace AtomEngine
 		m_FrustumCorners[kFarLowerRight] = Vector3(Right, Bottom, Back);
 		m_FrustumCorners[kFarUpperRight] = Vector3(Right, Top, Back);
 
-		m_FrustumPlanes[kNearPlane] = BoundingPlane(0.0f, 0.0f, -1.0f, Front);
-		m_FrustumPlanes[kFarPlane] = BoundingPlane(0.0f, 0.0f, 1.0f, -Back);
+		m_FrustumPlanes[kNearPlane] = BoundingPlane(0.0f, 0.0f, 1.0f, -Front);
+		m_FrustumPlanes[kFarPlane] = BoundingPlane(0.0f, 0.0f, -1.0f, Back);
 		m_FrustumPlanes[kLeftPlane] = BoundingPlane(1.0f, 0.0f, 0.0f, -Left);
 		m_FrustumPlanes[kRightPlane] = BoundingPlane(-1.0f, 0.0f, 0.0f, Right);
 		m_FrustumPlanes[kBottomPlane] = BoundingPlane(0.0f, 1.0f, 0.0f, -Bottom);
@@ -76,18 +76,21 @@ namespace AtomEngine
 		}
 		else
 		{
-			// Perspective
 			float NearClip, FarClip;
 
-			if (RcpZZ > 0.0f)	// Reverse Z
+			float Z_far_val = std::abs(M[14] * RcpZZ);
+
+			float Z_near_val = std::abs(Z_far_val / (1.0f - RcpZZ));
+
+			if (RcpZZ > 0.0f)
 			{
-				FarClip = M[14] * RcpZZ;
-				NearClip = FarClip / (RcpZZ + 1.0f);
+				NearClip = std::min(Z_near_val, Z_far_val);
+				FarClip = std::max(Z_near_val, Z_far_val);
 			}
 			else
 			{
-				NearClip = M[14] * RcpZZ;
-				FarClip = NearClip / (RcpZZ + 1.0f);
+				NearClip = std::max(Z_near_val, Z_far_val);
+				FarClip = std::min(Z_near_val, Z_far_val);
 			}
 
 			ConstructPerspectiveFrustum(RcpXX, RcpYY, NearClip, FarClip);
@@ -98,5 +101,25 @@ namespace AtomEngine
 		float vTan = tanf(fovY * 0.5f);
 		float hTan = vTan * aspect;
 		ConstructPerspectiveFrustum(hTan, vTan, nearZ, farZ);
+	}
+	void Frustum::DebugDraw(const Matrix4x4& viewProj, const Color& color) const
+	{
+		// Near rect
+		Primitive::DrawLine(m_FrustumCorners[kNearLowerLeft], m_FrustumCorners[kNearUpperLeft], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kNearUpperLeft], m_FrustumCorners[kNearUpperRight], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kNearUpperRight], m_FrustumCorners[kNearLowerRight], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kNearLowerRight], m_FrustumCorners[kNearLowerLeft], color, viewProj);
+
+		// Far rect
+		Primitive::DrawLine(m_FrustumCorners[kFarLowerLeft], m_FrustumCorners[kFarUpperLeft], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kFarUpperLeft], m_FrustumCorners[kFarUpperRight], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kFarUpperRight], m_FrustumCorners[kFarLowerRight], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kFarLowerRight], m_FrustumCorners[kFarLowerLeft], color, viewProj);
+
+		// Sides
+		Primitive::DrawLine(m_FrustumCorners[kNearLowerLeft], m_FrustumCorners[kFarLowerLeft], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kNearUpperLeft], m_FrustumCorners[kFarUpperLeft], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kNearLowerRight], m_FrustumCorners[kFarLowerRight], color, viewProj);
+		Primitive::DrawLine(m_FrustumCorners[kNearUpperRight], m_FrustumCorners[kFarUpperRight], color, viewProj);
 	}
 }

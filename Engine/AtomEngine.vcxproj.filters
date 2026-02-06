@@ -567,6 +567,19 @@
     <ClCompile Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
+    <ClCompile Include="External\imgui\include\GraphEditor.cpp" />
+    <ClCompile Include="External\imgui\include\ImCurveEdit.cpp" />
+    <ClCompile Include="External\imgui\include\ImGradient.cpp" />
+    <ClCompile Include="External\imgui\include\imgui.cpp" />
+    <ClCompile Include="External\imgui\include\ImGuizmo.cpp" />
+    <ClCompile Include="External\imgui\include\imgui_demo.cpp" />
+    <ClCompile Include="External\imgui\include\imgui_draw.cpp" />
+    <ClCompile Include="External\imgui\include\imgui_impl_dx12.cpp" />
+    <ClCompile Include="External\imgui\include\imgui_impl_win32.cpp" />
+    <ClCompile Include="External\imgui\include\imgui_tables.cpp" />
+    <ClCompile Include="External\imgui\include\imgui_widgets.cpp" />
+    <ClCompile Include="External\imgui\include\ImSequencer.cpp" />
+    <ClCompile Include="Source\Runtime\Function\Render\PostEffect\MotionBlur.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="External\vox\ogt_vox.h">
@@ -983,6 +996,21 @@
     <ClInclude Include="Source\Runtime\Function\Render\PostEffect\TemporalAA.h">
       <Filter>Shader</Filter>
     </ClInclude>
+    <ClInclude Include="External\imgui\include\GraphEditor.h" />
+    <ClInclude Include="External\imgui\include\imconfig.h" />
+    <ClInclude Include="External\imgui\include\ImCurveEdit.h" />
+    <ClInclude Include="External\imgui\include\ImGradient.h" />
+    <ClInclude Include="External\imgui\include\imgui.h" />
+    <ClInclude Include="External\imgui\include\ImGuizmo.h" />
+    <ClInclude Include="External\imgui\include\imgui_impl_dx12.h" />
+    <ClInclude Include="External\imgui\include\imgui_impl_win32.h" />
+    <ClInclude Include="External\imgui\include\imgui_internal.h" />
+    <ClInclude Include="External\imgui\include\ImSequencer.h" />
+    <ClInclude Include="External\imgui\include\imstb_rectpack.h" />
+    <ClInclude Include="External\imgui\include\imstb_textedit.h" />
+    <ClInclude Include="External\imgui\include\imstb_truetype.h" />
+    <ClInclude Include="External\imgui\include\ImZoomSlider.h" />
+    <ClInclude Include="Source\Runtime\Function\Render\PostEffect\MotionBlur.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Asset\Shaders\BufferCopyPS.hlsl">
@@ -1147,8 +1175,12 @@
     <FxCompile Include="Asset\Shaders\PostEffects\TAA\TemporalBlend.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="Asset\Shaders\PostEffects\TAA\CameraVelocity.hlsl" />
-    <FxCompile Include="Asset\Shaders\PostEffects\TAA\CameraVelocityLinearZ.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\MotionBlur\CameraVelocityCS.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\MotionBlur\CameraMotionBlurPrePassCS.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\MotionBlur\CameraMotionBlurPrePassLinearZCS.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\MotionBlur\MotionBlurFinalPassCS.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\MotionBlur\MotionBlurFinalPassPS.hlsl" />
+    <FxCompile Include="Asset\Shaders\PostEffects\MotionBlur\MotionBlurPrePassCS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Asset\Shaders\Common.hlsli">
@@ -1199,8 +1231,6 @@
     <None Include="Asset\Shaders\PostEffects\SSAO\AoRender.hlsli">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Asset\Shaders\PostEffects\TAA\PixelPacking_Velocity.hlsli">
-      <Filter>Shader</Filter>
-    </None>
+    <None Include="Asset\Shaders\PostEffects\MotionBlur\PixelPacking_Velocity.hlsli" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 #include "BoundingSphere.h"
+#include "BoundingBox.h"
 #include "Math.h"
 
 namespace AtomEngine
@@ -21,4 +22,9 @@ namespace AtomEngine
 
         return BoundingSphere((extremeA + extremeB) * 0.5f, (extremeA - extremeB).Length() * 0.5f);
     }
+    BoundingSphere::BoundingSphere(const AxisAlignedBox& box)
+    {
+        mRepr = Vector4(box.GetCenter(), box.GetRadius());
+    }
+
 }

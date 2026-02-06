@@ -463,7 +463,7 @@ namespace AtomEngine
 			}
 		}
 
-		uint32_t GetFrameIndex()
+		uint32_t GetFrameIndexMod2()
 		{
 			return (gFrameIndex % 2);
 		}

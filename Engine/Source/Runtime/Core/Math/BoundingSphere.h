@@ -5,6 +5,7 @@
 
 namespace AtomEngine
 {
+	class AxisAlignedBox;
     class BoundingSphere
     {
     public:
@@ -12,6 +13,7 @@ namespace AtomEngine
         BoundingSphere(float x, float y, float z, float r) : mRepr(x, y, z, r) {}
         BoundingSphere(const Vector4& v4) : mRepr(v4) {}
         BoundingSphere(const Vector3& center, float radius);
+        BoundingSphere(const AxisAlignedBox& box);
 
         explicit BoundingSphere(const Vector3& f3) : mRepr(Vector4(f3,1.0f)) {}
         explicit operator Vector4() const { return Vector4(mRepr); }

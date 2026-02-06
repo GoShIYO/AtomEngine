@@ -118,6 +118,11 @@ namespace AtomEngine
 			gTemporalMaxBound.Create(L"Temporal Max Color", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R11G11B10_FLOAT);
 
 		}
+
+		//Motion Blur
+		{
+			gMotionPrepBuffer.Create(L"Motion Blur Prep", bufferWidth1, bufferHeight1, 1, DXGI_FORMAT_R16G16B16A16_FLOAT);
+		}
 		//Luminance
 		{
 			gLumaBuffer.Create(L"Luminance", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R8_UNORM);

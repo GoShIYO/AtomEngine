@@ -15,6 +15,7 @@
 #include "Runtime/Function/Render/MeshRenderer.h"
 #include "Runtime/Function/Render/PostEffect/SSAO.h"
 #include "Runtime/Function/Render/PostEffect/TemporalAA.h"
+#include "Runtime/Function/Render/PostEffect/MotionBlur.h"
 
 namespace AtomEngine
 {
@@ -231,6 +232,7 @@ namespace AtomEngine
 		SpriteRenderer::Initialize();
 		MeshRenderer::Initialize();
 		SSAO::Initialize();
+		MotionBlur::Initialize();
 		TemporalAA::Initialize();
 
 		InitializeRenderPasses();
@@ -331,6 +333,7 @@ namespace AtomEngine
 		SpriteRenderer::Shutdown();
 		MeshRenderer::Shutdown();
 		SSAO::Shutdown();
+		MotionBlur::Shutdown();
 		TemporalAA::Shutdown();
 	}
 

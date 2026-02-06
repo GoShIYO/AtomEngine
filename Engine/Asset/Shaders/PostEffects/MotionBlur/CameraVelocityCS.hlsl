@@ -1,4 +1,5 @@
 #include "PixelPacking_Velocity.hlsli"
+#define USE_LINEAR_Z
 
 Texture2D<float> DepthBuffer : register(t0);
 RWTexture2D<packed_velocity_t> VelocityBuffer : register(u0);

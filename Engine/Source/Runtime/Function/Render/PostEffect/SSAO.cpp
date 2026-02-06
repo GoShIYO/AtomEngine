@@ -136,7 +136,7 @@ namespace AtomEngine
 
 
 
-		uint32_t FrameIndex = DX12Core::GetFrameIndex();
+		uint32_t FrameIndex = DX12Core::GetFrameIndexMod2();
 
 		DepthBuffer& Depth = gSceneDepthBuffer;
 		ColorBuffer& LinearDepth = gLinearDepth[FrameIndex];

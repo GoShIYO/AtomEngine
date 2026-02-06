@@ -93,14 +93,14 @@ namespace AtomEngine
 		mExposureBuffer.Create(L"Exposure", 8, 4, initExposure);
 
 
-		mMinExposure = 0.0f;
-		mMaxExposure = 1.0f;
-		mTargetLuminance = 0.45f;
-		mAdaptationRate = 0.5f;
-		mExposure = 1.0f;
-		mBloomThreshold = 0.8f;
-		mBloomStrength = 1.5f;
-		mBloomUpsampleFactor = 0.65f;
+		//mMinExposure = 0.0f;
+		//mMaxExposure = 1.0f;
+		//mTargetLuminance = 0.45f;
+		//mAdaptationRate = 0.5f;
+		//mExposure = 1.0f;
+		//mBloomThreshold = 0.8f;
+		//mBloomStrength = 1.5f;
+		//mBloomUpsampleFactor = 0.65f;
 	}
 
 	void PostEffect::Shutdown()

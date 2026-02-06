@@ -22,7 +22,6 @@ namespace AtomEngine
 	ComputePSO sBoundNeighborhoodCS(L"TAA: Bound Neighborhood CS");
 	ComputePSO sSharpenTAACS(L"TAA: Sharpen TAA CS");
 	ComputePSO sResolveTAACS(L"TAA: Resolve TAA CS");
-	ComputePSO sCameraVelocityCS[2] = { { L"TAA: Camera Velocity CS" },{ L"TAA: Camera Velocity Linear Z CS" } };
 
 	uint32_t sFrameIndex = 0;
 	uint32_t sFrameIndexMod2 = 0;
@@ -38,8 +37,6 @@ namespace AtomEngine
 		auto boundNeighborhood = ShaderCompiler::CompileBlob(L"PostEffects/TAA/BoundNeighborhood.hlsl", L"cs_6_6");
 		auto sharpenTAA = ShaderCompiler::CompileBlob(L"PostEffects/TAA/SharpenTAA.hlsl", L"cs_6_6");
 		auto resolveTAA = ShaderCompiler::CompileBlob(L"PostEffects/TAA/ResolveTAA.hlsl", L"cs_6_6");
-		auto cameraVelocity = ShaderCompiler::CompileBlob(L"PostEffects/TAA/CameraVelocity.hlsl", L"cs_6_6");
-		auto cameraVelocityLinearZ = ShaderCompiler::CompileBlob(L"PostEffects/TAA/CameraVelocityLinearZ.hlsl", L"cs_6_6");
 
 #define CreatePSO( ObjName, Shader ) \
 		ObjName.SetRootSignature(gCommonRS); \
@@ -50,8 +47,6 @@ namespace AtomEngine
 		CreatePSO(sBoundNeighborhoodCS, boundNeighborhood);
 		CreatePSO(sSharpenTAACS, sharpenTAA);
 		CreatePSO(sResolveTAACS, resolveTAA);
-		CreatePSO(sCameraVelocityCS[0], cameraVelocity);
-		CreatePSO(sCameraVelocityCS[1], cameraVelocityLinearZ);
 	}
 	
 	void TemporalAA::Shutdown()
@@ -62,10 +57,10 @@ namespace AtomEngine
 	void TemporalAA::Update(uint64_t frameIndex)
 	{
 		sFrameIndex = static_cast<uint32_t>(frameIndex);
-		sFrameIndexMod2 = sFrameIndex % 2;
+		sFrameIndexMod2 = DX12Core::GetFrameIndexMod2();
 		if (EnableTAA)// && !DepthOfField::Enable)
 		{
-			static const float Halton23[8][2] =
+			constexpr float Halton23[8][2] =
 			{
 				{ 0.0f / 8.0f, 0.0f / 9.0f }, { 4.0f / 8.0f, 3.0f / 9.0f },
 				{ 2.0f / 8.0f, 6.0f / 9.0f }, { 6.0f / 8.0f, 1.0f / 9.0f },
@@ -94,53 +89,7 @@ namespace AtomEngine
 		}
 
 	}
-	void TemporalAA::GenerateVelocityBuffer(CommandContext& BaseContext, const Camera& camera, bool UseLinearZ)
-	{
-		const auto& reprojectionMatrix = camera.GetReprojectionMatrix();
-		const auto& nearClip = camera.GetNearClip();
-		const auto& farClip = camera.GetFarClip();
 
-		ComputeContext& Context = BaseContext.GetComputeContext();
-
-		Context.SetRootSignature(gCommonRS);
-
-		uint32_t Width = gSceneColorBuffer.GetWidth();
-		uint32_t Height = gSceneColorBuffer.GetHeight();
-
-		float RcpHalfDimX = Width * 0.5f;
-		float RcpHalfDimY = Height * 0.5f;
-		float RcpZMagic = nearClip / (farClip - nearClip);
-
-		Matrix4x4 preMult = Matrix4x4(
-			Vector4(RcpHalfDimX, 0.0f, 0.0f, 0.0f),
-			Vector4(0.0f, -RcpHalfDimY, 0.0f, 0.0f),
-			Vector4(0.0f, 0.0f, UseLinearZ ? RcpZMagic : 1.0f, 0.0f),
-			Vector4(-1.0f, 1.0f, UseLinearZ ? -RcpZMagic : 0.0f, 1.0f)
-		);
-
-		Matrix4x4 postMult = Matrix4x4(
-			Vector4(1.0f / RcpHalfDimX, 0.0f, 0.0f, 0.0f),
-			Vector4(0.0f, -1.0f / RcpHalfDimY, 0.0f, 0.0f),
-			Vector4(0.0f, 0.0f, 1.0f, 0.0f),
-			Vector4(1.0f / RcpHalfDimX, 1.0f / RcpHalfDimY, 0.0f, 1.0f));
-
-
-		Matrix4x4 CurToPrevXForm = preMult * reprojectionMatrix * postMult;
-
-		Context.SetDynamicConstantBufferView(3, sizeof(CurToPrevXForm), &CurToPrevXForm);
-		Context.TransitionResource(gVelocityBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-		ColorBuffer& LinearDepth = gLinearDepth[sFrameIndexMod2];
-		if (UseLinearZ)
-			Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		else
-			Context.TransitionResource(gSceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-
-		Context.SetPipelineState(sCameraVelocityCS[UseLinearZ ? 1 : 0]);
-		Context.SetDynamicDescriptor(1, 0, UseLinearZ ? LinearDepth.GetSRV() : gSceneDepthBuffer.GetDepthSRV());
-		Context.SetDynamicDescriptor(2, 0, gVelocityBuffer.GetUAV());
-		Context.Dispatch2D(Width, Height);
-	}
 	void TemporalAA::GetJitterOffset(float& JitterX, float& JitterY)
 	{
 		JitterX = sJitterX;
@@ -173,7 +122,7 @@ namespace AtomEngine
 
 		uint32_t Src = sFrameIndexMod2;
 		uint32_t Dst = Src ^ 1;
-
+		if(EnableTAA)
 		{
 			ApplyTemporalAA(Context);
 			SharpenImage(Context, gTemporalColor[Dst]);

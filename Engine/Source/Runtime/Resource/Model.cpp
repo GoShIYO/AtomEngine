@@ -1,5 +1,4 @@
 #include "Model.h"
-#include "AssetManager.h"
 
 #include "Runtime/Function/Render/RenderQueue.h"
 #include "Runtime/Platform/DirectX12/Shader/ConstantBufferStructures.h"
@@ -45,12 +44,12 @@ namespace AtomEngine
 				);
 				BoundingSphere sphereVS = BoundingSphere(
 					sphereWS.GetCenter() * viewMat,
-					sphereWS.GetRadius() + 1.0f
+					sphereWS.GetRadius()
 				);
 
 				// TODO: ReverseZ 対応
-				//if (!frustum.IntersectSphere(sphereVS))
-				//	continue;
+				if (!frustum.IntersectSphere(sphereVS))
+					continue;
 
 				float distance = sphereVS.GetCenter().z + sphereVS.GetRadius();
 
