@@ -28,10 +28,10 @@ void SetClearSceneGameResult(AtomEngine::Scene* scene, int collected, int total,
 
 void Game::Initialize()
 {
+	Sound::LoadSounds();
+
 	auto titleScene = std::make_unique<TitleScene>("TitleScene", mSceneManager);
 	mSceneManager.PushScene(std::move(titleScene));
-
-	Sound::LoadSounds();
 }
 
 void Game::Update(float deltaTime)
